@@ -36,10 +36,11 @@ Research and record how the console behaves, studying consoles like Appwrite, Su
 - [x] Design it (spec): `/architect console UX patterns`
 Spec [0001](../specs/0001-console-ux-patterns/index.md)
 
-### 5. Security baseline · needs a decision
+### 5. Security baseline · done
 The bar every feature meets. Orvano stores other people's users, data, and secrets, and later runs their code, so this is set once before anything is built.
 **Done when:** a spec records a verification standard and level, a threat model for many projects on one install, password hashing, token signing and rotation, secrets encrypted at rest and keys shown once, and dependency scanning; later specs point to it for their security criteria.
-- [ ] Design it (spec): `/architect security baseline`
+spec [0006](../specs/0006-security-baseline/index.md)
+- [x] Design it (spec): `/architect security baseline`
 
 ### 57. Open source license · needs a decision
 Choose Orvano's license and contributor terms before the first public push. It decides whether others can resell Orvano as a hosted service, what every package's metadata says (spec 0002 is waiting on it), and which dependency licenses are allowed.

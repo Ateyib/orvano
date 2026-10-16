@@ -20,7 +20,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 3 | [Dart and Flutter practices](foundations.md) | Foundation | done |
 | 4 | [TypeScript SDK practices](foundations.md) | Foundation | done |
 | 54 | [Console UX patterns](foundations.md) | Foundation | done |
-| 5 | [Security baseline](foundations.md) | Foundation | planned |
+| 5 | [Security baseline](foundations.md) | Foundation | done |
 | 57 | [Open source license](foundations.md) | Foundation | planned |
 | 6 | [Stack & architecture](foundations.md) | Foundation | planned |
 | 7 | [Coding standards & tooling](foundations.md) | Foundation | planned |
@@ -92,7 +92,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 
 ## Epics
 
-- [Foundations](foundations.md): 13 features, 5 done
+- [Foundations](foundations.md): 13 features, 6 done
 - [SDKs](sdks.md): 5 features, 0 done
 - [Platform](platform.md): 7 features, 0 done
 - [Auth](auth.md): 6 features, 0 done
