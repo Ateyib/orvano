@@ -24,6 +24,7 @@ Run from `console/`. pnpm is pinned in `package.json` (`packageManager`). If you
 - Render through `renderWithProviders(url)` in `src/test/render.tsx`, which runs the real route tree. Pass in app URLs (`/`, not `/console/`): memory history does not apply the router's base path.
 - Lingui's `I18nProvider` renders nothing until a locale is active, so the helper activates `en` like `main.tsx` does.
 - Vitest browser mode serves from `/`, so `BASE_URL` is `/` in tests, and `vitest.config.ts` drops the dev proxy (it would forward Vitest's own requests to the server).
+- A failed browser test saves a screenshot under `.vitest/attachments/failure-screenshots/` (git ignored). Look there first when a test fails.
 
 ## Agent skills
 

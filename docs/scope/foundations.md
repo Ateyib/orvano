@@ -58,7 +58,7 @@ spec [0007](../specs/0007-stack-architecture/index.md) · code in `server/`, `co
 ### 7. Coding standards & tooling
 Capture the conventions from features 1 to 5 and the real scaffold, then install lint, format, analyzers, pre-commit hooks, and CI for the core monorepo, plus a starter setup each SDK repo copies. For the JavaScript side (console and TypeScript SDKs), use Vite+ (`vp`, MIT, 1.0 since 2026-09-28) as the toolchain: Oxfmt for formatting, Oxlint first with a small ESLint config only for rules Oxlint lacks (React Compiler diagnostics, Lingui `no-unlocalized-strings`, TanStack plugins, typescript-eslint strict type checked), `vp run` for tasks, and `vp hooks` / `vp staged` for git hooks. Settle whether type checking uses `vp check` (TypeScript 7) or `tsc` (TypeScript 6, specs 0003 WEB-2 and 0005 SDK-1).
 **Done when:** root `AGENTS.md` reflects the real stack and the researched practices, and lint, format, and CI run clean; Vite+ is confirmed working on this Windows machine (installer PATH, Defender flagging its shims, and `vp run` finding `.bin` scripts with the pinned pnpm), or the plan falls back to standalone Vite, Vitest, and tsdown with the reason recorded.
-- [ ] Capture conventions + tooling choices: `/audit`
+- [x] Capture conventions + tooling choices: `/audit`
 - [ ] Install the tooling: `/develop tooling`
 - [ ] Check it runs clean: `/test`
 

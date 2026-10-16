@@ -16,6 +16,10 @@ Decided in [spec 0007](docs/specs/0007-stack-architecture/index.md) (`## Propose
 
 **Tracer Bullet**: each slice runs end to end through server, console, and every SDK, working; later slices thicken one strand.
 
+## Local setup
+
+You need the .NET 10 SDK, Node 24 LTS, pnpm 12 (pinned in `console/package.json`), and Docker (Podman works too). The run order (dev database, root key, migrate, server, console) is in [README.md](README.md#local-development); each area's own commands are in its `AGENTS.md` under Context files.
+
 ## Read before you write code
 
 Read the matching practice spec first. Each rule has an ID (for example `API-1`, `UX-27`), so cite the ID in code review. Where an installed skill disagrees with a spec, the spec wins (rule GEN-0 in spec 0002).
