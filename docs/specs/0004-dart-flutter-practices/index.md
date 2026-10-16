@@ -32,7 +32,7 @@ Dart SDK code follows the numbered rules below. **MUST** rules fail the build or
 
 ### Scope and boundaries
 
-Applies to all code in the two Dart SDK repos: the Flutter SDK repo (packages `orvano` and `orvano_flutter`) and the Dart server SDK repo (package `orvano_server`), including generated code, tests, examples, and `tool/` scripts. It does not cover the .NET SDK (spec 0002), the TypeScript SDKs (feature 4), or the example apps' own code (feature 60), which follow these rules only where they call the SDK.
+Applies to all code in the two Dart SDK repos: the Flutter SDK repo `sdk-flutter` (packages `orvano` and `orvano_flutter`) and the Dart server SDK repo `sdk-dart` (package `orvano_server`), including generated code, tests, examples, and `tool/` scripts. It does not cover the .NET SDK (spec 0002), the TypeScript SDKs (feature 4), or the example apps' own code (feature 60), which follow these rules only where they call the SDK.
 
 Decided elsewhere, not here (this spec points to them and must not be read as deciding them):
 
@@ -42,7 +42,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 | CORS: allowing Orvano's request headers and exposing `Retry-After` and the trace header to browsers | Feature 10 (which headers) with the server setup in feature 6 |
 | What a session contains, token lifetimes and how a refresh works, sign in flows, refreshing across browser tabs and background isolates | Feature 14 (and 18, 19 for the other sign in methods) |
 | Token signing, PII classification, dependency vulnerability policy, the final dependency license policy | Feature 5, Security baseline (interim license list: spec 0002 GEN-5) |
-| Repo names in the `orvanohq` org; where the server container image is published | Feature 6, Stack & architecture |
+| Repo names in the `orvanohq` org; where the server container image is published | Feature 6, Stack & architecture (decided in [spec 0007](../0007-stack-architecture/index.md): REP-3, IMG-3) |
 | CI wiring and runners, the shared lint config template, PR templates | Feature 7, Coding standards & tooling; feature 58 for repo setup |
 | The license text in each package | Feature 57, Open source license |
 | pub.dev verified publisher, reserving package names, versions, release steps, changelog process | Feature 52, SDK publishing & versioning |
@@ -70,10 +70,10 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 
 ### Package layout
 
-- **PKG-1 (MUST)**: The Flutter SDK repo is a pub workspace (repo names come from feature 6):
+- **PKG-1 (MUST)**: The Flutter SDK repo `sdk-flutter` is a pub workspace (repo names per spec 0007 REP-3):
 
 ```
-<flutter-sdk-repo>/
+sdk-flutter/
   pubspec.yaml               # workspace root: publish_to: none, sdk ^3.10.0,
                              #   workspace: [packages/orvano, packages/orvano_flutter, packages/orvano_flutter/example]
   pubspec.lock               # committed (DRT-3)
@@ -105,7 +105,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
       README.md CHANGELOG.md LICENSE
 ```
 
-- **PKG-2 (MUST)**: The Dart server SDK repo is a single package, laid out like `packages/orvano` above but at the repo root: `pubspec.yaml` (package `orvano_server`, PLT-3), `dart_test.yaml`, `lib/orvano_server.dart`, `lib/src/generated/`, `lib/src/core/`, `lib/src/services/`, `lib/src/version.dart`, `test/` with `test/conformance/`, `example/main.dart`, `tool/`, and the same root files. It has no `session/` folder: the server SDK authenticates with an API key only.
+- **PKG-2 (MUST)**: The Dart server SDK repo `sdk-dart` is a single package, laid out like `packages/orvano` above but at the repo root: `pubspec.yaml` (package `orvano_server`, PLT-3), `dart_test.yaml`, `lib/orvano_server.dart`, `lib/src/generated/`, `lib/src/core/`, `lib/src/services/`, `lib/src/version.dart`, `test/` with `test/conformance/`, `example/main.dart`, `tool/`, and the same root files. It has no `session/` folder: the server SDK authenticates with an API key only.
 - **PKG-3 (MUST)**: The hand written runtime in `lib/src/core/` (transport, auth hook, retry, cancel token, options, exceptions, codecs, the paging helper) comes from one template set owned by feature 10 and is emitted into both repos. Neither repo depends on the other. A change to the runtime is made in the templates and regenerated into both; the conformance suite (DQA-3) proves they behave the same.
 - **PKG-4 (MUST)**: `orvano_flutter` exports all of `package:orvano/orvano.dart`, so a Flutter app imports only `package:orvano_flutter/orvano_flutter.dart`. Both packages release at the same version (feature 52 owns how), and `orvano_flutter` depends on `orvano` with an explicit range on the same minor version, `orvano: ">=X.Y.Z <X.(Y+1).0"` (a caret would allow the next minor after 1.0).
 - **PKG-5 (MUST)**: No Orvano package ships native code (no `android/`, `ios/`, `macos/`, `windows/`, `linux/` plugin folders). Platform work goes through existing federated plugins (flutter_secure_storage, shared_preferences). This keeps five native languages out of the SDK team's review load and avoids the pana cap on legacy native builds.
@@ -224,7 +224,7 @@ abstract interface class SessionStore {
 
 - **DQA-1 (MUST)**: Unit tests use package:test (`orvano`, `orvano_server`) and flutter_test (`orvano_flutter`). Test doubles are hand written: package:http's `MockClient` for plain responses (it ignores the abort trigger by design), a small `FakeAbortableClient` in the test helpers that honors the abort trigger and can hold a response open (for the timeout, cancel, and close tests), `MemorySessionStore` as a real in memory store, and small fakes for flutter_secure_storage, shared_preferences, and `AppLifecycleSource`. Time is controlled with `fake_async` and jitter with a seeded `Random` (STR-5). No mockito, mocktail, or build_runner. No real network outside the conformance suite, and no real delays.
 - **DQA-2 (MUST)**: Per PR: `orvano` tests on the VM and in Chrome under dart2js and dart2wasm; `orvano_flutter` tests with `flutter test` plus `flutter test --platform chrome`, with and without `--wasm` (*verify at scaffold* the flag); `orvano_server` tests on the VM on Linux; each against the floor and the latest stable, plus the downgrade job (DRT-3).
-- **DQA-3 (MUST)**: Feature 10's shared conformance suite is implemented in Dart under `test/conformance/`, tagged `conformance`, and runs per PR for `orvano` (VM) and `orvano_server` against a real Orvano server container: the image the core monorepo's CI publishes (feature 6 names the registry), pinned to the server version the SDK targets. Until the first image exists, the job is skipped with a visible notice in the CI summary. Locally the container runs under Podman (spec 0002 TST-5a); CI uses whatever its runners provide (feature 7).
+- **DQA-3 (MUST)**: Feature 10's shared conformance suite is implemented in Dart under `test/conformance/`, tagged `conformance`, and runs per PR for `orvano` (VM) and `orvano_server` against a real Orvano server container: the image the core monorepo's CI publishes, `ghcr.io/orvanohq/orvano` (spec 0007 IMG-3), pinned to the server version the SDK targets. Until the first image exists, the job is skipped with a visible notice in the CI summary. Locally the container runs under Docker or Podman (spec 0002 TST-5a, spec 0007 DEV-1); CI uses whatever its runners provide (feature 7).
 - **DQA-4 (MUST)**: Nightly: `integration_test` from `packages/orvano_flutter/example` against a real server on an Android emulator, an iOS simulator, macOS, Windows, Linux (with a keyring service running), and Chrome (a wasm build). Since `integration_test` can't relaunch the app, a restart is simulated: sign in, `close()` the client, and open a new one over the same real platform storage, which must come back signed in. The first run cleanup is tested by clearing `shared_preferences` through the plugin and resetting the once per process guard (a `@visibleForTesting` hook) before opening again, which must come back signed out. A Linux job with no keyring service proves the memory fallback. The server SDK runs its tests nightly on macOS and Windows too, plus a smoke test of `dart compile exe example/main.dart` against the server. The latest Flutter beta also runs nightly, for information only. A nightly failure opens an issue (feature 7 wires it).
 - **DQA-5 (MUST)**: No coverage number. Instead, each kind of code has required tests, and review checks them:
   - Each hand written service method: success, and each `OrvanoException` subtype it can produce.
@@ -253,8 +253,8 @@ The pure Dart package's pubspec (version floors are examples; the scaffold sets 
 name: orvano
 description: Dart client for Orvano, the self hostable backend. Auth, databases, storage, and realtime for Dart and Flutter apps.
 version: 0.1.0
-repository: https://github.com/orvanohq/<flutter-sdk-repo>/tree/main/packages/orvano
-issue_tracker: https://github.com/orvanohq/<flutter-sdk-repo>/issues
+repository: https://github.com/orvanohq/sdk-flutter/tree/main/packages/orvano
+issue_tracker: https://github.com/orvanohq/sdk-flutter/issues
 topics: [backend, database, auth, realtime, baas]
 resolution: workspace
 
@@ -692,7 +692,8 @@ New code immediately. Neither Dart SDK repo exists yet, so every rule holds from
 
 - [x] Confirmed on 2026-10-15 (no SDK repo needed): package:http's `AbortableRequest`, `AbortableStreamedRequest`, `abortTrigger`, and `RequestAbortedException` (NET-2), and that `MockClient` ignores aborting (DQA-1); the browser client honors `followRedirects` (NET-10); flutter_secure_storage 11.2's `storageNamespace`, `resetOnError` (default true), `accountName`, `accessibility`, `first_unlock_this_device`, `readAll`, and its Dart 3.8 and Flutter 3.19 floor (SES-4); pana's `--json` and `--exit-code-threshold` flags and its Dart 3.11 need (PUB-1); 20 of the 21 DRT-4 lint names; newest `test` and `shared_preferences` need more than the floor (DRT-3).
 - [ ] First commit of each Dart SDK repo, still verify: the casing of `no_runtimeType_toString` (DRT-4); flutter_secure_storage and shared_preferences Swift Package Manager support (sources conflict) and wasm readiness (PLT-2); the shape of pana's JSON report for `tool/check_pana.dart` and whether the total maximum is 150 or 160 (PUB-1); the `dart test` syntax for running Chrome under both dart2js and dart2wasm, and whether `flutter test --platform chrome --wasm` exists (DQA-2; if not, test the wasm build in the nightly only and note it here); the lowest working versions of `meta`, `web`, `clock`, `logging`, `collection`, `fake_async`, `lints`, `test`, and `shared_preferences` that resolve on the floor (DRT-3). Record any changed form in this spec.
-- [ ] Feature 6: name the Flutter SDK repo and the Dart server SDK repo in the `orvanohq` org; publish the server container image the conformance suite pulls (DQA-3); serve the CORS headers below.
+- [x] Feature 6: name the Flutter SDK repo and the Dart server SDK repo in the `orvanohq` org; publish the server container image the conformance suite pulls (DQA-3). Closed by spec 0007: repos `sdk-flutter` and `sdk-dart` (REP-3), image `ghcr.io/orvanohq/orvano` (IMG-3).
+- [x] Serve the CORS headers below. Closed by spec 0007 COR-1 to COR-5: the server allows Orvano's request headers and exposes `Retry-After`, the trace header, and Orvano's response headers from one `OrvanoHeaders` list that feature 10 fills.
 - [ ] Feature 7 (`/audit`): lift these rules into each Dart SDK repo's `AGENTS.md`; record the 10 installed skills under `## Agent skills` with the DRT-0 overrides; list the official Dart and Flutter MCP server (`dart mcp-server`, Dart 3.9 or later) as the MCP server to connect in those repos. Write the shared `analysis_options.yaml` and the `tool/` checks, and wire the CI jobs in the Enforcement table, including macOS runners, a Linux keyring service for DQA-4, the weekly pana job, and nightly issue filing.
 - [ ] Feature 10: one template set for the Dart runtime emitted into both repos (PKG-3), with the auth hook (NET-8) and the streamed primitive (NET-9); Dart output that meets MDL-1 to MDL-4 (plain classes, field by field parsing, enums with `unknown`, UTC timestamps, `num` reads); separate response and input models (MDL-3); a 64 bit integer wire format that is safe on the web (MDL-4); how partial updates mark a field as unset; client only and server only endpoint tags (DSC-1); the SDK identification header name (NET-6); the reserved `unknown` error code (NET-10) and the session expired code (NET-8); error body fields matching EXC-1; contract descriptions good enough to become dartdoc (PUB-2); the conformance suite runnable from `dart test` (DQA-3); the CORS contract: Orvano's request headers in `Access-Control-Allow-Headers`, and `Retry-After` plus the trace header in `Access-Control-Expose-Headers`, so web clients can honor retries and read trace IDs.
 - [ ] Feature 14: the session's JSON shape and its `v` schema version (SES-1); every `AuthState` subtype and payload before 1.0 (STR-2, DRT-7); how a refresh works for NET-8 and on `AppPhase.resumed` (CLN-6); refresh races across tabs (SES-8) and between a background isolate and the app (STR-6).

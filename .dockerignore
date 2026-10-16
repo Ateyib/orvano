@@ -1,0 +1,11 @@
+# The image builds from server/ and console/ only.
+.git
+.claude
+docs
+**/node_modules
+**/dist
+**/bin
+**/obj
+**/*.user
+deploy/.env
+deploy/root.key

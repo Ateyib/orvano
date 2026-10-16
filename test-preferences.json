@@ -1,0 +1,19 @@
+{
+  "tool": "xunit.v3",
+  "gate": null,
+  "additionalTools": ["Shouldly", "Testcontainers.PostgreSql", "Microsoft.AspNetCore.Mvc.Testing"],
+  "e2eTool": "playwright",
+  "testDir": "server/tests/<Project>.Tests, server/tests/Orvano.Host.IntegrationTests (spec 0002 TST-2)",
+  "filePattern": "*Tests.cs",
+  "packageManager": "dotnet",
+  "packages": {
+    "console": {
+      "tool": "vitest",
+      "additionalTools": ["@vitest/browser-playwright", "vitest-browser-react"],
+      "e2eTool": "playwright",
+      "testDir": "beside the source (spec 0003 DIR-4); e2e/ for Playwright",
+      "filePattern": "*.test.ts / *.test.tsx",
+      "packageManager": "pnpm"
+    }
+  }
+}

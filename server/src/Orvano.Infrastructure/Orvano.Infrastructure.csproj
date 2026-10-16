@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Spec 0007 REP-2: references only Orvano.SharedKernel; modules never reference this project. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Orvano.SharedKernel\Orvano.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

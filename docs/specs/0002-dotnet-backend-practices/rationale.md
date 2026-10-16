@@ -104,6 +104,8 @@ Each row: the options weighed, the pick (chosen by the engineer in the design co
 | Outbound resilience | Microsoft.Extensions.Http.Resilience · Polly directly · no retries | Http.Resilience | Standard handler (Polly v8) on every client, consistent; replaces the older Http.Polly package | Polly directly |
 | JSON | System.Text.Json source generated · STJ reflection · Newtonsoft | STJ source generated | Fastest, in the box, trimming and AOT safe for the SDK | STJ reflection |
 
+_Amended 2026-10-16: spec 0007 later chose JIT plus ReadyToRun for faster container start, and PRF-1 now follows it. The reasons above still hold for staying off Native AOT._
+
 ### Library (SDK)
 
 | Area | Options weighed | Pick | Why | Runner up |

@@ -47,12 +47,13 @@ Choose Orvano's license and contributor terms before the first public push. It d
 **Done when:** a spec records the license for the server, the console, and the SDKs (they may differ), the contributor terms (sign off or contributor agreement), and the dependency licenses that are allowed, and a `LICENSE` file is ready for each repo.
 - [ ] Design it (spec): `/architect open source license`
 
-### 6. Stack & architecture · needs a decision
+### 6. Stack & architecture · done
 Design the system around your given choices (.NET 10, React with Vite, PostgreSQL): service boundaries, how one self hosted install runs, background jobs, caching, file storage, and the names of the SDK repos. Then scaffold the `orvano` core monorepo.
 **Done when:** the architecture is recorded in a spec, and the core monorepo scaffold boots the server and console locally and builds clean.
-- [ ] Decide the stack (spec): `/architect stack & architecture`
-- [ ] Scaffold from the decision: `/develop stack & architecture`
-- [ ] Smoke check it runs: `/test`
+spec [0007](../specs/0007-stack-architecture/index.md) · code in `server/`, `console/`, `deploy/`
+- [x] Decide the stack (spec): `/architect stack & architecture`
+- [x] Scaffold from the decision: `/develop stack & architecture`
+- [x] Smoke check it runs: `/test`
 
 ### 7. Coding standards & tooling
 Capture the conventions from features 1 to 5 and the real scaffold, then install lint, format, analyzers, pre-commit hooks, and CI for the core monorepo, plus a starter setup each SDK repo copies. For the JavaScript side (console and TypeScript SDKs), use Vite+ (`vp`, MIT, 1.0 since 2026-09-28) as the toolchain: Oxfmt for formatting, Oxlint first with a small ESLint config only for rules Oxlint lacks (React Compiler diagnostics, Lingui `no-unlocalized-strings`, TanStack plugins, typescript-eslint strict type checked), `vp run` for tasks, and `vp hooks` / `vp staged` for git hooks. Settle whether type checking uses `vp check` (TypeScript 7) or `tsc` (TypeScript 6, specs 0003 WEB-2 and 0005 SDK-1).

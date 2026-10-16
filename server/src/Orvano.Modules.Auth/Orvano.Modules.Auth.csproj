@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="NSec.Cryptography" />
+    <ProjectReference Include="..\Orvano.SharedKernel\Orvano.SharedKernel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Orvano.Modules.Auth.Tests" />
+  </ItemGroup>
+</Project>

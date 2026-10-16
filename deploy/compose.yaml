@@ -1,0 +1,107 @@
+# The reference install (spec 0007 INS-1): PostgreSQL, a one shot migrate, Orvano, and Caddy for HTTPS.
+# Works with Docker Compose v2 and `podman compose`.
+#
+# First time, in the folder that holds this file, as yourself (spec 0007 INS-3):
+#   docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/out:Z" ghcr.io/orvanohq/orvano init --out /out --domain <your domain>
+#   (rootless Podman: podman run --rm --userns=keep-id -v "$PWD:/out:Z" ghcr.io/orvanohq/orvano init --out /out --domain <your domain>)
+#   docker compose up -d
+#
+# init sets this folder to 0700 and writes root.key (0644, so the container can read it) and .env (0600)
+# (spec 0007 INS-5). The folder is what keeps root.key private: back it up owner only or encrypted, apart from
+# your database backups, and run compose as the same user that ran init.
+name: orvano
+
+x-orvano: &orvano
+  image: ghcr.io/orvanohq/orvano:${ORVANO_VERSION:-edge}
+  environment: &orvano-environment
+    ORVANO_DATABASE__HOST: postgres
+    ORVANO_DATABASE__USERNAME: orvano
+    ORVANO_DATABASE__PASSWORD: ${ORVANO_DB_PASSWORD:?run orvano init first}
+    ORVANO_PROJECTDB__ADMINUSERNAME: orvano_provisioner
+    ORVANO_PROJECTDB__ADMINPASSWORD: ${ORVANO_PROVISIONER_PASSWORD:?run orvano init first}
+    ORVANO_PUBLIC_URL: ${ORVANO_PUBLIC_URL:?run orvano init first}
+  networks:
+    - orvano
+
+services:
+  postgres:
+    image: postgres:18.6 # spec 0007 PG-1
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run orvano init first}
+      ORVANO_DB_PASSWORD: ${ORVANO_DB_PASSWORD:?run orvano init first}
+      ORVANO_PROVISIONER_PASSWORD: ${ORVANO_PROVISIONER_PASSWORD:?run orvano init first}
+    # Spec 0007 PG-4: replicas x (platform pool 30 + project cap 150 + 2) + 10 is 192 for one replica.
+    command: ["postgres", "-c", "max_connections=300"]
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d orvano"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - orvano
+
+  migrate:
+    <<: *orvano
+    command: ["migrate"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  orvano:
+    <<: *orvano
+    restart: unless-stopped
+    environment:
+      <<: *orvano-environment
+      # Only the server gets the root key; migrate needs none (spec 0007 INS-2).
+      ORVANO_ROOT_KEY_FILE: /run/secrets/orvano_root_key
+      # Spec 0006 NET-1: forwarded headers are trusted from Caddy's fixed address only.
+      ORVANO_TRUSTED_PROXIES: 172.30.80.10
+    secrets:
+      - orvano_root_key
+    volumes:
+      - orvano-storage:/var/lib/orvano/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    image: caddy:2.11.7 # spec 0007 TLS-1
+    restart: unless-stopped
+    environment:
+      ORVANO_DOMAIN: ${ORVANO_DOMAIN:?run orvano init first}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - orvano
+    networks:
+      orvano:
+        ipv4_address: 172.30.80.10
+
+secrets:
+  orvano_root_key:
+    file: ./root.key
+
+volumes:
+  postgres-data:
+  orvano-storage:
+  caddy-data:
+  caddy-config:
+
+networks:
+  orvano:
+    ipam:
+      config:
+        - subnet: 172.30.80.0/24

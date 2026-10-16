@@ -1,0 +1,6 @@
+# Spec 0002 GEN-2: rule severities change only here. Feature 7 (coding standards & tooling) fills in the rest.
+root = true
+
+# Spec 0002 TST-3 names tests <Behavior>_<expected>_when_<condition>.
+[tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none

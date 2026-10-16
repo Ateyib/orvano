@@ -2,6 +2,7 @@
 
 **Date**: 2026-10-15
 **Status**: Accepted
+**Updated**: 2026-10-16, verify at scaffold results recorded (RTE-3, RTE-7, FRM-5, I18N-2, I18N-6); RTE-6 and QA-2 retargeted.
 
 ## Summary
 
@@ -22,7 +23,7 @@ This is a cross cutting standard, so it has no build plan of its own. The rules 
 
 **Chosen option**: Option 1: Document the standard and enforce it from the first line of console code (type checks, lint rules, accessibility checks, catalog and API drift checks, and the bundle budget fail CI; review covers the rest).
 
-Console code follows the numbered rules below. **MUST** rules fail the build or the review. **SHOULD** rules need a written reason to skip. Rules marked *verify at scaffold* name a current library API the feature 6 scaffold must confirm before the first screen; if it differs, the scaffold records the working form here.
+Console code follows the numbered rules below. **MUST** rules fail the build or the review. **SHOULD** rules need a written reason to skip. Rules marked *verify with feature 11* or *verify with the first API screen* name a current library API that work must confirm; if it differs, that work records the working form here. The feature 6 scaffold confirmed the rest (see Follow-up).
 
 **Implementation skills**: `vite` (`antfu/skills`, `.claude/skills/vite/`) · `vitest` (`antfu/skills`, `.claude/skills/vitest/`) · `pnpm` (`antfu/skills`, `.claude/skills/pnpm/`) · `lingui-framework-setup` (`lingui/skills`, `.claude/skills/lingui-framework-setup/`) · `lingui-best-practices` (`lingui/skills`, `.claude/skills/lingui-best-practices/`) · `playwright-cli` (`microsoft/playwright-cli`, `.claude/skills/playwright-cli/`) · `accessibility` (`addyosmani/web-quality-skills`, `.claude/skills/accessibility/`) · `vercel-react-best-practices` (`vercel-labs/agent-skills`, `.claude/skills/vercel-react-best-practices/`)
 
@@ -41,7 +42,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 | How every screen behaves: layout, forms, grid, states, deletes, messages, URL contents, focus, shortcuts (UX-1 to UX-41) | Spec 0001, Console UX patterns |
 | Visual language, tokens, themes, density values, **styling technology**, the **data grid library**, the primitives' look, CSS budget, any component workbench | Feature 11, Design system & console shell |
 | Wire format: error body and codes, field errors, request ID, cursors, row versions, allowed actions, dependents counts, the session and runtime config endpoints, the API contract file and its location | Feature 10, API contract & SDK generation |
-| The console's folder in the monorepo, its fixed base path, how the server serves it (same origin), the dev proxy, container images | Feature 6, Stack & architecture |
+| The console's folder in the monorepo, its fixed base path, how the server serves it (same origin), the dev proxy, container images | Feature 6, Stack & architecture (decided in [spec 0007](../0007-stack-architecture/index.md): REP-1, CSL-1 to CSL-3, IMG-1) |
 | ESLint, format, and CI wiring; which lint plugins carry each rule below; pre commit hooks | Feature 7, Coding standards & tooling |
 | Content Security Policy and `Referrer-Policy` headers, session cookie and CSRF design, dependency vulnerability policy, the final license policy | Feature 5, Security baseline (interim license list: spec 0002 GEN-5) |
 | Console sign in flow, the account's locale setting | Feature 13, Console accounts & projects |
@@ -61,16 +62,16 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 - **WEB-5 (MUST)**: Vite's default build target decides the syntax the build emits. A web API may be used without a fallback when it is Baseline widely available (supported in every major browser for at least 30 months) on the day the code is written; newer APIs need feature detection and a working fallback. (`AbortSignal.any` qualifies as of October 2026.)
 - **WEB-6 (MUST)**: The React Compiler is on for all of `src/`, through the stable Babel path (`reactCompilerPreset` from `@vitejs/plugin-react`, run by `@rolldown/plugin-babel`), not the experimental Rust `compiler` option. Don't write `useMemo`, `useCallback`, or `memo` by hand. Where a component can't be compiled (a library the compiler can't analyze), opt it out with the `'use no memo'` directive and a comment saying why. Code follows the Rules of React, which `eslint-plugin-react-hooks` (recommended config, compiler rules included) checks; its compiler diagnostics are errors, so a component the compiler silently skips fails lint.
 - **WEB-7 (MUST)**: A new runtime or dev dependency follows spec 0002 GEN-5 (OSI license on the interim allow list, a release or commit in the last 12 months, no commercial or source available license). One addition for the console: MPL 2.0 is allowed for **dev dependencies only** (today `axe-core` and `@axe-core/playwright`). A runtime dependency's size and reason go in the PR (BDL-3).
-- **WEB-8 (MUST)**: One console build serves every install. Its base path is fixed at build time by feature 6 and is the same for every install. No install specific value (instance URL, instance name, feature switches) is baked in; runtime values come from the API at boot (RTE-10). `import.meta.env` is read in exactly one module, `src/shared/config.ts`, and only for build facts (`DEV`, `BASE_URL`, the app version).
+- **WEB-8 (MUST)**: One console build serves every install. Its base path is `/console`, fixed at build time (Vite `base: '/console/'`, spec 0007 CSL-1) and the same for every install; `config.basePath` is derived from `BASE_URL`. No install specific value (instance URL, instance name, feature switches) is baked in; runtime values come from the API at boot (RTE-10). `import.meta.env` is read in exactly one module, `src/shared/config.ts`, and only for build facts (`DEV`, `BASE_URL`, the app version).
 - **WEB-9 (MUST)**: Named exports only, no default exports (except where a tool requires one, such as `vite.config.ts`). File names are `kebab-case`: `rows-page.tsx` exports `RowsPage`, `use-rows-view.ts` exports `useRowsView`. Route files follow the router plugin's naming (`$tableId`, `_shell`, `route.tsx`, `index.tsx`).
 - **WEB-10 (MUST)**: The app renders inside `<StrictMode>`, so effects must survive running twice (cleanups undo what setups did). `createRoot` passes `onCaughtError` and `onUncaughtError` to the one error reporter (FLT-4).
 
 ### Structure
 
-- **DIR-1 (MUST)**: The console app is laid out like this (the console's own folder name and place in the monorepo come from feature 6):
+- **DIR-1 (MUST)**: The console app is laid out like this (it is the top level `console/` folder of the core monorepo, spec 0007 REP-1):
 
   ```
-  <console>/
+  console/
     lingui.config.ts · vite.config.ts · vitest.config.ts · playwright.config.ts
     tsconfig.json · tsconfig.node.json
     index.html                    includes <meta name="referrer" content="same-origin"> (SEC-6)
@@ -123,7 +124,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
   ```
 
   The resource list's query lives in the service layout route's component, so switching the open resource changes only child params. A link to a resource points at its root, so switching resources lands on the default tab.
-- **RTE-3 (MUST)**: Router defaults, set once in `createAppRouter` (`src/router.ts`): `context: { queryClient }`, `basepath` from `shared/config.ts`, `parseSearch` and `stringifySearch` from `shared/url` (URL-2), `defaultPreload: 'intent'`, `defaultPreloadStaleTime: 0` (TanStack Query decides freshness), `defaultPendingComponent` (the content area skeleton), `defaultPendingMs: 300` and `defaultPendingMinMs: 500` (the UX-21 timing), `scrollRestoration: true`, and the default error and not found components. The shell's scrolling panes (content, resource list) carry scroll restoration IDs, since only the window is restored otherwise (*verify at scaffold*: the attribute name).
+- **RTE-3 (MUST)**: Router defaults, set once in `createAppRouter` (`src/router.ts`): `context: { queryClient }`, `basepath` from `shared/config.ts`, `parseSearch` and `stringifySearch` from `shared/url` (URL-2), `defaultPreload: 'intent'`, `defaultPreloadStaleTime: 0` (TanStack Query decides freshness), `defaultPendingComponent` (the content area skeleton), `defaultPendingMs: 300` and `defaultPendingMinMs: 500` (the UX-21 timing), `scrollRestoration: true`, and the default error and not found components. The shell's scrolling panes (content, resource list) carry scroll restoration IDs, since only the window is restored otherwise (the attribute is `data-scroll-restoration-id`, confirmed 2026-10-16 on `@tanstack/router-core` 1.171; `useElementScrollRestoration` covers a pane without the attribute).
 - **RTE-4 (MUST)**: Loaders feed the query cache; they never return data for `useLoaderData`, since there is one cache and it's TanStack Query's.
   - **Layout routes** (`_shell`, org, project, service, resource) await (`queryClient.ensureQueryData`) only the small frame data the frame renders: the session, the project and its capabilities, that the resource exists, and its name for the heading, crumbs, and title. Each one owns the pending skeleton for its content area; the shell and resource list never go blank while a child loads.
   - **Leaf routes** never await data that changes with search params (grid pages, filtered lists). They prefetch it (`void queryClient.prefetchQuery(...)`), and the component reads it with `useQuery`, so paging keeps the current rows on screen (UX-21).
@@ -134,14 +135,14 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
   - The default tab redirect is `beforeLoad: () => { throw redirect({ to: ..., params, replace: true }) }`.
   - A delete removes the deleted resource's cached queries (`queryClient.removeQueries`) before it navigates away, then invalidates the list, so nothing refetches a 404.
 - **RTE-6 (MUST)**: Links and navigation:
-  - `src/ui` exports one `Link`, made with TanStack's `createLink` over React Aria's `Link`, so links keep typed `to`, `params`, and `search` and the router's preload behavior (*verify at scaffold*: preload on hover and focus still fires). Feature code uses only this `Link` or `useNavigate`.
+  - `src/ui` exports one `Link`, made with TanStack's `createLink` over React Aria's `Link`, so links keep typed `to`, `params`, and `search` and the router's preload behavior (*verify with feature 11*: preload on hover and focus still fires; checked when `src/ui` builds this `Link`). Feature code uses only this `Link` or `useNavigate`.
   - The root route renders React Aria's `RouterProvider` with the router's `navigate` and `buildLocation` based `useHref`, so React Aria widgets that take `href` (menu items, crumbs, list items) navigate through the router.
   - Never build URL strings by hand or assign `window.location`; the exception is the full reload in QRY-9.
   - `RouteTabs` is a `nav` of links (UX-5), not React Aria `Tabs`. Its links never pass `search: true`, so the Rows tab's filters don't carry over to other tabs. A key that really is shared across tabs is kept with the `retainSearchParams` middleware on the parent route.
   - `ResourceList` links set `preload={false}`, so a keyboard user moving through 200 tables doesn't prefetch each one.
 - **RTE-7 (MUST)**: Crumbs, title, and focus (UX-4, UX-35):
   - Each route that adds a crumb declares it in `staticData.crumb` (a Lingui message, or a function of params that names the query holding the resource's name), typed by augmenting `StaticDataRouteOption`. `Breadcrumbs` renders one `Crumb` component per match from `useMatches()`, so each crumb can call its own query hook. The document title is built the same way, once, in the root; no route sets `document.title` itself.
-  - Focus after navigation: on the router's `onResolved` event (skipping the first load), the root waits for the next frame and then, if the pathname changed, moves focus to the page's `h1` (`tabIndex={-1}`). Links in `RouteTabs` and `ResourceList` navigate with history state `{ keepFocus: true }` (typed by augmenting `HistoryState`), and then focus stays on the link, because the frame around it didn't change. A change to the search only leaves focus where it is, except paging, which moves focus to the grid (the view hook does this). Spec 0001 UX-35 says the same.
+  - Focus after navigation: on the router's `onResolved` event (skipping the first load, when the event has no `fromLocation`), the root waits for the next frame and then, if `pathChanged` is true, moves focus to the page's `h1` (`tabIndex={-1}`). Links in `RouteTabs` and `ResourceList` navigate with history state `{ keepFocus: true }` (typed by augmenting `HistoryState`), and then focus stays on the link, because the frame around it didn't change. A change to the search only leaves focus where it is, except paging, which moves focus to the grid (the view hook does this). Spec 0001 UX-35 says the same.
 - **RTE-8 (MUST)**: The `UnsavedChangesGuard` primitive is the only user of the router's `useBlocker` (with `withResolver` and `enableBeforeUnload`). Every dirty form registers with it, and one navigation asks once, however many forms are dirty. It blocks a navigation when a dirty form would be unmounted (a different path, or its `sheet` param removed) and when the row sheet is dirty and `row` changes (Previous, Next, or clicking another row, UX-13). It asks with the design system dialog, never `window.confirm` (UX-9). It also holds the interaction lock while any form is dirty (QRY-4).
 - **RTE-9 (MUST)**: Guards and access (UX-30):
   - `_shell`'s `beforeLoad` ensures the session query. Without a session it throws `redirect({ to: '/sign-in', search: { redirect } })`, where `redirect` is the current path and search. The sign in page follows `redirect` only when it is a same origin path (starts with a single `/`), else goes to the default page.
@@ -233,7 +234,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 - **FRM-2 (MUST)**: The UX-8 timing is implemented once, in the shared field wiring in `src/ui/form`, and covered by browser component tests. A field is checked when it loses focus after a change. Once it shows an error, it's checked on every change, and the error clears the moment it passes. Screens never set validator timing themselves.
 - **FRM-3 (MUST)**: Each form has one Zod schema for its values in `features/<area>/schemas/`, and one mapper function `to<Action>Request(values)` whose return type is the generated request type, so the compiler checks that form and API agree. Validation messages use the `t` macro from `@lingui/core/macro` inside the schema's `error` functions, so they're translated when validation runs, in the current locale. Checks that need the server (for example "name already taken") are a field's `onBlurAsync` validator. It passes on the `signal` it's given, says "Checking" through the announcer (UX-41), and is never the final word: the server decides on submit.
 - **FRM-4 (MUST)**: Submitting runs in the form's `onSubmitAsync` validator: `mutateAsync(toRequest(schema.parse(values)))`, so trims, coercions, and defaults in the schema apply. Server validation errors come back from that validator as `{ form, fields }`, so they land in the same error state as client errors: errors that name a field show at the field, and the rest go to the `ErrorSummary` (UX-8). After a failed submit, focus moves to the summary. The submit button is never disabled for invalid input. It shows the busy state while submitting and ignores a second press.
-- **FRM-5 (MUST)**: A form starts from the last saved values (a snapshot of the query data) as its default values. It counts as changed while its values differ from those defaults (the form's `isDefaultValue` state is false), not `isDirty`, which stays true after a change is reverted (UX-9; *verify at scaffold*: the state's name). After a successful save, the form resets to the saved values. The `UnsavedChangesGuard` and settings card Update buttons read that changed state.
+- **FRM-5 (MUST)**: A form starts from the last saved values (a snapshot of the query data) as its default values. It counts as changed while its values differ from those defaults (the form's `isDefaultValue` state is false), not `isDirty`, which stays true after a change is reverted (UX-9; the state is `isDefaultValue`, confirmed 2026-10-16 on TanStack Form 1.33 for both form and field state). After a successful save, the form resets to the saved values. The `UnsavedChangesGuard` and settings card Update buttons read that changed state.
 - **FRM-6 (MUST)**: A failed submit keeps every value, wrong ones included (UX-10). The one exception is the password after a failed sign in, which is reset on purpose. Forms never persist drafts (STO-6).
 
 ### Accessibility (WCAG 2.2 AA)
@@ -249,11 +250,11 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 ### Translation ready strings
 
 - **I18N-1 (MUST)**: Every user facing string is a Lingui message. In components, use `<Trans>`, `<Plural>`, and `useLingui()` from `@lingui/react/macro`. Outside components, use the `t` macro from `@lingui/core/macro` only inside functions that run when the text is shown or validated (never at module level). For text stored before it's shown (crumbs, store messages), keep a lazy `msg` descriptor and translate at display time with `i18n._(descriptor)`. Resource names, user content, and code never go through translation.
-- **I18N-2 (MUST)**: The Lingui macros and the React Compiler run in **one** Babel pass: `babel({ plugins: ['@lingui/babel-plugin-lingui-macro'], presets: [reactCompilerPreset()] })` from `@rolldown/plugin-babel`. Babel runs plugins before presets, so the macros expand before the compiler reads the code. `lingui()` compiles `.po` catalogs on import. Install `@babel/types` beside `@lingui/babel-plugin-lingui-macro` (a peer that `lingui extract` needs). *Verify at scaffold* that both transforms ran (I18N-9); if the single pass doesn't work, fall back to two passes, `linguiTransformerBabelPreset()` first, and record it here.
+- **I18N-2 (MUST)**: The Lingui macros and the React Compiler run in **one** Babel pass: `babel({ plugins: ['@lingui/babel-plugin-lingui-macro'], presets: [reactCompilerPreset()] })` from `@rolldown/plugin-babel`. Babel runs plugins before presets, so the macros expand before the compiler reads the code. `lingui()` compiles `.po` catalogs on import. Install `@babel/types` beside `@lingui/babel-plugin-lingui-macro` (a peer that `lingui extract` needs). The scaffold confirmed on 2026-10-16 that both transforms run in this single pass (the built page carries the compiler's memo cache and compiled message IDs). If a later upgrade breaks it, fall back to two passes, `linguiTransformerBabelPreset()` first, and record it here; I18N-9 keeps checking.
 - **I18N-3 (MUST)**: Catalogs are PO files at `src/locales/<locale>/messages.po`, with `en` as the source locale and IDs generated from the source text (add `context` when one English word means two things). Start with one catalog. The `en` catalog is imported statically by the entry, since the boot error page needs it (it counts in the BDL-1 budget). Other locales load lazily. Split catalogs by area only if `en` passes 30 KB gzip. CI runs `lingui check sync` and fails when a message was added or changed without extraction. Only the source catalog is required to be complete; missing translations are checked at release time once other languages ship.
 - **I18N-4 (MUST)**: Plurals and choices use ICU through the macros (`plural`, `select`, `<Plural>`). Never build a sentence from fragments, concatenate translated strings, or pick a plural with `count === 1 ? ... : ...`. Name placeholders (assign to a well named variable, or use `ph()`), so translators see `{tableName}`, not `{0}`.
 - **I18N-5 (MUST)**: Dates, times, relative times, numbers, and lists are formatted only through `shared/format`, which wraps `Intl.DateTimeFormat`, `Intl.RelativeTimeFormat`, `Intl.NumberFormat`, and `Intl.ListFormat` for the active locale (cached per locale). No date library is added. Sizes use binary units (UX-34): `shared/format` picks the unit and formats the number, and a message supplies the unit label (`{size} KiB`), because `Intl` has no binary units.
-- **I18N-6 (MUST)**: The locale comes from the account's setting (feature 13), then `navigator.languages` matched to the shipped catalogs, then `en`. One locale module in `shared/i18n` owns `resolveLocale` and `getDirection`. Changing locale sets `<html lang dir>` and React Aria's `I18nProvider` locale. React Aria's built in strings are pruned to the shipped locales at build time (`@react-aria/optimize-locales-plugin`; *verify at scaffold* that it runs under Rolldown). Layout uses logical properties only (feature 11 enforces the CSS side).
+- **I18N-6 (MUST)**: The locale comes from the account's setting (feature 13), then `navigator.languages` matched to the shipped catalogs, then `en`. One locale module in `shared/i18n` owns `resolveLocale` and `getDirection`. Changing locale sets `<html lang dir>` and React Aria's `I18nProvider` locale. React Aria's built in strings are pruned to the shipped locales at build time (`@react-aria/optimize-locales-plugin`, listed before `react()` as `{ ...optimizeLocales.vite({ locales }), enforce: 'pre' }`, where `locales` is derived from the shipped catalogs in `shared/i18n` and mapped to the region tags React Aria uses (`en` becomes `en-US`; a bare `en` would prune the English strings themselves); confirmed 2026-10-16 under Vite 8.3 with Rolldown, where it removed the other locales' strings and saved about 16 KB gzip on a DatePicker bundle). Layout uses logical properties only (feature 11 enforces the CSS side).
 - **I18N-7 (SHOULD)**: Development builds include a pseudo locale (`pseudoLocale` in `lingui.config.ts`), so untranslated strings and text that breaks at 30% longer (UX-34) show up while building.
 - **I18N-8 (MUST)**: Lint flags literal text in JSX and in user facing props outside message calls (`eslint-plugin-lingui` `no-unlocalized-strings`, with a short allow list: code snippets, brand names, test files). This is spec 0001's literal string rule.
 - **I18N-9 (MUST)**: A green build doesn't prove the macro pass ran (a miswired macro transform leaves strings untranslated without an error). One E2E test loads the console in the pseudo locale and checks that a known string is pseudo translated.
@@ -286,7 +287,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
   - **Every shared module** (search serializer and history helper, storage, error mapping, formatters, the placeholder helper, the interaction lock): edge and corrupt inputs (bad URLs, corrupt or blocked storage, unknown error bodies).
   - **Every slice**: at least one Playwright path through the real console and server (QA-5).
   - **Every bug fix**: a regression test.
-- **QA-5 (MUST)**: End to end tests use Playwright against the built console served by a **real Orvano server and PostgreSQL in containers** (Podman on this machine, per spec 0002 TST-5a). A Playwright `globalSetup` starts the containers, waits for the server to be healthy, creates the first console admin through the API, and saves its signed in state. Each test then creates its own org and project through the API, so tests never share data. Traces are kept on failure. PRs run Chromium; a nightly run covers Chromium, Firefox, and WebKit.
+- **QA-5 (MUST)**: End to end tests use Playwright against the built console served by a **real Orvano server and PostgreSQL in containers** (the `ghcr.io/orvanohq/orvano` image per spec 0007 IMG-3, run under Docker or Podman per spec 0002 TST-5a and spec 0007 DEV-1). A Playwright `globalSetup` starts the containers, waits for the server to be healthy, creates the first console admin through the API, and saves its signed in state. Each test then creates its own org and project through the API, so tests never share data. Traces are kept on failure. PRs run Chromium; a nightly run covers Chromium, Firefox, and WebKit.
 - **QA-6 (MUST)**: A test that proves an acceptance criterion starts its name with the spec qualified ID (`'0013 AC-2: shows the first use empty state'`), so `/check verify` can trace it.
 
 ### Bundle size and performance
@@ -302,7 +303,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 
 ### Canonical pattern
 
-The shape every screen follows. API paths are placeholders until feature 10 fixes them, and any API a rule marks *verify at scaffold* may change form.
+The shape every screen follows. API paths are placeholders until feature 10 fixes them, and any API a rule still marks *verify with …* may change form.
 
 ```ts
 // vite.config.ts
@@ -323,6 +324,13 @@ export default defineConfig({
       presets: [reactCompilerPreset()],                           // so macros expand first
     }),
   ],
+  base: '/console/',                                              // WEB-8, spec 0007 CSL-1
+  server: {
+    port: 5173,
+    proxy: {                                                      // spec 0007 CSL-3: one origin in dev
+      '^/(?!console(/|$))': { target: 'http://localhost:5080' },  // every path outside /console
+    },
+  },
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: { manifest: true },                                      // BDL-1
 })
@@ -598,9 +606,9 @@ New code immediately. No console code exists, so every rule holds from the first
 - A Babel pass (Lingui macros and the React Compiler) makes builds slower than a pure Oxc pipeline, and a wrong wiring fails silently, so the scaffold and I18N-9 must prove both transforms ran.
 - No optimistic updates means every write shows a brief saving state instead of an instant change.
 - TypeScript stays on 6.0 until the lint ecosystem supports 7, which gives up 7's much faster type checking for now.
-- Browser mode tests in three engines and E2E tests against real containers are slower and need Playwright browsers plus Podman on every machine and runner.
+- Browser mode tests in three engines and E2E tests against real containers are slower and need Playwright browsers plus a container engine (Docker or Podman, spec 0007 DEV-1) on every machine and runner.
 - `eslint-plugin-jsx-a11y` doesn't declare ESLint 10 support yet, so feature 7 must choose ESLint 9 or another source for those rules.
-- Several rules name current library APIs marked *verify at scaffold*; the scaffold may have to adjust their exact form.
+- Two rules name library APIs still marked *verify with feature 11* or *verify with the first API screen* (RTE-6, QA-2); their exact form may change then.
 
 **Neutral**:
 - The data grid library, styling, and the visual design stay open for feature 11; this spec only fixes how they get data and strings.
@@ -610,8 +618,10 @@ New code immediately. No console code exists, so every rule holds from the first
 
 ## Follow-up
 
-- [ ] Feature 6 scaffold, verify before the first screen: the single Babel pass runs both the Lingui macros and the compiler (I18N-2, I18N-9; React DevTools shows compiled components); `createLink` over React Aria's `Link` keeps preloading (RTE-6); the scroll restoration attribute (RTE-3); the `onResolved` payload (RTE-7); TanStack Form's `isDefaultValue` (FRM-5); `@react-aria/optimize-locales-plugin` under Rolldown (I18N-6); MSW 3 in browser mode in all three engines (QA-2). Record any changed form in this spec.
-- [ ] Feature 6: decide the console's folder in the monorepo, its fixed base path, how the server serves it (same origin), and the dev proxy, so `shared/config.ts` and `basepath` have values.
+- [x] Feature 6 scaffold (spec 0007 Follow-up, CSL-1 to CSL-3): verified 2026-10-16 and recorded in place: the single Babel pass (I18N-2), the scroll restoration attribute (RTE-3), the `onResolved` payload (RTE-7), TanStack Form's `isDefaultValue` (FRM-5), and `@react-aria/optimize-locales-plugin` under Rolldown (I18N-6).
+- [ ] Feature 11: confirm `createLink` over React Aria's `Link` keeps preloading on hover and focus (RTE-6) when `src/ui` builds the `Link`; record any changed form here.
+- [ ] The first screen that calls the API (features 10 and 13): confirm MSW 3 in browser mode in Chromium, Firefox, and WebKit (QA-2); record any changed form here.
+- [x] Feature 6: decide the console's folder in the monorepo, its fixed base path, how the server serves it (same origin), and the dev proxy, so `shared/config.ts` and `basepath` have values. Closed by spec 0007: folder `console/` (REP-1), base path `/console` (CSL-1), served same origin by the server with an `index.html` fallback (CSL-2), and the Vite dev server on 5173 proxying every path outside `/console` to the server on 5080 (CSL-3).
 - [ ] Feature 7 (`/audit`): lift these rules into the console's `AGENTS.md`; record the 8 installed skills under `## Agent skills` with the WEB-0 overrides; note the React Aria docs MCP (`@react-aria/mcp`) as an MCP server to connect.
 - [ ] Feature 7: choose ESLint 9 or 10 given `eslint-plugin-jsx-a11y`'s peer range, pick the import boundary plugin, write the restricted syntax rules (QRY-2, URL-3), and pick the bundle size runner.
 - [ ] After the console installs its packages: run `npx skills experimental_sync` to pull the official TanStack skills that ship inside the TanStack npm packages (they couldn't be installed from the GitHub repo on 2026-10-15).

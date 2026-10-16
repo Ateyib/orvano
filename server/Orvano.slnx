@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Orvano.Host/Orvano.Host.csproj" />
+    <Project Path="src/Orvano.Infrastructure/Orvano.Infrastructure.csproj" />
+    <Project Path="src/Orvano.Modules.Auth/Orvano.Modules.Auth.csproj" />
+    <Project Path="src/Orvano.SharedKernel/Orvano.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Orvano.ArchitectureTests/Orvano.ArchitectureTests.csproj" />
+    <Project Path="tests/Orvano.Host.IntegrationTests/Orvano.Host.IntegrationTests.csproj" />
+    <Project Path="tests/Orvano.Infrastructure.Tests/Orvano.Infrastructure.Tests.csproj" />
+    <Project Path="tests/Orvano.Modules.Auth.Tests/Orvano.Modules.Auth.Tests.csproj" />
+    <Project Path="tests/Orvano.SharedKernel.Tests/Orvano.SharedKernel.Tests.csproj" />
+    <Project Path="tests/Orvano.Testing/Orvano.Testing.csproj" />
+  </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/Orvano.Benchmarks/Orvano.Benchmarks.csproj" />
+  </Folder>
+</Solution>

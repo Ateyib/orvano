@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Spec 0002 TST-2: shared test helpers (the PostgreSQL fixture, the API factory, CLI runner). -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <ProjectReference Include="..\..\src\Orvano.Host\Orvano.Host.csproj" />
+  </ItemGroup>
+</Project>

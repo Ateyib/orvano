@@ -1,2 +1,16 @@
 # Agent research cache (rebuilt on demand; findings live in each spec's rationale.md)
 docs/.agent-cache/
+
+# Build output
+node_modules/
+console/dist/
+bin/
+obj/
+BenchmarkDotNet.Artifacts/
+
+# Install secrets written by `orvano init` (spec 0006 SCR-5)
+deploy/.env
+deploy/root.key
+
+# Vitest browser mode failure screenshots
+.vitest/

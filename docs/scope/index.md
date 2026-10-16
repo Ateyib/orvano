@@ -22,7 +22,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 54 | [Console UX patterns](foundations.md) | Foundation | done |
 | 5 | [Security baseline](foundations.md) | Foundation | done |
 | 57 | [Open source license](foundations.md) | Foundation | planned |
-| 6 | [Stack & architecture](foundations.md) | Foundation | planned |
+| 6 | [Stack & architecture](foundations.md) | Foundation | done |
 | 7 | [Coding standards & tooling](foundations.md) | Foundation | planned |
 | 58 | [Repo & community setup](foundations.md) | Foundation | planned |
 | 8 | [Platform data model](foundations.md) | Foundation | planned |

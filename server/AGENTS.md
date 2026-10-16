@@ -1,0 +1,59 @@
+# Server
+
+The .NET 10 modular monolith: one executable, `orvano`, built from `Orvano.Host`. Rules live in [spec 0002](../docs/specs/0002-dotnet-backend-practices/index.md) (code), [spec 0007](../docs/specs/0007-stack-architecture/index.md) (runtime, install, image), and [spec 0006](../docs/specs/0006-security-baseline/index.md) (security). Cite rule IDs in reviews.
+
+## Commands
+
+Run from `server/`. Integration tests and local runs need Docker (or Podman) running.
+
+- Build: `dotnet build Orvano.slnx`. CI strictness (warnings as errors): `CI=true dotnet build Orvano.slnx --no-incremental`
+- Test everything: `dotnet test --solution Orvano.slnx` (starts one `postgres:18.6` container). One project: `dotnet test --project tests/<Project>`
+- Dev database: `docker compose -f ../deploy/compose.dev.yaml up -d --wait` (trust auth on `127.0.0.1:5432`, user `orvano`)
+- Dev root key, once: `dotnet user-secrets set ROOT_KEY "$(openssl rand -base64 32)" --project src/Orvano.Host`
+- Migrate, then run on `http://localhost:5080`: `dotnet run --project src/Orvano.Host -- migrate`, then `dotnet run --project src/Orvano.Host`
+- Password hash benchmark (HSH-2): `dotnet run -c Release --project benchmarks/Orvano.Benchmarks -- --filter '*PasswordHashing*'`
+
+## Layout
+
+- `src/Orvano.Host`: composition, middleware, and the commands in `Commands/` (`serve`, `migrate`, `init`, `healthcheck`, `admin selftest`). No feature code.
+- `src/Orvano.SharedKernel`: config sources and helpers (`Configuration/`), `LogEventIds`. References no other Orvano project.
+- `src/Orvano.Infrastructure`: root key, TLS options, and later the job runner, outbox, signals, and file stores (spec 0007 REP-2). References only SharedKernel; modules never reference it (architecture test).
+- `src/Orvano.Modules.<Name>`: one project per module. Auth holds `IPasswordHasher` (Argon2id via NSec) in `Contracts/`.
+- `tests/`: `<Project>.Tests` for unit tests, `Orvano.Host.IntegrationTests` (HTTP and CLI), `Orvano.ArchitectureTests`, and shared helpers in `Orvano.Testing`.
+
+## Conventions
+
+- Configuration comes from `ORVANO_<SECTION>__<KEY>` variables, and any key also takes a `_FILE` form. Options classes have a `Section` constant, a source generated `[OptionsValidator]`, and XML docs. Bad config fails startup with a message naming the variable (`ConfigurationNames`, `OptionsErrors`).
+- Checks that must pass before serving (PostgreSQL 18, no pending migrations, hasher self test) go in `Startup/StartupChecks.cs`. New module `DbContext`s go in `Database/MigrationOrder.cs`.
+- A module that maps endpoints calls the plain `services.AddValidation()` in its `Add<Module>Module`; without it, its request types are never validated (spec 0002 VAL-1). Each endpoint's invalid body test (TST-4) catches a missing call.
+- Log through `[LoggerMessage]` methods in `<Module>Log`, with event IDs from that module's block in `LogEventIds`.
+- Package versions live only in `Directory.Packages.props`. Every project has a `packages.lock.json` covering `linux-x64` and `linux-arm64`. After changing packages, run `dotnet restore Orvano.slnx --force-evaluate` and commit the lock files: the image restores in locked mode. A new `src/` project also needs its `.csproj` and lock file added to the restore layer in `deploy/Dockerfile`.
+- The image builds with a newer SDK (10.0.402) than an older local SDK, and it can raise analyzer warnings yours misses. Keep the local SDK current.
+
+## Gotchas
+
+- `UseConsoleFiles` (static files) must run before `UseRouting`, or the `/console/{**path}` fallback swallows every asset.
+- ASP.NET Core's forwarded headers middleware trusts everyone when both known lists are empty. `UseForwardedHeaders` is registered only when `ORVANO_TRUSTED_PROXIES` has entries; keep it that way.
+- System.CommandLine 2 has no parser for `Uri`. Take a string option and validate it with `Uri.TryCreate`.
+- `init`'s file and folder modes follow spec 0007 INS-5 (folder 0700, `root.key` 0644, `.env` 0600), in that order of steps.
+
+## Tests
+
+- Names are `<Behavior>_<expected>_when_<condition>` (CA1707 is off for `tests/` in `.editorconfig`). Tag rule coverage with `[Trait("Spec", "NNNN:RULE-ID")]`.
+- `PostgresFixture` is an assembly fixture, pinned to the same tag as the compose files. `OrvanoApiFactory` passes settings with `UseSetting`, which reaches config before the host builds. `ConsoleBuild` fakes `wwwroot/console`.
+- Test startup failures and CLI behavior through `OrvanoCli` (the real process). `WebApplicationFactory` cannot observe them, because `serve` catches startup errors and disposes the app.
+
+## Agent skills
+
+Load only what the task needs. Spec 0002 wins where a skill disagrees (GEN-0).
+
+- [dotnet-webapi](../.claude/skills/dotnet-webapi/): `dotnet/skills`, Minimal API endpoints (not its interface per service or `Middleware/` advice)
+- [ef-core](../.claude/skills/ef-core/): `github/awesome-copilot`, EF Core models and migrations
+- [csharp-xunit](../.claude/skills/csharp-xunit/): `github/awesome-copilot`, xUnit tests (use Shouldly, not its assertion picks)
+- [testcontainers](../.claude/skills/testcontainers/): `wshaddix/dotnet-skills`, PostgreSQL containers in tests
+- [caching](../.claude/skills/caching/): `codewithmukesh/dotnet-claude-kit`, HybridCache (no Redis backplane, spec 0007 CCH-1)
+- [opentelemetry](../.claude/skills/opentelemetry/): `codewithmukesh/dotnet-claude-kit`, traces and metrics (no Aspire ServiceDefaults, spec 0007 DEV-2)
+- [dotnet-system-commandline](../.claude/skills/dotnet-system-commandline/): `wshaddix/dotnet-skills`, System.CommandLine 2 commands and options for `Commands/`
+- Declined (2026-10-16): a BenchmarkDotNet skill
+
+_Drafted by /sync from the introducing change, worth a quick human pass._

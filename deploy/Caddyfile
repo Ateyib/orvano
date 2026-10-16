@@ -1,0 +1,6 @@
+# Spec 0007 TLS-1: Caddy gets certificates automatically and proxies everything to Orvano.
+# It trusts no forwarded headers from clients and sets the client address itself. The server, not Caddy,
+# sends HSTS (spec 0006 NET-1), and no body size limit is set here: Kestrel's limits apply.
+{$ORVANO_DOMAIN} {
+	reverse_proxy orvano:8080
+}
