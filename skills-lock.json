@@ -13,6 +13,18 @@
       "skillPath": "plugins/dotnet-diag/skills/analyzing-dotnet-performance/SKILL.md",
       "computedHash": "88e4ef0fbace90c8606466966634e597fad09951878fbf9332df7b98bd9924ee"
     },
+    "caching": {
+      "source": "codewithmukesh/dotnet-claude-kit",
+      "sourceType": "github",
+      "skillPath": "skills/caching/SKILL.md",
+      "computedHash": "c979e0d4a9489f5db5c1c386801750f6d05137c571ac4321594f551289056fe6"
+    },
+    "containerize-aspnetcore": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/containerize-aspnetcore/SKILL.md",
+      "computedHash": "23f73cb98109f2a56c0b49b5121fc6132a5fddf1fd3bb145db94085f36f7d205"
+    },
     "create-datadriven-aspnetcore": {
       "source": "dotnet/skills",
       "sourceType": "github",
@@ -73,11 +85,23 @@
       "skillPath": "skills/deno/SKILL.md",
       "computedHash": "f0f811a7cb7a9890d4735785a54c17a5f1a488a0a184b62834fd2ea493048bd2"
     },
+    "docker-compose-patterns": {
+      "source": "docker/skills",
+      "sourceType": "github",
+      "skillPath": "skills/docker-compose-patterns/SKILL.md",
+      "computedHash": "391f366bb0e60f5c7c48ecc814b917e7dae797edbb58625d228cb951d7a538ee"
+    },
     "dotnet-best-practices": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
       "skillPath": "skills/dotnet-best-practices/SKILL.md",
       "computedHash": "9ef94db7f06c167d544369817e5a4415eeb7886dcff0d47026837a1aada260e3"
+    },
+    "dotnet-system-commandline": {
+      "source": "wshaddix/dotnet-skills",
+      "sourceType": "github",
+      "skillPath": "skills/dotnet-system-commandline/SKILL.md",
+      "computedHash": "712e94ad992ae00eae7afe854646d4876b4cc983406386a4ae52f5f397e1800a"
     },
     "dotnet-webapi": {
       "source": "dotnet/skills",
@@ -151,6 +175,12 @@
       "skillPath": "plugins/dotnet-advanced/skills/nuget-trusted-publishing/SKILL.md",
       "computedHash": "cfe94d9ea3cc0cc2107eff8114dcf945778a0b24b4cc5205d365e3b8efa059cf"
     },
+    "opentelemetry": {
+      "source": "codewithmukesh/dotnet-claude-kit",
+      "sourceType": "github",
+      "skillPath": "skills/opentelemetry/SKILL.md",
+      "computedHash": "c12cd1149c033d46cff807b9cd18bf1579939e4775b1ae2f4e4d763111865592"
+    },
     "optimizing-ef-core-queries": {
       "source": "dotnet/skills",
       "sourceType": "github",
@@ -186,6 +216,17 @@
       "sourceType": "github",
       "skillPath": "skills/react-native-best-practices/SKILL.md",
       "computedHash": "5b9722518860a462a9308759b7046725e4a1ab59642ad6a6e520afc45bc8373b"
+    },
+    "router-plugin": {
+      "source": "./console/node_modules/@tanstack/router-plugin/skills",
+      "sourceType": "local",
+      "computedHash": "9954f6c52398cb2a84cd67cf79eac683e6e72848a3eb10c5bf79e14ac056e3a5"
+    },
+    "tanstack-router-best-practices": {
+      "source": "deckardger/tanstack-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tanstack-router/SKILL.md",
+      "computedHash": "659549bfcacc5767cd489fcbceb2889247bd38c82f0a37c282da754eb2603f63"
     },
     "testcontainers": {
       "source": "wshaddix/dotnet-skills",
