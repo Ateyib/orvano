@@ -19,6 +19,7 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 - [ ] Open a PR with one unsigned commit → `ci-gate` fails through `repo / hygiene / dco`, which prints the SHA and the `git rebase --signoff` fix; after the fix and `git push --force-with-lease` it passes → AC-7
 - [ ] Same PR with a sign off whose email differs from the author → fails naming the author email → AC-7
 - [ ] A Dependabot PR's bot commits and a merge commit from "Update branch" are skipped by `dco` → AC-7
+- [ ] A PR opened by a person with a commit authored as `dependabot[bot]` (the `noreply` email) and no sign off fails `dco` with the reset author fix → AC-7, DCO-2
 - [ ] The weekly `Scheduled` run starts (the `pull-requests: read` grant reaches `dco`, which skips) → AC-7
 - [ ] `github-settings.mjs --org orvanohq` (with `gh auth refresh -s admin:org`) exits 0, or SHA pinning is ticked here by hand if the API doesn't return it; fork PR approval setting name written here → AC-12
 - [ ] Skills inventory table in `rationale.md`; each kept skill has its `LICENSE` → AC-14
