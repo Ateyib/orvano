@@ -21,60 +21,63 @@ Reasoning and options: see [rationale.md](rationale.md).
 
 ## Standard definition
 
-Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor and patch updates through Dependabot are fine; a new major of any tool in the TL-4 table needs a spec update.
+Versions below are the ones the build pinned on 2026-10-16, the newest that cleared pnpm's 3 day release wait (TL-8). The landscape check in rationale.md saw a few newer ones that were still inside that wait. Minor and patch updates through Dependabot are fine; a new major of any tool in the TL-4 table needs a spec update.
 
 ### TL: precedence, layout, versions
 
 - **TL-0 (MUST)**: The practice specs (0001 to 0007) own _what_ a rule says. This spec owns _which tool enforces it and how it is configured_. Where a practice spec's Enforcement table names a tool this spec replaces (ESLint for the JSX accessibility rules, see LNT-4), this spec wins and the practice spec gets a one line update (see Follow-up). Where an installed skill disagrees, this spec wins.
-- **TL-1 (MUST)**: The repo root is a pnpm workspace. Root `package.json` is `"name": "orvano-repo"`, `"private": true`, `"type": "module"`, holds `packageManager: "pnpm@12.12.1"` and the Node `engines` range (both moved from `console/package.json`), the shared dev tools (TL-4), and the repo scripts (TL-6). Root `pnpm-workspace.yaml` lists `console` (and later JS packages such as feature 11's design system) and keeps the SEC-5 settings (`minimumReleaseAge: 4320`, install scripts blocked, with its comment). There is one `pnpm-lock.yaml`, at the root. `console/pnpm-lock.yaml` and `console/pnpm-workspace.yaml` are deleted. A root `.node-version` (moved from `console/`, holding the full version, `24.22.0`) is the one Node version: `engines`, setup-vp, and the Dockerfile's `node` tag follow it. pnpm's one pin is `packageManager`; everything else (CI, Dockerfile) gets pnpm through corepack, never by naming a version again. The console keeps its own `vite` and `vitest` dependencies and its scripts (`dev`, `build`, `test`); Vite+ is used for `fmt`, `lint`, `staged`, `hooks`, and `run`, not as a replacement for the console's Vite and Vitest, so no package aliases or overrides are needed. `tooling/starters/**` is excluded from the workspace.
+- **TL-1 (MUST)**: The repo root is a pnpm workspace. Root `package.json` is `"name": "orvano-repo"`, `"private": true`, `"type": "module"`, holds `packageManager: "pnpm@12.12.1"` and the Node `engines` range (both moved from `console/package.json`), the shared dev tools (TL-4), and the repo scripts (TL-6). Root `pnpm-workspace.yaml` lists `console` (and later JS packages such as feature 11's design system) and keeps the SEC-5 settings (`minimumReleaseAge: 4320`, install scripts blocked, with its comment). There is one `pnpm-lock.yaml`, at the root. `console/pnpm-lock.yaml` and `console/pnpm-workspace.yaml` are deleted. A root `.node-version` (moved from `console/`, holding the full version, `24.22.0`) is the one Node version: `engines`, setup-vp, and the Dockerfile's `node` tag follow it. pnpm's one pin is `packageManager`, and nothing names a pnpm version again: CI gets pnpm from setup-vp's managed package manager, which reads `packageManager`, and the Dockerfile gets it through corepack, which reads the same field. The console keeps its own `vite` and `vitest` dependencies and its scripts (`dev`, `build`, `test`); Vite+ is used for `fmt`, `lint`, `staged`, `hooks`, and `run`, not as a replacement for the console's Vite and Vitest, so no package aliases or overrides are needed. `tooling/starters/**` is excluded from the workspace.
 - **TL-2 (MUST)**: Vite+ is a pinned devDependency of the root (`vite-plus`, exact version), and every script calls the local `vp`. A global Vite+ install is optional and never required, so the Windows global installer issues (PATH, Defender flags on shims) don't block anyone. CI installs it through `pnpm install` after `voidzero-dev/setup-vp` (pinned by SHA, TL-4) sets up Node and pnpm.
 - **TL-3 (MUST)**: Config homes, all at the repo root:
   - `vite.config.ts` holds the Vite+ `fmt`, `staged`, and `lint` blocks. The `lint` block points at `.oxlintrc.json`, which holds every Oxlint rule, so `eslint-plugin-oxlint` can read the same file (VER-5).
   - `eslint.config.ts` is one ESLint config with a `files` block per package (`console/**` now, later JS packages), loaded through `jiti`.
   - `tsconfig.json` type checks the root configs and `tooling/scripts/*.mjs` (`allowJs`, `checkJs`), and is what type aware ESLint uses for root files (`parserOptions.projectService`, `tsconfigRootDir` at the root).
-  - `console/vite.config.ts` stays the app's build config, with no `fmt`, `lint`, or `staged` block. If Vite+ turns out to need these blocks per package, the console config imports them from `tooling/vp/shared.ts` and the root stays the source (VER-2).
-- **TL-4 (MUST)**: Tool versions, pinned exactly in the root `package.json` (`"vite-plus": "1.3.0"`, not `^1.3.0`), because a lint or format minor can change results across the whole repo:
+  - `console/vite.config.ts` stays the app's build config, with no `fmt`, `lint`, or `staged` block. VER-2 confirmed Vite+ applies the root blocks to `console/`, so no per package copy exists.
+- **TL-4 (MUST)**: Tool versions, pinned exactly in the root `package.json` (`"vite-plus": "1.1.0"`, not `^1.1.0`), because a lint or format minor can change results across the whole repo:
 
-  | Tool                                      | Version                                                           | Where                                                                                   |
-  | ----------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-  | vite-plus (bundles Oxlint, Oxfmt)         | 1.3.0                                                             | root devDependency                                                                      |
-  | eslint                                    | 10.13.0                                                           | root devDependency                                                                      |
-  | typescript-eslint                         | 8.71.2                                                            | root devDependency                                                                      |
-  | eslint-plugin-react-hooks                 | 7.1.1                                                             | root devDependency                                                                      |
-  | eslint-plugin-lingui                      | 0.16.0                                                            | root devDependency                                                                      |
-  | @tanstack/eslint-plugin-query             | 5.104.3                                                           | root devDependency                                                                      |
-  | @tanstack/eslint-plugin-router            | 1.162.0                                                           | root devDependency                                                                      |
-  | eslint-plugin-oxlint                      | the Oxlint version `vp --version` reports for vite-plus 1.3.0     | root devDependency                                                                      |
-  | jiti                                      | latest at build time, pinned exactly                              | root devDependency (loads `eslint.config.ts`)                                           |
-  | typescript                                | `~6.0.3` (WEB-2, SDK-1)                                           | console and root                                                                        |
-  | size-limit, @size-limit/file              | latest at build time, pinned exactly                              | console devDependency                                                                   |
-  | @vitest/coverage-v8                       | same version as the console's `vitest`                            | console devDependency                                                                   |
-  | Microsoft.CodeAnalysis.BannedApiAnalyzers | latest stable at build time, pinned in central package management | `server/Directory.Packages.props`                                                       |
-  | Microsoft.Testing.Extensions.CodeCoverage | latest stable at build time                                       | `server/Directory.Packages.props`, referenced from `server/tests/Directory.Build.props` |
-  | actionlint, zizmor, hadolint, typos       | through their actions, pinned by SHA                              | CI only (TL-6)                                                                          |
+  | Tool                                            | Version                                                                                                  | Where                                                                                   |
+  | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+  | vite-plus (bundles Oxlint 1.87.0, Oxfmt 0.72.0) | 1.1.0                                                                                                    | root devDependency                                                                      |
+  | eslint                                          | 10.12.0                                                                                                  | root devDependency                                                                      |
+  | typescript-eslint                               | 8.71.2                                                                                                   | root devDependency                                                                      |
+  | eslint-plugin-react-hooks                       | 7.1.1                                                                                                    | root devDependency                                                                      |
+  | eslint-plugin-lingui                            | 0.16.0                                                                                                   | root devDependency                                                                      |
+  | @tanstack/eslint-plugin-query                   | 5.104.2                                                                                                  | root devDependency                                                                      |
+  | @tanstack/eslint-plugin-router                  | 1.162.0                                                                                                  | root devDependency                                                                      |
+  | eslint-plugin-oxlint                            | 1.87.0 (the Oxlint in vite-plus)                                                                         | root devDependency                                                                      |
+  | jiti                                            | 2.7.0                                                                                                    | root devDependency (loads `eslint.config.ts`)                                           |
+  | typescript                                      | `~6.0.3` (WEB-2, SDK-1)                                                                                  | console and root                                                                        |
+  | size-limit, @size-limit/file                    | 14.2.0                                                                                                   | console devDependency                                                                   |
+  | @vitest/coverage-v8                             | 5.0.4 (the console's `vitest`)                                                                           | console devDependency                                                                   |
+  | Microsoft.CodeAnalysis.BannedApiAnalyzers       | 5.6.0                                                                                                    | `server/Directory.Packages.props`                                                       |
+  | Microsoft.Testing.Extensions.CodeCoverage       | 18.12.0                                                                                                  | `server/Directory.Packages.props`, referenced from `server/tests/Directory.Build.props` |
+  | actionlint, zizmor, hadolint, typos             | through their actions, pinned by SHA (CodeQL action v4.38.3, zizmor-action v0.6.4 running zizmor 1.30.1) | CI only (TL-6)                                                                          |
 
-  "At build time" means `/develop` picks the then current version, pins it exactly, and writes it into this table. This applies to the JS tools only; the console's runtime dependencies keep their caret ranges, since the lockfile pins them.
+  The exact pins apply to the dev tools only; the console's runtime dependencies keep their caret ranges, since the lockfile pins them. `eslint-plugin-oxlint` always equals the Oxlint version `vp --version` reports for the pinned vite-plus, so it moves by hand with the toolchain PR (DPB-2), not on its own.
 
-- **TL-5 (MUST)**: Vite+ stays only while the Windows CI job (CI-8) passes. If that job can't be made to pass, the repo falls back in one PR to standalone Vite, Vitest, the `oxlint` and `oxfmt` CLIs, tsdown for SDKs, and Lefthook for hooks, and this spec records the reason. You (the maintainer) make the call at Rollout step 11, at most two weeks after the repo's first push. Known Windows issues and their workarounds live in `CONTRIBUTING.md` (feature 58) until then, with a short note in root `AGENTS.md`.
+- **TL-5 (MUST)**: Vite+ stays only while the Windows CI job (CI-8) passes. If that job can't be made to pass, the repo falls back in one PR to standalone Vite, Vitest, the `oxlint` and `oxfmt` CLIs, tsdown for SDKs, and Lefthook for hooks, and this spec records the reason. You (the maintainer) make the call at Rollout step 11, at most two weeks after the repo's first push. Known Windows issues and their workarounds live in `CONTRIBUTING.md` (feature 58), with a short note in root `AGENTS.md`.
+  - **Decided 2026-10-17: keep Vite+.** The Windows job (CI-8), hook proof included, passed on the first CI run that got through (`747b063`), so you chose to keep Vite+ then, without waiting for the weekly run. The fallback stays written here: if the Windows job later fails and can't be fixed, the one PR fallback above still applies.
 - **TL-6 (MUST)**: One command checks the repo locally, from the root, on every OS. These are root `package.json` scripts, run as `pnpm <name>` (the same as `vp run <name>`). Vite+'s own `vp check` command is a different thing: it is one step inside `check:js`.
   - `pnpm check` runs `check:js` then `check:dotnet`.
   - `check:js`:
     - `vp check` (Oxfmt check and Oxlint, TYC-1)
     - `eslint --max-warnings=0`
-    - `pnpm --filter @orvano/console typecheck`
-    - the console drift checks (CI-2)
-  - `check:dotnet`: `dotnet format server/Orvano.slnx --verify-no-changes`, then `dotnet build server/Orvano.slnx -p:CI=true --no-incremental`.
-  - `pnpm fix`: `vp check --fix`, `eslint --fix`, `dotnet format server/Orvano.slnx`.
-  - `pnpm test`: `pnpm --filter @orvano/console test` and `dotnet test --solution server/Orvano.slnx`.
-  - Every dotnet command names `server/Orvano.slnx` by path, so it runs from the root. Scripts use no shell syntax that differs by OS (no `VAR=x cmd`; MSBuild gets `-p:CI=true` instead of a `CI` env var). Anything longer than one line is a Node script in `tooling/scripts/*.mjs`. actionlint, zizmor, hadolint, and typos run in CI only, so nobody installs four binaries to contribute.
+    - `pnpm run typecheck`: `tsc -p tsconfig.json` for the root, then `pnpm --filter @orvano/console typecheck`
+    - `node tooling/scripts/check-drift.mjs`, the console drift checks (CI-2)
+  - `check:dotnet`: `cd server && dotnet format Orvano.slnx --verify-no-changes && dotnet build Orvano.slnx -p:CI=true --no-incremental`.
+  - `check:lint-fixtures`: `node tooling/scripts/check-lint-fixtures.mjs` (LNT-3).
+  - `pnpm fix`: `vp check --fix`, `eslint --fix`, then `cd server && dotnet format Orvano.slnx`.
+  - `pnpm test`: `test:tooling` (`node --test` over `tooling/scripts/*.test.mjs`), `pnpm --filter @orvano/console test`, then `cd server && dotnet test --solution Orvano.slnx`.
+  - Every dotnet command runs from `server/`, as `cd server && dotnet ... Orvano.slnx`. `server/global.json` pins the SDK and picks the Microsoft.Testing.Platform runner, and dotnet finds it only from `server/` or below, so `dotnet test --solution server/Orvano.slnx` fails from the root. `cd server && ...` works the same in sh and in `cmd.exe`, which pnpm uses on Windows. Scripts use no other shell syntax that differs by OS (no `VAR=x cmd`; MSBuild gets `-p:CI=true` instead of a `CI` env var). Anything longer than one line is a Node script in `tooling/scripts/*.mjs`. actionlint, zizmor, hadolint, and typos run in CI only, so nobody installs four binaries to contribute.
 - **TL-7 (MUST)**: The image build follows the root workspace. The Dockerfile's console stage:
-  - copies the root `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, and `.node-version`, then `console/package.json`
+  - copies the root `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, and `.node-version`, then `tooling/scripts/prepare.mjs` (pnpm runs the root `prepare` script even with `--filter`, and the script exits at once on `ORVANO_SKIP_HOOKS=1`), then `console/package.json`
   - enables corepack (pnpm from `packageManager`, no second pin)
   - sets `ORVANO_SKIP_HOOKS=1`
   - runs `pnpm install --frozen-lockfile --filter @orvano/console...` (the console and its dependencies only, so the root lint tools never enter the image build)
   - copies `console/` and runs `pnpm --filter @orvano/console build`
   - The `node` image tag matches `.node-version` (Dependabot's `docker` ecosystem updates the tag; a CI step fails if they differ).
-  - `.dockerignore` gets an updated comment (root workspace files are needed) and also ignores `.vite-hooks`, `tooling`, `.github`, and `docs`.
+  - `.dockerignore` gets an updated comment (root workspace files are needed) and also ignores `.vite-hooks`, `tooling`, `.github`, `.claude`, `.agents`, and `docs`, with one exception, `!tooling/scripts/prepare.mjs`, for the step above.
+- **TL-8 (MUST)**: Every pin waits out the 3 day release age (SEC-5's `minimumReleaseAge: 4320`), whatever installs it. A tool in TL-4 is pinned to the newest version published at least 3 days earlier, and so is every action and action tool version in a workflow (the action's tag and the tool version it runs). pnpm would refuse a younger npm version anyway; the rule extends the same wait to NuGet packages, actions, and Docker tags, which nothing else checks. Dependabot's 3 day `cooldown` (DPB-2) keeps later updates inside it.
 
 ### FMT: formatting
 
@@ -87,7 +90,7 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
   - `tooling/starters/**` (template files, checked by their own repos once copied)
   - vendored skills (`.claude/skills/`, `.agents/skills/`, `skills-lock.json`), which are third party content that a reformat would make drift from upstream
 
-  typos uses the same ignore list (in `typos.toml`).
+  typos uses the same ignore list (in `typos.toml`). Real words typos doesn't know go under `[default.extend-words]` in `typos.toml`, each with a comment saying why (today: `SIZ`, the spec 0005 rule prefix; `wrk`, the benchmark tool; `unparseable`, a valid spelling).
 
 - **FMT-3 (MUST)**: C# is formatted by `dotnet format` reading `server/.editorconfig` (GEN-2 stays: severities change only there). CI runs `dotnet format server/Orvano.slnx --verify-no-changes` (whitespace, style, and analyzer fixes). EF Core migrations match `[**/Migrations/*.cs]` with `generated_code = true` in `server/.editorconfig`, which covers the `*.Designer.cs` and model snapshot files there too.
 - **FMT-4 (MUST)**: A root `.editorconfig` (`root = true`) sets the basics for every file:
@@ -127,12 +130,12 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
 
 - **LNT-2 (MUST)**: ESLint 10 runs second, from the one root `eslint.config.ts` (TL-3), only for what Oxlint can't do today: `typescript-eslint` `strictTypeChecked` (type aware, needs TS 6), `eslint-plugin-react-hooks` recommended with the React Compiler diagnostics as errors, `@tanstack/eslint-plugin-query`, `@tanstack/eslint-plugin-router`, `eslint-plugin-lingui` (I18N-4, I18N-8), and the restriction rules (LNT-3). `eslint-plugin-oxlint` comes last in the config, built from `.oxlintrc.json`, so no rule runs twice. CI runs `eslint --max-warnings=0`, and `linterOptions.reportUnusedDisableDirectives` is `error`.
 - **LNT-3 (MUST)**: Restriction rules live in ESLint core rules, never in a plugin: `no-restricted-imports` (patterns), `no-restricted-globals`, and `no-restricted-syntax` (selectors).
-  - The allowed file for each restriction is a `files` override that turns that one rule off, never an inline disable. See the canonical pattern below.
+  - ESLint flat config replaces a rule's options rather than merging them, so one `files` override that turns a rule off would also drop every other restriction under that rule. Instead, `tooling/config/console-restrictions.ts` lists the console's regions (area folders, plus the allowed homes such as `src/shared/api/**` and `src/shared/config.ts`) and the restrictions, and generates each region's full rule set. A region that is a restriction's allowed home leaves out only that one restriction; every other restriction still applies there. Never an inline disable. See the canonical pattern below.
   - Every entry's `message` starts with its rule ID and says where to go instead.
   - The rule IDs, their allowed homes, and the banned packages come from the spec 0003 Enforcement table and Replaces list (DIR-2, DIR-3, STO-1, QRY-1, QRY-2, URL-3, WEB-8, SEC-2). The 0005 rules (RTM-2, RTM-4, RTM-6, KEY-5, NXT-5, and its Replaces list) go into the TypeScript starter's `eslint.config.ts`, with the allowed homes named in 0005 (`src/env.ts`, `config.fetch`).
   - The UX import boundary (spec 0001, the component library only inside the design system package) is a `no-restricted-imports` pattern too.
   - Each restriction has one fixture file under `tooling/lint-fixtures/` that breaks it on purpose. A `check:lint-fixtures` script runs ESLint on them and fails unless every rule ID fires, so a mistyped selector can't silently match nothing.
-- **LNT-4 (MUST)**: A11Y-6 is met by Oxlint's `jsx-a11y` plugin with every rule it implements set to error. `eslint-plugin-jsx-a11y` is not installed (it doesn't support ESLint 10). The rules Oxlint lacks compared to the plugin's strict preset are listed in rationale.md at build time (VER-3), and axe (A11Y-5) covers them at test time.
+- **LNT-4 (MUST)**: A11Y-6 is met by Oxlint's `jsx-a11y` plugin with every rule it implements set to error. `eslint-plugin-jsx-a11y` is not installed (it doesn't support ESLint 10). Oxlint 1.87 implements all 36 jsx-a11y rules, which covers every active rule in the plugin's strict preset; only the plugin's deprecated rules are missing (VER-3). axe (A11Y-5) still runs at test time for what no lint rule can see.
 - **LNT-5 (MUST)**: Turning a rule off for one line needs a reason in the same comment: `// eslint-disable-next-line <rule> -- <reason>`, `// oxlint-disable-next-line <rule> -- <reason>`, and in C# `[SuppressMessage(..., Justification = "<reason>")]` or `#pragma warning disable <id> // <reason>`. File wide disables are not allowed; a file that needs one gets an override in the config, with a comment.
 - **LNT-6 (MUST)**: .NET analyzers are the SDK's own (`latest-recommended`, GEN-2) plus `Microsoft.CodeAnalysis.BannedApiAnalyzers`, referenced once in `server/Directory.Build.props` (`PrivateAssets="all"`, so tests inherit it) with `server/BannedSymbols.txt` as an `AdditionalFiles` item. Each line ends with `; <rule ID>: <use this instead>`. What is a banned symbol and what isn't:
 
@@ -199,24 +202,25 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
   - Branch protection (feature 58) requires `ci-gate` plus the two CI-3 checks. No merge queue for now, so there is no `merge_group` trigger. Adding a merge queue later means adding `merge_group` to all three workflows in the same PR.
 - **CI-2 (MUST)**: What each area runs:
 
-  | Workflow       | Jobs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-  | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `_server.yml`  | `dotnet restore server/Orvano.slnx --locked-mode`; `check:dotnet` (FMT-3, build with `-p:CI=true`: warnings as errors, NuGetAudit errors, SUP-5); `dotnet test --solution server/Orvano.slnx` with coverage (CI-6). PostgreSQL comes from the existing `PostgresFixture` (Testcontainers, `postgres:18.6`, the same tag as the compose files) on the runner's Docker, so no service container, credentials, or connection string env var is needed                                                                                              |
-  | `_console.yml` | `check:js` and `check:lint-fixtures` (LNT-3); drift checks: `pnpm --filter @orvano/console exec lingui check sync` (I18N-3; if Lingui 6 has no `check` command, `lingui extract --clean` then `git diff --exit-code console/src/locales`), and the console build regenerating `src/routeTree.gen.ts` (committed, RTE-1) followed by `git diff --exit-code console/src/routeTree.gen.ts`; `pnpm --filter @orvano/console test` (Vitest browser mode, Chromium, coverage); size check (BDL-1, below); `pnpm audit --audit-level moderate` (SUP-5) |
-  | `_deploy.yml`  | hadolint on `deploy/Dockerfile`; `docker compose config` on both compose files; the `.node-version` and Dockerfile `node` tag match (TL-7); image build for `linux/amd64` without push                                                                                                                                                                                                                                                                                                                                                          |
-  | `_repo.yml`    | calls `repo-hygiene.yml` (KIT-1) by local path: `pr-title` (GIT-2), Oxfmt check of Markdown, YAML, JSON, and TOML outside `console/`, `actionlint`, `zizmor` (fails on findings), `typos`                                                                                                                                                                                                                                                                                                                                                       |
-  | `_windows.yml` | CI-8                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-  - **Size check (BDL-1)**: the console build writes Vite's manifest. `console/scripts/size-entries.mjs` reads it, maps each route's source file to its built chunks, and writes `.size-limit.json` entries with spec 0003's gzip budgets (copied from BDL-1, not restated here). `size-limit` then fails over budget. Hashed file names are fine, because entries are rebuilt from the manifest on every run.
+  | Workflow       | Jobs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+  | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `_server.yml`  | Steps run with `defaults.run.working-directory: server` (TL-6: `global.json` is found only from there). `dotnet restore Orvano.slnx --locked-mode`; the two `check:dotnet` commands without Node (FMT-3, build with `-p:CI=true`: warnings as errors, NuGetAudit errors, SUP-5); `dotnet test --solution Orvano.slnx` with coverage (CI-6). PostgreSQL comes from the existing `PostgresFixture` (Testcontainers, `postgres:18.6`, the same tag as the compose files) on the runner's Docker, so no service container, credentials, or connection string env var is needed |
+  | `_console.yml` | `check:js`, `check:lint-fixtures` (LNT-3), and `test:tooling`. `check:js` holds the drift checks (`check-drift.mjs`): `pnpm --filter @orvano/console exec lingui check sync --clean` (I18N-3, VER-6), and the console build regenerating `src/routeTree.gen.ts` (committed, RTE-1) followed by `git diff --exit-code console/src/routeTree.gen.ts`; `pnpm --filter @orvano/console test` (Vitest browser mode, Chromium, coverage); size check (BDL-1, below); `pnpm audit --audit-level moderate` (SUP-5, with ignores only per CI-10)                                    |
+  | `_deploy.yml`  | hadolint on `deploy/Dockerfile`; `docker compose config` on both compose files; the `.node-version` and Dockerfile `node` tag match (TL-7); image build for `linux/amd64` without push                                                                                                                                                                                                                                                                                                                                                                                     |
+  | `_repo.yml`    | calls `repo-hygiene.yml` (KIT-1) by local path: `pr-title` (GIT-2), Oxfmt check of Markdown, YAML, JSON, and TOML outside `console/`, `actionlint`, `zizmor` (fails on findings), `typos`                                                                                                                                                                                                                                                                                                                                                                                  |
+  | `_windows.yml` | CI-8                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+  - **Size check (BDL-1)**: the console build writes Vite's manifest. `console/scripts/size-entries.mjs` reads it, maps each route's source file to its built chunks, and writes `.size-limit.json` entries with spec 0003's gzip budgets (copied from BDL-1, not restated here). `size-limit` then fails over budget. Hashed file names are fine, because entries are rebuilt from the manifest on every run. To keep every emitted file under BDL-1's 80 KB, `console/vite.config.ts` splits `react` (with `react-dom` and `scheduler`), `tanstack`, and `lingui` into their own chunks (Rolldown `codeSplitting.groups`).
   - Playwright E2E against a real server (QA-5) joins `_console.yml` with the first API screen, as spec 0003 plans. The workflow keeps a commented placeholder job for it.
 
 - **CI-3 (MUST)**: Security checks run in their own workflows, not through `ci-gate` (a job can't `need` another workflow), and branch protection requires them directly:
   - `codeql.yml`: a matrix over `csharp` and `javascript-typescript`, `build-mode: none`, the `security-extended` query suite, on PRs, pushes to `main`, and weekly (SUP-3). It is a workflow file, not repo default setup, so it is pinned and reviewed like the rest. Each analysis job grants `security-events: write`.
   - `dependency-review.yml` runs on every PR, failing on moderate or worse vulnerabilities and on licenses outside `.github/dependency-review-config.yml`. Until feature 57 decides, its `allow-licenses` is GEN-5's list as SPDX IDs: `MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`, `ISC`, `PostgreSQL` (SUP-2).
-  - Both need the repo to be public (or GitHub Advanced Security). While the repo is private, the files exist but feature 58 switches the checks on and makes them required when the repo goes public (after feature 57 picks the license).
+  - Both need the repo to be public (or GitHub Advanced Security). Each job has `if: ${{ !github.event.repository.private }}`, so while the repo is private the jobs skip, and they turn on by themselves when it goes public. Feature 58 makes them required then (after feature 57 picks the license). CodeQL's job also grants `actions: read`, which a private repo needs.
   - Fork PRs: CodeQL's PR analysis runs with the read only token GitHub gives forks. If the upload is refused there, the analysis still runs and the upload step is skipped for forks only (verified at Rollout step 11).
 - **CI-4 (MUST)**: Hardening (SUP-6), checked by zizmor and actionlint:
   - Every workflow starts with `permissions: {}`. Each job, and each `uses:` call of a reusable workflow, grants only what it needs (usually `contents: read`), since a called workflow can only narrow what its caller grants.
-  - Every external action and every cross repo reusable workflow is pinned to a full commit SHA with a `# vX.Y.Z` comment. Calls to this repo's own reusable workflows use the local `./.github/workflows/...` path, so a PR tests its own version.
+  - Every external action and every cross repo reusable workflow is pinned to a full commit SHA with a `# vX.Y.Z` comment, at a version that clears TL-8. Calls to this repo's own reusable workflows use the local `./.github/workflows/...` path, so a PR tests its own version.
+  - `.github/zizmor.yml` holds zizmor's settings, each naming its rule: the `dependabot-cooldown` check expects 3 days (DPB-2), and `self-repository` is off, because the local `./` paths above are on purpose. zizmor scans only `.github/`, so `tooling/starters/**` stays out of it (KIT-2).
   - `actions/checkout` sets `persist-credentials: false`.
   - No `pull_request_target`, and no untrusted input (titles, branch names, bodies) inside `${{ }}` in a `run:` step. It goes through `env:`.
   - Every job has `timeout-minutes`.
@@ -244,7 +248,8 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
     - runs `git commit` (so the real hook runs)
     - fails unless both files come out formatted
   - No .NET build or tests run here (Windows runners can't run the Linux PostgreSQL container). This job is the TL-5 go or no go.
-- **CI-9 (MUST)**: `scheduled.yml` (weekly, Monday) calls `ci.yml` (every area runs, CI-1) and `_windows.yml` against `main`. Upstream breaks (a runner image, a new tool release, a new advisory for `pnpm audit` or NuGetAudit) then show within a week, even when nobody pushes.
+- **CI-9 (MUST)**: `scheduled.yml` (weekly, Monday) calls `ci.yml` only, against `main`. Under `workflow_call` every area counts as changed (CI-1), so that run includes the Windows job (CI-8); calling `_windows.yml` again would run it twice. Upstream breaks (a runner image, a new tool release, a new advisory for `pnpm audit` or NuGetAudit) then show within a week, even when nobody pushes.
+- **CI-10 (MUST)**: An audit advisory is ignored in one place only: `pnpm-workspace.yaml` under `auditConfig.ignoreGhsas` for `pnpm audit` (and, if one is ever needed, a `NuGetAuditSuppress` item in `server/Directory.Build.props` for NuGetAudit). Each ignore has a comment above it giving the reason (why the vulnerable code is not reachable in what ships), the date checked, and the exit condition, usually "remove when a patched release ships". Never `--audit-level` changes, `continue-on-error`, or a blanket ignore. Today's one ignore is `GHSA-vfj7-8cjw-p6xm` (`braces`, reached only through `@lingui/cli` at build time, no patched release on 2026-10-17). The weekly run (CI-9) and Dependabot surface the fix; the PR that takes it removes the ignore.
 
 ### DPB: Dependabot
 
@@ -252,6 +257,7 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
 - **DPB-2 (MUST)**: Grouping and limits:
   - Per ecosystem, minor and patch updates are one grouped PR.
   - A separate `toolchain` group moves `vite-plus`, `eslint`, every `eslint-plugin-*`, `typescript-eslint`, and `@tanstack/eslint-plugin-*` together. Before merging that PR, a person runs VER-5 again, sets `eslint-plugin-oxlint` to the new Oxlint version, and runs `pnpm check`. TL-4's exact pins mean nothing moves without that PR.
+  - Dependabot ignores `eslint-plugin-oxlint` entirely (it must equal the Oxlint inside vite-plus, so it moves by hand in the toolchain PR; left in, Dependabot had put it in `npm-minor-and-patch`, not `toolchain`) and semver major updates of Node: the `node` image tag and `@types/node` follow `.node-version` (TL-1, TL-7), so a Node major is one hand made PR.
   - Majors come one PR each, since a major of a TL-4 tool or a pinned framework needs a spec update.
   - `cooldown` is 3 days (matches pnpm's `minimumReleaseAge`, SEC-5).
   - Commit messages use the prefix `build` with scope `deps`, so Dependabot titles meet GIT-2 (`build(deps): bump ...`).
@@ -278,36 +284,43 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
 - **PRT-1 (MUST)**: One `.github/pull_request_template.md`: a summary, the feature number and spec, the rule IDs the change touches, then one checklist block per area (Server, Console, Security, Docs). You delete the blocks the PR doesn't touch. Each item is a Review row from a practice spec's Enforcement table and cites its ID (for example "Log content has no secrets or personal data (LOG-2, LOG-3)"). The Security block always stays.
 - **EDT-1 (MUST)**: `.vscode/extensions.json` recommends the Oxc, ESLint, EditorConfig, and C# Dev Kit extensions. No `.vscode/settings.json` is committed, and the editor never decides formatting: the root `.editorconfig` and FMT rules do.
 
-**Canonical pattern** (LNT-3, a restriction with its one allowed home):
+**Canonical pattern** (LNT-3, a restriction with its one allowed home, as built in `tooling/config/console-restrictions.ts`):
 
 ```ts
-// eslint.config.ts (repo root, TL-3)
-export default defineConfig(
-  // ...typescript-eslint strictTypeChecked, react-hooks, tanstack, lingui
+// tooling/config/console-restrictions.ts
+// Later regions win, so the more specific ones come last.
+export const regions: Region[] = [
+  { files: [`${src}/**/*.{ts,tsx}`], area: "app" },
+  { files: [`${src}/shared/**/*.{ts,tsx}`], area: "shared" },
+  { files: [`${src}/shared/api/**/*.{ts,tsx}`], area: "shared", home: "api" }, // QRY-1 home
+  { files: [`${src}/shared/config.ts`], area: "shared", home: "config" }, // WEB-8 home
+  // ...
+];
+
+export const restrictions: Restriction[] = [
   {
-    files: ["console/src/**/*.{ts,tsx}"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            { group: ["openapi-fetch"], message: "QRY-1: call the API through src/shared/api." },
-          ],
-        },
-      ],
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "MemberExpression[object.type='MetaProperty'][property.name='env']",
-          message: "WEB-8: read import.meta.env only in src/shared/config.ts.",
-        },
-      ],
+    allowIn: ["api"],
+    imports: {
+      regex: packages(["openapi-fetch"]),
+      message: "QRY-1: call the API through the client in src/shared/api.",
     },
   },
-  { files: ["console/src/shared/api/**"], rules: { "no-restricted-imports": "off" } }, // QRY-1 home
-  { files: ["console/src/shared/config.ts"], rules: { "no-restricted-syntax": "off" } }, // WEB-8 home
-  oxlint.buildFromOxlintConfigFile("./.oxlintrc.json"), // LNT-2: last
-);
+  {
+    allowIn: ["config"],
+    syntax: [
+      {
+        selector: "MemberExpression[object.type='MetaProperty'][property.name='env']",
+        message:
+          "WEB-8: read import.meta.env only in src/shared/config.ts, and import config from there.",
+      },
+    ],
+  },
+  // ...
+];
+
+// eslint.config.ts (repo root, TL-3) spreads regionRules(): one block per region, each with that region's full
+// no-restricted-imports, no-restricted-globals, and no-restricted-syntax options, then
+// oxlint.buildFromOxlintConfigFile("./.oxlintrc.json") last (LNT-2).
 ```
 
 **Replaces**:
@@ -325,19 +338,19 @@ export default defineConfig(
 
 **Enforcement**:
 
-| Mechanism                                                                      | Rules                                                                                  | Where it lives                                  |
-| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| `pnpm check` and the area workflows                                            | FMT-1 to FMT-4, FMT-6, LNT-1 to LNT-4, LNT-6, TYC-1, TL-6                              | root `package.json`, `.github/workflows/_*.yml` |
-| Lint fixtures that must fire                                                   | LNT-3                                                                                  | `tooling/lint-fixtures/`, `check:lint-fixtures` |
-| ESLint `reportUnusedDisableDirectives`, Oxlint and C# rules for justifications | LNT-5                                                                                  | configs; review for the reason's quality        |
-| `pr-title` job                                                                 | GIT-2                                                                                  | `repo-hygiene.yml`                              |
-| actionlint, zizmor                                                             | CI-1, CI-4, CI-5                                                                       | `repo-hygiene.yml`                              |
-| Windows job                                                                    | TL-2, TL-5, HOK-1, HOK-2, GIT-4                                                        | `_windows.yml`                                  |
-| Image build, Node tag check                                                    | TL-1, TL-7                                                                             | `_deploy.yml`                                   |
-| CodeQL, dependency review                                                      | SUP-2, SUP-3 (CI-3)                                                                    | `codeql.yml`, `dependency-review.yml`           |
-| Branch protection requiring `ci-gate` and the CI-3 checks, squash only         | CI-1, CI-3, GIT-2                                                                      | feature 58                                      |
-| The first SDK repo's CI                                                        | KIT-1 to KIT-3                                                                         | each SDK repo                                   |
-| Review (`/check review`, people)                                               | TL-0, TL-4 (no unpinned tools), GIT-1, LNT-5 reasons, DPB-2 toolchain steps, PRT-1 use | PR template                                     |
+| Mechanism                                                                      | Rules                                                                                                                                                                     | Where it lives                                  |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `pnpm check` and the area workflows                                            | FMT-1 to FMT-4, FMT-6, LNT-1 to LNT-4, LNT-6, TYC-1, TL-6                                                                                                                 | root `package.json`, `.github/workflows/_*.yml` |
+| Lint fixtures that must fire                                                   | LNT-3                                                                                                                                                                     | `tooling/lint-fixtures/`, `check:lint-fixtures` |
+| ESLint `reportUnusedDisableDirectives`, Oxlint and C# rules for justifications | LNT-5                                                                                                                                                                     | configs; review for the reason's quality        |
+| `pr-title` job                                                                 | GIT-2                                                                                                                                                                     | `repo-hygiene.yml`                              |
+| actionlint, zizmor                                                             | CI-1, CI-4, CI-5                                                                                                                                                          | `repo-hygiene.yml`                              |
+| Windows job                                                                    | TL-2, TL-5, HOK-1, HOK-2, GIT-4                                                                                                                                           | `_windows.yml`                                  |
+| Image build, Node tag check                                                    | TL-1, TL-7                                                                                                                                                                | `_deploy.yml`                                   |
+| CodeQL, dependency review                                                      | SUP-2, SUP-3 (CI-3)                                                                                                                                                       | `codeql.yml`, `dependency-review.yml`           |
+| Branch protection requiring `ci-gate` and the CI-3 checks, squash only         | CI-1, CI-3, GIT-2                                                                                                                                                         | feature 58                                      |
+| The first SDK repo's CI                                                        | KIT-1 to KIT-3                                                                                                                                                            | each SDK repo                                   |
+| Review (`/check review`, people)                                               | TL-0, TL-4 (no unpinned tools), TL-8 (pins clear the 3 day wait), CI-10 (audit ignores have a reason and an exit), GIT-1, LNT-5 reasons, DPB-2 toolchain steps, PRT-1 use | PR template                                     |
 
 **Rollout**: New code immediately, plus one migration PR for what already exists: the scaffold's console moves under the root workspace (TL-1, TL-7), and the first repo wide format lands as its own commit (FMT-5). Existing lint and style findings from the scaffold are fixed in the same build, not tracked as debt, since the codebase is small (87 source files).
 
@@ -362,15 +375,17 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 9. Local proof (repo not pushed yet): `pnpm check` and `pnpm test` clean on macOS; `changes.mjs` gives the right areas for a few sample diffs; actionlint and zizmor clean on every workflow file, run locally through Docker; the image builds
 10. Starters: `tooling/starters/*` files and the `sdk-*.yml` reusable workflows (KIT-1, KIT-2); they are proven later by the first SDK repo (KIT-3)
 11. Later, once the repo is on GitHub (feature 58): CI green, CodeQL on fork PRs checked (CI-3), the NuGet lock file question answered (DPB-3), the Windows job green and TL-5 decided (within two weeks), the weekly run seen once
+    - Progress (2026-10-17): the repo is pushed to `orvanohq/orvano` (private). The first run's findings were fixed (`747b063`: typos words, one audit ignore per CI-10, `actions: read` for CodeQL), and CI then went green, including the Windows job (CI-8). TL-5 is decided: keep Vite+. CodeQL and dependency review skip while the repo is private (CI-3).
+    - Still open: the weekly `scheduled.yml` run seen once (CI-9); CodeQL on a fork PR (CI-3) and the required checks, once feature 58 makes the repo public; the DPB-3 lock file question, at the first Dependabot NuGet PR
 
-**Verify at build** (record each result here and in rationale.md):
+**Verify at build** (results from the build on 2026-10-16, also in rationale.md):
 
-- **VER-1**: `vp hooks` and `vp staged` work from the root workspace, and `vp staged` passes the staged `.cs` paths to `format-cs.mjs` so it can make them relative (HOK-2).
-- **VER-2**: Vite+ reads `fmt` and `lint` from the root `vite.config.ts` for files under `console/` (TL-3).
-- **VER-3**: List the jsx-a11y strict rules Oxlint lacks, and confirm each is covered by axe (LNT-4).
-- **VER-4**: Hook time for 20 staged files is under 10 seconds on this Mac (HOK-3).
-- **VER-5**: The Vite+ `lint` block can point at `.oxlintrc.json`, and `eslint-plugin-oxlint`'s `buildFromOxlintConfigFile` reads that same file. If Vite+ can't point at a file, the rules live in the `lint` block and a script writes `.oxlintrc.json` from it for ESLint.
-- **VER-6**: Whether Lingui 6 has `lingui check sync` (CI-2 names the fallback).
+- **VER-1** (pass): `vp hooks` and `vp staged` work from the root workspace, and `vp staged` passes the staged `.cs` paths to `format-cs.mjs`, which makes them relative to `server/` (HOK-2).
+- **VER-2** (pass): Vite+ reads `fmt` and `lint` from the root `vite.config.ts` for files under `console/`, so `console/vite.config.ts` needs no copy and `tooling/vp/shared.ts` is not needed (TL-3).
+- **VER-3** (pass): Oxlint 1.87 implements all 36 jsx-a11y rules, which covers every active rule in `eslint-plugin-jsx-a11y`'s strict preset. Only the plugin's deprecated rules are missing, so nothing moves to axe (LNT-4).
+- **VER-4** (pass): 20 staged files commit in 1.4 seconds on this Mac, well under 10 (HOK-3).
+- **VER-5** (pass): the `lint` block spreads `.oxlintrc.json`, read with `readFileSync`, and `eslint-plugin-oxlint`'s `buildFromOxlintConfigFile` reads the same file. No generated copy is needed.
+- **VER-6** (pass): Lingui 6 has `lingui check sync`; the drift check runs `lingui check sync --clean` (CI-2), so the `extract` fallback is not used.
 
 ## Consequences
 
@@ -385,7 +400,6 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 
 - Two linters on the JS side (Oxlint and a small ESLint) until TypeScript 7 lands across the plugins, so two configs to keep in step (`eslint-plugin-oxlint` limits the overlap, and the `toolchain` Dependabot group moves them together).
 - Vite+ is a month past 1.0, with open Windows issues. TL-5 means a real fallback PR may be needed, and TL-4's exact pins mean tool upgrades are deliberate work.
-- Oxlint's jsx-a11y set is smaller than the plugin's strict preset, so a few a11y checks move from lint time to test time (axe).
 - Reusable workflows in the core repo tie SDK CI to this repo's history. An SDK change waits for a core PR.
 - The proof that CI passes, the security checks, and the Windows decision wait until the repo is pushed and public (features 57 and 58), so feature 7 can't be fully done before that.
 - The starters stay unproven until the first SDK repo exists.
@@ -399,8 +413,9 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 
 ## Follow-up
 
-- [ ] `/sync` after the build: update root `AGENTS.md` (replace the "Coding standards and tooling ... not decided yet" rule with a pointer to this spec and `pnpm check`; Local setup: pnpm and Node are pinned at the root), `console/AGENTS.md`, `server/AGENTS.md`, and `deploy/AGENTS.md` (commands, the image build), and record the five newly installed skills under `## Agent skills`
-- [ ] Spec 0003: update the Enforcement table row for A11Y-6 (Oxlint jsx-a11y, LNT-4) and close the two Rollout items for feature 7 (ESLint 10 chosen; restriction rules, import boundary, and size runner chosen here)
+- [x] `/sync` after the build (done in `8a2dcf9`): update root `AGENTS.md` (replace the "Coding standards and tooling ... not decided yet" rule with a pointer to this spec and `pnpm check`; Local setup: pnpm and Node are pinned at the root), `console/AGENTS.md`, `server/AGENTS.md`, and `deploy/AGENTS.md` (commands, the image build), and record the five newly installed skills under `## Agent skills`
+- [ ] `/sync` again for the build results above: check that the `AGENTS.md` files say dotnet commands run from `server/` (TL-6), CI gets pnpm from setup-vp (TL-1), `pnpm test` includes `test:tooling`, and the pin wait (TL-8); add only what is missing
+- [ ] Spec 0003: update the Enforcement table row for A11Y-6 (Oxlint jsx-a11y, LNT-4, full strict coverage per VER-3) and close the two Rollout items for feature 7 (ESLint 10 chosen; restriction rules, import boundary, and size runner chosen here)
 - [ ] Spec 0001: its Follow-up for feature 7 is met by LNT-3 (import boundary), LNT-2 (literal strings through Lingui), and A11Y-5 in CI
 - [ ] Spec 0006: SUP-1 to SUP-3 and SUP-5, SUP-6 are wired by DPB, CI-3, CI-4; SUP-4 (secret scanning with push protection) is a repo setting for feature 58
 - [ ] Feature 58: create and push `orvanohq/orvano`; protect `main` requiring `ci-gate`, CodeQL, and dependency review; squash merge only; secret scanning on; then run step 11 of the Rollout order
