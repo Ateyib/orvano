@@ -20,28 +20,28 @@ Every install runs `ghcr.io/orvanohq/orvano` plus PostgreSQL 18; everything else
 
 ## Proposed stack
 
-| Layer | Choice | Reason |
-|---|---|---|
-| Architecture | Modular monolith (spec 0002 LAY-1), one image, roles `api` and `worker` chosen by `ORVANO_ROLES` | Simplest to self host; splits into separate api and worker containers later without a code change. |
-| Language and runtime | C# 14 on .NET 10, JIT with ReadyToRun | Given; ReadyToRun (precompiled code) starts fast while keeping full EF Core and reflection support that Native AOT limits. |
-| Web framework | ASP.NET Core Minimal APIs on Kestrel | Given by spec 0002 API-1. |
-| Platform database | PostgreSQL 18 only (minimum 18), EF Core 10 with Npgsql 10 | One version to test; 18 brings built in `uuidv7()` for feature 8. |
-| Project databases | One database per project (spec 0006 TEN-1), on the platform server by default, a separate server optional | Smallest install by default, room to split. |
-| Connection pooling | One Npgsql pool per project database, created lazily, small and pruned, with an install wide cap | No extra service; PgBouncer optional for large installs. |
-| Background jobs | In house PostgreSQL queue (`FOR UPDATE SKIP LOCKED`, woken by `NOTIFY`), cron via `Cronos` (MIT) | No license risk, no mediator (spec 0002 API-7), a few hundred lines Orvano owns. |
-| Module events | Transactional outbox table per module, delivered by the job runner | Nothing lost on a crash; the same stream realtime and webhooks read later (features 33 to 36). |
-| Cache | `HybridCache` in memory per replica, tag invalidation broadcast over `NOTIFY` | No Redis; replicas stay consistent (spec 0002 PRF-2). |
-| Cross replica signals | One `LISTEN` connection per process on channel `orvano_signal` | Shared by job wake ups, cache invalidation, and session revocation (spec 0006 TOK-6); a hint backed by polling, never the only path. |
-| Password hashing | Argon2id via `NSec.Cryptography` (MIT, libsodium) | Maintained, native speed for the 250 ms target, one lane matches spec 0006 PWD-1. |
-| File storage | `IFileStore` with two providers: local volume (default) and S3 compatible via `AWSSDK.S3` (Apache 2.0) | Zero setup for small installs, scale out on S3, MinIO, R2, or Garage. |
-| Console | React and Vite SPA, built into the server image, served same origin at `/console` | One container, one origin, so spec 0006 CON-1 and CON-2 cookies and CSRF work without CORS. |
-| CORS | ASP.NET Core CORS middleware with a per project policy provider, exact origins only | Applies spec 0006 NET-4; header lists come from one place so SDK headers always pass. |
-| TLS | Caddy 2.11 in the reference compose (automatic Let's Encrypt), or Kestrel with operator supplied PEM files | Two supported ways (spec 0006 NET-1), no unmaintained ACME plugin in the server. |
-| Container image | `mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled`, multi arch (amd64, arm64), published to GHCR | No shell, non root, glibc for libsodium. |
-| Install | Docker or Podman compose: Orvano, PostgreSQL, Caddy, plus a one shot `migrate` step | The one supported install form for the first release. |
-| Local development | `deploy/compose.dev.yaml` for PostgreSQL (and an optional OpenTelemetry dashboard), apps run directly | Works with Docker or Podman (spec 0002 TST-5a), no Aspire to learn. |
-| Operator commands | Subcommands of the server binary via `System.CommandLine` 2 (MIT) | `orvano serve`, `migrate`, `init`, `healthcheck`, `admin …`; host access only. |
-| Observability | OpenTelemetry (spec 0002 LOG-4), OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set | Already decided; this spec places it in `Orvano.Host`. |
+| Layer                 | Choice                                                                                                     | Reason                                                                                                                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Architecture          | Modular monolith (spec 0002 LAY-1), one image, roles `api` and `worker` chosen by `ORVANO_ROLES`           | Simplest to self host; splits into separate api and worker containers later without a code change.                                   |
+| Language and runtime  | C# 14 on .NET 10, JIT with ReadyToRun                                                                      | Given; ReadyToRun (precompiled code) starts fast while keeping full EF Core and reflection support that Native AOT limits.           |
+| Web framework         | ASP.NET Core Minimal APIs on Kestrel                                                                       | Given by spec 0002 API-1.                                                                                                            |
+| Platform database     | PostgreSQL 18 only (minimum 18), EF Core 10 with Npgsql 10                                                 | One version to test; 18 brings built in `uuidv7()` for feature 8.                                                                    |
+| Project databases     | One database per project (spec 0006 TEN-1), on the platform server by default, a separate server optional  | Smallest install by default, room to split.                                                                                          |
+| Connection pooling    | One Npgsql pool per project database, created lazily, small and pruned, with an install wide cap           | No extra service; PgBouncer optional for large installs.                                                                             |
+| Background jobs       | In house PostgreSQL queue (`FOR UPDATE SKIP LOCKED`, woken by `NOTIFY`), cron via `Cronos` (MIT)           | No license risk, no mediator (spec 0002 API-7), a few hundred lines Orvano owns.                                                     |
+| Module events         | Transactional outbox table per module, delivered by the job runner                                         | Nothing lost on a crash; the same stream realtime and webhooks read later (features 33 to 36).                                       |
+| Cache                 | `HybridCache` in memory per replica, tag invalidation broadcast over `NOTIFY`                              | No Redis; replicas stay consistent (spec 0002 PRF-2).                                                                                |
+| Cross replica signals | One `LISTEN` connection per process on channel `orvano_signal`                                             | Shared by job wake ups, cache invalidation, and session revocation (spec 0006 TOK-6); a hint backed by polling, never the only path. |
+| Password hashing      | Argon2id via `NSec.Cryptography` (MIT, libsodium)                                                          | Maintained, native speed for the 250 ms target, one lane matches spec 0006 PWD-1.                                                    |
+| File storage          | `IFileStore` with two providers: local volume (default) and S3 compatible via `AWSSDK.S3` (Apache 2.0)     | Zero setup for small installs, scale out on S3, MinIO, R2, or Garage.                                                                |
+| Console               | React and Vite SPA, built into the server image, served same origin at `/console`                          | One container, one origin, so spec 0006 CON-1 and CON-2 cookies and CSRF work without CORS.                                          |
+| CORS                  | ASP.NET Core CORS middleware with a per project policy provider, exact origins only                        | Applies spec 0006 NET-4; header lists come from one place so SDK headers always pass.                                                |
+| TLS                   | Caddy 2.11 in the reference compose (automatic Let's Encrypt), or Kestrel with operator supplied PEM files | Two supported ways (spec 0006 NET-1), no unmaintained ACME plugin in the server.                                                     |
+| Container image       | `mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled`, multi arch (amd64, arm64), published to GHCR        | No shell, non root, glibc for libsodium.                                                                                             |
+| Install               | Docker or Podman compose: Orvano, PostgreSQL, Caddy, plus a one shot `migrate` step                        | The one supported install form for the first release.                                                                                |
+| Local development     | `deploy/compose.dev.yaml` for PostgreSQL (and an optional OpenTelemetry dashboard), apps run directly      | Works with Docker or Podman (spec 0002 TST-5a), no Aspire to learn.                                                                  |
+| Operator commands     | Subcommands of the server binary via `System.CommandLine` 2 (MIT)                                          | `orvano serve`, `migrate`, `init`, `healthcheck`, `admin …`; host access only.                                                       |
+| Observability         | OpenTelemetry (spec 0002 LOG-4), OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set                            | Already decided; this spec places it in `Orvano.Host`.                                                                               |
 
 ## Architecture rules
 
@@ -164,6 +164,7 @@ CORS (the browser rule that decides which other websites may call the API) follo
   5. Print the warning: `root.key` is safe only inside this folder; any copy (a backup, `cp`, `tar`, `docker cp`) must be made owner only (0600) or encrypted, and kept apart from database backups.
 
   On Windows outside a container, init skips the mode steps and says so; the Docker Desktop VM is the boundary there.
+
 - **INS-4 (SHOULD)**: Running the image alone against an existing PostgreSQL works and is documented as untested in the first release. Kubernetes and a Helm chart wait until after alpha.
 
 ### Local development
@@ -189,12 +190,14 @@ Set by the install from earlier specs: `ORVANO_PUBLIC_URL`, `ORVANO_TRUSTED_PROX
 ## Consequences
 
 **Positive**:
+
 - A self hoster runs three containers (Orvano, PostgreSQL, Caddy) and learns one database; backups cover jobs, events, and data together.
 - Jobs and events commit in the same transaction as the change that caused them, so a crash never loses or invents one.
 - Scale out is a config change (more replicas, or split `api` and `worker`), not a rewrite.
 - Every open question owed to feature 6 by specs 0002, 0003, 0004, 0005, and 0006 has an answer.
 
 **Negative / tradeoffs**:
+
 - PostgreSQL carries queue, outbox, signal, and data load. Very high job throughput (tens of thousands a second) would need a broker later.
 - Orvano owns its job runner and outbox: retries, leases, and dead jobs are code to test and maintain, with no ready made dashboard.
 - `NOTIFY` is lossy across reconnects; correctness rests on SIG-2's clear and reload, which must be tested.
@@ -205,6 +208,7 @@ Set by the install from earlier specs: `ORVANO_PUBLIC_URL`, `ORVANO_TRUSTED_PROX
 - Kestrel's own TLS needs a restart when the certificate changes.
 
 **Neutral**:
+
 - Spec 0002 gains `Orvano.Infrastructure` in LAY-1 and a looser PRF-2 cap; specs 0003 and 0005 get concrete values for the base path and dev proxy.
 - The supported PostgreSQL range may widen later if self hosters ask.
 

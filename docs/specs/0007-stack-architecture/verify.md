@@ -1,7 +1,9 @@
 # Verify: Stack & architecture · spec 0007 · updated 2026-10-16
+
 _Updated 2026-10-16 for INS-2, INS-5 and the two bug fixes. Steps derived from feature 6's "Done when" (the scaffold boots the server and console locally and builds clean) and the spec 0007 rules the scaffold builds, since spec 0007 has no numbered acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
 
 ## Commands
+
 - [ ] `CI=true dotnet build server/Orvano.slnx --no-incremental` → `0 Warning(s)`, build succeeded (spec 0002 GEN-2)
 - [ ] `pnpm --dir console build` → typecheck passes, Vite build succeeds, first load JavaScript under 200 KB gzip (spec 0003 BDL-1) → Done when
 - [ ] `docker compose -f deploy/compose.dev.yaml up -d --wait`, then `dotnet run --project server/src/Orvano.Host -- migrate` → exit 0 (INS-2, DEV-1)
@@ -21,6 +23,7 @@ _Updated 2026-10-16 for INS-2, INS-5 and the two bug fixes. Steps derived from f
 - [ ] `dotnet run -c Release --project server/benchmarks/Orvano.Benchmarks -- --filter '*PasswordHashing*'` on the reference box (4 vCPU, 8 GB) → `Hash` mean at or under 250 ms (HSH-2)
 
 ## UI / manual
+
 - [ ] With the server running, `pnpm --dir console dev`, open `http://localhost:5173/console/` → "Orvano console" heading, no console errors; `http://localhost:5173/health/ready` → `Healthy` through the proxy (CSL-3) → Done when
 - [ ] Reference install in an empty folder: copy `compose.yaml`, `Caddyfile`, `postgres-init/`; run `init` from the image with the INS-3 command; `docker compose up -d` → `migrate` exits 0 with no root key mounted, `orvano` turns healthy (INS-1, INS-2)
 - [ ] On a Linux host, under rootful Docker, rootful Podman, and rootless Podman: the same install works, another host user cannot read `root.key`, and init without `--user` fails safely (INS-5, open follow up)
@@ -30,6 +33,7 @@ _Updated 2026-10-16 for INS-2, INS-5 and the two bug fixes. Steps derived from f
 - [ ] The built console loads in a browser under the strict CSP with no violations, and an unknown client route shows the router's not found view (NET-2, CSL-1)
 
 ## Acceptance-criteria coverage
+
 - Done when (server boots locally, builds clean): build, migrate, serve, and health steps above
 - Done when (console boots locally, builds clean): console build and dev proxy steps
 - RUN-1, RUN-2, RUN-4, RUN-5 · INS-1 to INS-3 · IMG-1 to IMG-4 · CSL-1 to CSL-3 · TLS-1, TLS-2 · DEV-1 · HSH-2, HSH-3: the steps tagged with each

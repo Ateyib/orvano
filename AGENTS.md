@@ -24,13 +24,13 @@ You need the .NET 10 SDK, Node 24 LTS, pnpm 12 (pinned in `console/package.json`
 
 Read the matching practice spec first. Each rule has an ID (for example `API-1`, `UX-27`), so cite the ID in code review. Where an installed skill disagrees with a spec, the spec wins (rule GEN-0 in spec 0002).
 
-| You are writing | Read first |
-|---|---|
-| .NET server code or the .NET SDK | [0002 .NET backend practices](docs/specs/0002-dotnet-backend-practices/index.md) |
-| Console UI (React) | [0003 React console practices](docs/specs/0003-react-console-practices/index.md) and [0001 Console UX patterns](docs/specs/0001-console-ux-patterns/index.md) |
-| Dart or Flutter SDK | [0004 Dart and Flutter practices](docs/specs/0004-dart-flutter-practices/index.md) |
-| TypeScript, JavaScript, or Next.js SDK | [0005 TypeScript SDK practices](docs/specs/0005-typescript-sdk-practices/index.md) |
-| Server runtime, install, the image, or compose files | [0007 Stack and architecture](docs/specs/0007-stack-architecture/index.md) |
+| You are writing                                      | Read first                                                                                                                                                    |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| .NET server code or the .NET SDK                     | [0002 .NET backend practices](docs/specs/0002-dotnet-backend-practices/index.md)                                                                              |
+| Console UI (React)                                   | [0003 React console practices](docs/specs/0003-react-console-practices/index.md) and [0001 Console UX patterns](docs/specs/0001-console-ux-patterns/index.md) |
+| Dart or Flutter SDK                                  | [0004 Dart and Flutter practices](docs/specs/0004-dart-flutter-practices/index.md)                                                                            |
+| TypeScript, JavaScript, or Next.js SDK               | [0005 TypeScript SDK practices](docs/specs/0005-typescript-sdk-practices/index.md)                                                                            |
+| Server runtime, install, the image, or compose files | [0007 Stack and architecture](docs/specs/0007-stack-architecture/index.md)                                                                                    |
 
 Each spec has a `rationale.md` beside it; read it only when you need the why. Each spec also lists its implementation skills under `.claude/skills/`; load only the ones the task needs.
 
@@ -55,6 +55,7 @@ Stored in `docs/specs/`, one folder per spec: `docs/specs/NNNN-title/index.md`. 
 ## Context files
 
 <!-- Nested AGENTS.md files are listed here as they are created -->
+
 - [server/AGENTS.md](server/AGENTS.md): the .NET solution, its commands, config and test conventions
 - [console/AGENTS.md](console/AGENTS.md): the React console, its pnpm commands, Lingui and test conventions
 - [deploy/AGENTS.md](deploy/AGENTS.md): the image, the reference and dev compose files, install rules

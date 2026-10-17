@@ -7,79 +7,105 @@ Features 1 to 4 and 54 are the research you asked for before any code. Each one 
 ## Foundation
 
 ### 1. .NET backend practices · done
+
 Research and record how Orvano writes .NET 10 code, for both the server and the .NET server SDK library, so every backend feature follows one playbook.
 **Done when:** a spec records the chosen practices (project layout, API style, data access, async and cancellation, error handling, logging, configuration, testing, performance, library packaging) with the research behind each, ready for `/audit` to turn into conventions.
 spec [0002](../specs/0002-dotnet-backend-practices/index.md)
+
 - [x] Design it (spec): `/architect .NET backend practices`
 
 ### 2. React console practices · done
+
 Research and record how the console is written with React and Vite, so every console screen is built the same way.
 **Done when:** a spec records the chosen practices (structure, routing, data fetching and caching, state, forms, WCAG 2.2 AA accessibility, translation ready strings, testing, bundle size) with the research behind each.
 spec [0003](../specs/0003-react-console-practices/index.md)
+
 - [x] Design it (spec): `/architect React console practices`
 
 ### 3. Dart and Flutter practices · done
+
 Research and record how the Flutter client SDK and the Dart server SDK are written, since they share one language and toolchain.
 **Done when:** a spec records the chosen practices (package layout, null safety, async and streams, platform support for iOS, Android, web, and desktop, secure session storage, pub.dev package scoring, testing) with the research behind each.
 spec [0004](../specs/0004-dart-flutter-practices/index.md)
+
 - [x] Design it (spec): `/architect Dart and Flutter practices`
 
 ### 4. TypeScript SDK practices · done
+
 Research and record how the JavaScript client, Next.js, and JavaScript server SDKs are written, so three packages for very different runtimes stay consistent.
 **Done when:** a spec records the chosen practices (module formats, tree shaking, runtime targets from browser to Node to edge, typing, Next.js App Router and server components, testing) with the research behind each.
 spec [0005](../specs/0005-typescript-sdk-practices/index.md)
+
 - [x] Design it (spec): `/architect TypeScript SDK practices`
 
 ### 54. Console UX patterns · done
+
 Research and record how the console behaves, studying consoles like Appwrite, Supabase, and other developer tools: page layout and navigation, a resource list that stays visible while one item is open (the Appwrite style table list), sidebars, tabs, forms, data grids, empty and loading states, and confirming destructive actions. Feature 11 builds its components on these patterns.
 **Done when:** a spec records the chosen patterns with the research behind each, so every console screen (tables, users, buckets, functions, sites) follows the same layout and interaction rules.
+
 - [x] Design it (spec): `/architect console UX patterns`
-Spec [0001](../specs/0001-console-ux-patterns/index.md)
+      Spec [0001](../specs/0001-console-ux-patterns/index.md)
 
 ### 5. Security baseline · done
+
 The bar every feature meets. Orvano stores other people's users, data, and secrets, and later runs their code, so this is set once before anything is built.
 **Done when:** a spec records a verification standard and level, a threat model for many projects on one install, password hashing, token signing and rotation, secrets encrypted at rest and keys shown once, and dependency scanning; later specs point to it for their security criteria.
 spec [0006](../specs/0006-security-baseline/index.md)
+
 - [x] Design it (spec): `/architect security baseline`
 
 ### 57. Open source license · needs a decision
+
 Choose Orvano's license and contributor terms before the first public push. It decides whether others can resell Orvano as a hosted service, what every package's metadata says (spec 0002 is waiting on it), and which dependency licenses are allowed.
 **Done when:** a spec records the license for the server, the console, and the SDKs (they may differ), the contributor terms (sign off or contributor agreement), and the dependency licenses that are allowed, and a `LICENSE` file is ready for each repo.
+
 - [ ] Design it (spec): `/architect open source license`
 
 ### 6. Stack & architecture · done
+
 Design the system around your given choices (.NET 10, React with Vite, PostgreSQL): service boundaries, how one self hosted install runs, background jobs, caching, file storage, and the names of the SDK repos. Then scaffold the `orvano` core monorepo.
 **Done when:** the architecture is recorded in a spec, and the core monorepo scaffold boots the server and console locally and builds clean.
 spec [0007](../specs/0007-stack-architecture/index.md) · code in `server/`, `console/`, `deploy/`
+
 - [x] Decide the stack (spec): `/architect stack & architecture`
 - [x] Scaffold from the decision: `/develop stack & architecture`
 - [x] Smoke check it runs: `/test`
 
 ### 7. Coding standards & tooling · in-progress
+
 Capture the conventions from features 1 to 5 and the real scaffold, then install lint, format, analyzers, pre-commit hooks, and CI for the core monorepo, plus a starter setup each SDK repo copies. For the JavaScript side (console and TypeScript SDKs), use Vite+ (`vp`, MIT, 1.0 since 2026-09-28) as the toolchain: Oxfmt for formatting, Oxlint first with a small ESLint config only for rules Oxlint lacks (React Compiler diagnostics, Lingui `no-unlocalized-strings`, TanStack plugins, typescript-eslint strict type checked), `vp run` for tasks, and `vp hooks` / `vp staged` for git hooks. Settle whether type checking uses `vp check` (TypeScript 7) or `tsc` (TypeScript 6, specs 0003 WEB-2 and 0005 SDK-1).
 **Done when:** root `AGENTS.md` reflects the real stack and the researched practices, and `pnpm check` and `pnpm test` run clean locally with the hooks working (spec 0008 Rollout step 9). Once feature 58 pushes the repo, CI and the security checks run clean there and the Windows CI job decides whether Vite+ stays or the plan falls back to standalone Vite, Vitest, tsdown, and Lefthook, with the reason recorded (spec 0008 TL-5, step 11).
 spec [0008](../specs/0008-coding-standards-tooling/index.md) · code in `package.json`, `vite.config.ts`, `eslint.config.ts`, `tooling/`, `.github/`, `.vite-hooks/`
+
 - [x] Design it (spec): `/architect coding standards & tooling`
 - [x] Capture conventions + tooling choices: `/audit`
 - [x] Install the tooling: `/develop tooling`
 - [ ] Check it runs clean: `/test`
 
 ### 58. Repo & community setup
+
 Set up the GitHub side of every repo in the org from the license spec (feature 57) and the tooling (feature 7): branch protection, code owners, a security policy, a contributing guide, issue and PR templates, and contributor sign off. SDK repos copy the same template.
 **Done when:** the `orvano` repo has protected `main`, code owners, `SECURITY.md` (how to report a vulnerability), `CONTRIBUTING.md`, templates, and sign off checks running, and a template repo lets each SDK repo start the same way.
+
 - [ ] Set it up: `/develop repo & community setup`
 
 ### 8. Platform data model · needs a decision
+
 Orvano's own records, kept apart from the databases projects create: console accounts, organizations, projects, API keys, settings, and the usage, audit, and messaging records later slices fill.
 **Done when:** the entities and relationships support every slice in this scope (team roles, usage, audit, messaging targets) without a breaking redesign.
+
 - [ ] Design it (spec): `/architect platform data model`
 
 ### 9. Access control model · needs a decision
+
 One permissions model shared by databases, storage, realtime, and functions: who a caller is (anyone, guest, signed in user, a specific user, a label, a server key), what they may do, and where the check runs. Features 16, 26, 29, 34, and 38 build on it.
 **Done when:** one model decides who can read or write any resource for both end user sessions and server API keys, and any database engine can enforce it.
+
 - [ ] Design it (spec): `/architect access control model`
 
 ### 11. Design system & console shell · needs a decision
+
 Visual language, base components, layout, navigation, and light and dark themes for the console, so every screen feels the same and works for everyone.
 **Done when:** `design.md` covers type, color, spacing, and components; the console shell meets WCAG 2.2 AA with keyboard and screen reader use; every string lives in message files.
+
 - [ ] Design it (spec): `/architect design system & console shell`

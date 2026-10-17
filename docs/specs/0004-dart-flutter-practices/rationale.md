@@ -14,7 +14,7 @@ The team is small, the workflow tier is GA, and much of the code will be written
 
 ## Options considered
 
-The libraries and patterns were chosen one area at a time (see *Research by practice area*). The options here are how the standard is enforced.
+The libraries and patterns were chosen one area at a time (see _Research by practice area_). The options here are how the standard is enforced.
 
 ### Option 1: Document and enforce from the first commit
 
@@ -43,7 +43,7 @@ Option 1, chosen by the engineer and matching specs 0002 and 0003. Neither repo 
 
 ## Research by practice area
 
-Each pick lists the main alternatives and why it won. Versions are from pub.dev and the Dart and Flutter docs on 2026-10-15 (see *Landscape facts*).
+Each pick lists the main alternatives and why it won. Versions are from pub.dev and the Dart and Flutter docs on 2026-10-15 (see _Landscape facts_).
 
 ### Package layout: a pure Dart core plus a Flutter layer in one workspace
 
@@ -66,7 +66,7 @@ Chosen by the engineer. Dart futures can't be cancelled, so cancelling needs an 
 
 ### Errors: a sealed OrvanoException tree
 
-Chosen by the engineer. Dart 3 sealed classes let apps `switch` over every failure with the compiler checking they covered all of them, and the tree hides the difference between `SocketException` on native, `ClientException` from the browser client, and whatever a plugged in native client throws. It carries the same API fields as spec 0002 LIB-6. Mirroring .NET exactly (only API errors wrapped, network errors passed through) was closer to the .NET SDK, but in Dart those passed through types differ by platform and client, which is exactly what a cross platform SDK should hide. `OrvanoProtocolException` was added while writing (see *Calls made without a question*).
+Chosen by the engineer. Dart 3 sealed classes let apps `switch` over every failure with the compiler checking they covered all of them, and the tree hides the difference between `SocketException` on native, `ClientException` from the browser client, and whatever a plugged in native client throws. It carries the same API fields as spec 0002 LIB-6. Mirroring .NET exactly (only API errors wrapped, network errors passed through) was closer to the .NET SDK, but in Dart those passed through types differ by platform and client, which is exactly what a cross platform SDK should hide. `OrvanoProtocolException` was added while writing (see _Calls made without a question_).
 
 ### Models: plain generated classes
 
@@ -109,62 +109,62 @@ Chosen by the engineer. Plain `Stream`s and `Future`s work with every library (R
 
 Smaller calls settled while writing, each with its runner up:
 
-| Call | Why | Runner up |
-|---|---|---|
-| `Orvano.open` is asynchronous (CLN-1) | The stored session is restored before the app reads `currentState`, so there is no "restoring" state for every app to handle | A synchronous constructor plus an `AuthRestoring` state |
-| `OrvanoProtocolException` as a fifth error type (EXC-1) | A malformed 2xx reply is neither an API error nor a network error; without it a `TypeError` would escape | Report it as an `OrvanoApiException` with a made up code |
-| Class modifiers: `final` by default (DRT-7) | Adding a member to a class apps can't extend or implement isn't breaking | Open classes, relying on docs |
-| `show` lists on every export (DRT-8) | Nothing in `src/` becomes public by accident | Export whole files |
-| Retry, timeout, and error fields identical to .NET (NET-3, NET-4, EXC-1) | One behavior for the conformance suite across server SDKs | Dart specific defaults |
-| Timeout covers headers and body (NET-4) | A slow body otherwise hangs past the timeout | Headers only |
-| No `RetryClient` (NET-3) | It can't tell idempotent requests apart or see the cancel token | Wrap `RetryClient` |
-| Default `http.Client()`, no native client dependency (NET-1) | Keeps dependencies tiny; apps opt into `cupertino_http` or `cronet_http` | Depend on native clients in `orvano_flutter` |
-| `https` required except localhost or an explicit opt in (NET-7) | A token over plain HTTP is readable on the network; self hosters on a home network can opt in | Allow any scheme |
-| `User-Agent` only on native (NET-6) | Browsers forbid setting it | Always set it and catch the error |
-| Enhanced enums with `unknown` (MDL-3) | Exhaustive switches and no crash on new server values | Extension types over `String`, which keep the raw value but lose exhaustiveness |
-| 64 bit integers never as `int` when they may pass 2^53 (MDL-4) | Web builds store `int` as a JavaScript number | `int` everywhere |
-| Session key `orvano.session.<projectId>@<authority>` (SES-2) | Two installs can both have a project named `default` | Project ID only |
-| Keychain accessibility `first_unlock_this_device` (SES-4) | Background work can read it after the first unlock, and it never syncs or moves to another device | `after_first_unlock`, which can move with backups |
-| Undecryptable or unknown version session is deleted (SES-6) | Android Auto Backup can restore data whose Keystore key is gone; that should mean signed out, not a storage failure | Treat it as a store failure |
-| Cross tab sync through the `storage` event (SES-8) | Signing out in one tab signs out the others | Each tab independent |
-| Memory store default for pure Dart on the VM (SES-3) | A CLI never writes a token to disk unasked | An unencrypted file in the home folder |
-| `clock` plus `fake_async` for time (STR-5) | Tests control backoff and expiry without real waits, like .NET's `TimeProvider` | Injecting a custom time interface |
-| No isolates or `compute()` in the SDK (STR-6) | Pages are bounded by feature 10's limits; isolates don't exist on the web; measure before adding | `Isolate.run` for bodies over 64 KB on native |
-| Small `StateStream` helper instead of rxdart (STR-2) | About 40 lines, no dependency | rxdart's `BehaviorSubject` |
-| package:logging, silent by default (DSC-3) | A Dart team package apps already know; nothing prints unless the app listens | A custom logger callback in options |
-| No native code in Orvano packages (PKG-5) | No native review load, no Swift Package Manager cap on pana points | An Orvano plugin for storage |
-| Commit the workspace `pubspec.lock` (DRT-3) | Reproducible CI; the downgrade and upgrade jobs still test the ranges | Leave it uncommitted, the usual library default |
-| `dart_apitool` from the first beta (PUB-4) | Before beta, breaking changes are allowed; the tool is still 0.x | Track from day one |
-| First run marker in `shared_preferences` (SES-7) | It lives in ordinary app storage, which an uninstall erases | A file in the app support folder through path_provider |
-| `// Not null: <why>` comment on `!` (DRT-6) | No lint bans `!`; a comment makes review catch it | Ban `!` outright |
+| Call                                                                     | Why                                                                                                                          | Runner up                                                                       |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `Orvano.open` is asynchronous (CLN-1)                                    | The stored session is restored before the app reads `currentState`, so there is no "restoring" state for every app to handle | A synchronous constructor plus an `AuthRestoring` state                         |
+| `OrvanoProtocolException` as a fifth error type (EXC-1)                  | A malformed 2xx reply is neither an API error nor a network error; without it a `TypeError` would escape                     | Report it as an `OrvanoApiException` with a made up code                        |
+| Class modifiers: `final` by default (DRT-7)                              | Adding a member to a class apps can't extend or implement isn't breaking                                                     | Open classes, relying on docs                                                   |
+| `show` lists on every export (DRT-8)                                     | Nothing in `src/` becomes public by accident                                                                                 | Export whole files                                                              |
+| Retry, timeout, and error fields identical to .NET (NET-3, NET-4, EXC-1) | One behavior for the conformance suite across server SDKs                                                                    | Dart specific defaults                                                          |
+| Timeout covers headers and body (NET-4)                                  | A slow body otherwise hangs past the timeout                                                                                 | Headers only                                                                    |
+| No `RetryClient` (NET-3)                                                 | It can't tell idempotent requests apart or see the cancel token                                                              | Wrap `RetryClient`                                                              |
+| Default `http.Client()`, no native client dependency (NET-1)             | Keeps dependencies tiny; apps opt into `cupertino_http` or `cronet_http`                                                     | Depend on native clients in `orvano_flutter`                                    |
+| `https` required except localhost or an explicit opt in (NET-7)          | A token over plain HTTP is readable on the network; self hosters on a home network can opt in                                | Allow any scheme                                                                |
+| `User-Agent` only on native (NET-6)                                      | Browsers forbid setting it                                                                                                   | Always set it and catch the error                                               |
+| Enhanced enums with `unknown` (MDL-3)                                    | Exhaustive switches and no crash on new server values                                                                        | Extension types over `String`, which keep the raw value but lose exhaustiveness |
+| 64 bit integers never as `int` when they may pass 2^53 (MDL-4)           | Web builds store `int` as a JavaScript number                                                                                | `int` everywhere                                                                |
+| Session key `orvano.session.<projectId>@<authority>` (SES-2)             | Two installs can both have a project named `default`                                                                         | Project ID only                                                                 |
+| Keychain accessibility `first_unlock_this_device` (SES-4)                | Background work can read it after the first unlock, and it never syncs or moves to another device                            | `after_first_unlock`, which can move with backups                               |
+| Undecryptable or unknown version session is deleted (SES-6)              | Android Auto Backup can restore data whose Keystore key is gone; that should mean signed out, not a storage failure          | Treat it as a store failure                                                     |
+| Cross tab sync through the `storage` event (SES-8)                       | Signing out in one tab signs out the others                                                                                  | Each tab independent                                                            |
+| Memory store default for pure Dart on the VM (SES-3)                     | A CLI never writes a token to disk unasked                                                                                   | An unencrypted file in the home folder                                          |
+| `clock` plus `fake_async` for time (STR-5)                               | Tests control backoff and expiry without real waits, like .NET's `TimeProvider`                                              | Injecting a custom time interface                                               |
+| No isolates or `compute()` in the SDK (STR-6)                            | Pages are bounded by feature 10's limits; isolates don't exist on the web; measure before adding                             | `Isolate.run` for bodies over 64 KB on native                                   |
+| Small `StateStream` helper instead of rxdart (STR-2)                     | About 40 lines, no dependency                                                                                                | rxdart's `BehaviorSubject`                                                      |
+| package:logging, silent by default (DSC-3)                               | A Dart team package apps already know; nothing prints unless the app listens                                                 | A custom logger callback in options                                             |
+| No native code in Orvano packages (PKG-5)                                | No native review load, no Swift Package Manager cap on pana points                                                           | An Orvano plugin for storage                                                    |
+| Commit the workspace `pubspec.lock` (DRT-3)                              | Reproducible CI; the downgrade and upgrade jobs still test the ranges                                                        | Leave it uncommitted, the usual library default                                 |
+| `dart_apitool` from the first beta (PUB-4)                               | Before beta, breaking changes are allowed; the tool is still 0.x                                                             | Track from day one                                                              |
+| First run marker in `shared_preferences` (SES-7)                         | It lives in ordinary app storage, which an uninstall erases                                                                  | A file in the app support folder through path_provider                          |
+| `// Not null: <why>` comment on `!` (DRT-6)                              | No lint bans `!`; a comment makes review catch it                                                                            | Ban `!` outright                                                                |
 
 Calls added after the cross check, each accepted by the engineer as recommended:
 
-| Call | Why | Runner up |
-|---|---|---|
-| Auth hook per attempt; one refresh and one retry on a session expired 401 (NET-8) | The shared core needs a fixed auth contract before feature 10 can emit it; a 401 means the server didn't act, so one retry is safe for any method | Leave 401 handling to each service |
-| No network I/O in `open`; it throws only `ArgumentError` (CLN-1) | An offline launch must not hang on a refresh; a broken store must not stop the app | Refresh during `open` |
-| `close()` idempotent, aborts first, then awaits writes, then closes the client (CLN-5) | In flight calls get `OrvanoCancelledException`, not a network error from a closed client | Close the client and let calls fail |
-| A `Retry-After` above 30 s stops retrying (NET-3) | The app, not the SDK, should decide on a long wait; TLS failures never heal by retrying | Cap the wait at 30 s and retry anyway |
-| No redirects on native; odd error bodies map to `OrvanoErrorCodes.unknown` (NET-10) | Redirects can silently move a token to another host or to plain HTTP; a proxy's HTML page still needs a typed error | Follow redirects like package:http's default |
-| A streamed primitive under the buffered call (NET-9) | Uploads, server sent events, and function output would otherwise need a second transport later | Buffered only, extended per feature |
-| Secure store in its own namespace with `resetOnError` (SES-4) | Never read or wipe the app's own secrets; Android decrypt failures heal as signed out | The plugin's default namespace with manual error classification |
-| Memory fallback retries on resume and before writes (SES-5) | A keychain locked after a reboot is temporary | A fallback that lasts the whole run |
-| First run cleanup once per process, no marker on failure (SES-7) | A failed delete must not leave an old token forever | Write the marker anyway |
-| Session key with normalized host, port, and base path (SES-2) | Two projects behind one host with path prefixes would otherwise collide, and userinfo would end up in the key | Host and project only |
-| Auth events only on sign in, sign out, user change, or persistence change (STR-2) | A token refresh shouldn't rebuild every `StreamBuilder` | Emit on every refresh |
-| `Stream.multi` for the state stream (STR-2) | A broadcast controller can't replay the current value to one new listener | A custom `Stream` subclass |
-| Lifecycle mapping, `inactive` ignored (CLN-6) | `inactive` flickers on iOS for overlays; background isolates opt out | Map `inactive` to paused |
-| `OrvanoRow` and `ResultPage` (CLN-4, MDL-5) | `Row` and `Page` clash with Flutter's widgets library in every file that imports both | Keep the short names and tell apps to hide them |
-| `collection` for deep equality; `copyWith` can't clear a field (MDL-1) | Lists and maps need element equality; a sentinel `copyWith` would lose type safety | Generated equality helpers, a sentinel `copyWith` |
-| `num` reads and timestamps without an offset as UTC (MDL-2, MDL-4) | JSON numbers differ between the VM and the web; local time would shift values by the device's offset | `int` and `double` patterns, `DateTime.parse` as is |
-| Option fields and defaults spelled out (CLN-8) | Builders shouldn't invent defaults | Leave them to the templates |
-| pana per PR except dependency freshness, which runs weekly (PUB-1) | A dependency's new major shouldn't fail unrelated PRs | Gate every category per PR |
-| Interfaces and sealed families frozen after beta (DRT-7) | Adding a subtype or an abstract member breaks app code | `abstract base class` with default methods |
-| `OrvanoServer` throws on Android and iOS (PLT-3) | `platforms:` only affects pub.dev badges; web builds already fail on `dart:io` | Documentation only |
-| Conformance image from the core monorepo's CI, skipped until it exists (DQA-3) | The SDK repos can wire the job before Slice 1 ships a server | Build the server inside SDK CI |
-| Server SDK on Linux per PR, other OSes and a compile smoke test nightly (DQA-2, DQA-4) | Keeps PRs fast while still testing every claimed platform | Full OS matrix per PR |
-| Abort race and per attempt token callbacks (NET-2, NET-5) | Clients that ignore aborting would otherwise hang the caller, and a long lived token would collect listeners | Trust the client's abort support |
+| Call                                                                                   | Why                                                                                                                                               | Runner up                                                       |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Auth hook per attempt; one refresh and one retry on a session expired 401 (NET-8)      | The shared core needs a fixed auth contract before feature 10 can emit it; a 401 means the server didn't act, so one retry is safe for any method | Leave 401 handling to each service                              |
+| No network I/O in `open`; it throws only `ArgumentError` (CLN-1)                       | An offline launch must not hang on a refresh; a broken store must not stop the app                                                                | Refresh during `open`                                           |
+| `close()` idempotent, aborts first, then awaits writes, then closes the client (CLN-5) | In flight calls get `OrvanoCancelledException`, not a network error from a closed client                                                          | Close the client and let calls fail                             |
+| A `Retry-After` above 30 s stops retrying (NET-3)                                      | The app, not the SDK, should decide on a long wait; TLS failures never heal by retrying                                                           | Cap the wait at 30 s and retry anyway                           |
+| No redirects on native; odd error bodies map to `OrvanoErrorCodes.unknown` (NET-10)    | Redirects can silently move a token to another host or to plain HTTP; a proxy's HTML page still needs a typed error                               | Follow redirects like package:http's default                    |
+| A streamed primitive under the buffered call (NET-9)                                   | Uploads, server sent events, and function output would otherwise need a second transport later                                                    | Buffered only, extended per feature                             |
+| Secure store in its own namespace with `resetOnError` (SES-4)                          | Never read or wipe the app's own secrets; Android decrypt failures heal as signed out                                                             | The plugin's default namespace with manual error classification |
+| Memory fallback retries on resume and before writes (SES-5)                            | A keychain locked after a reboot is temporary                                                                                                     | A fallback that lasts the whole run                             |
+| First run cleanup once per process, no marker on failure (SES-7)                       | A failed delete must not leave an old token forever                                                                                               | Write the marker anyway                                         |
+| Session key with normalized host, port, and base path (SES-2)                          | Two projects behind one host with path prefixes would otherwise collide, and userinfo would end up in the key                                     | Host and project only                                           |
+| Auth events only on sign in, sign out, user change, or persistence change (STR-2)      | A token refresh shouldn't rebuild every `StreamBuilder`                                                                                           | Emit on every refresh                                           |
+| `Stream.multi` for the state stream (STR-2)                                            | A broadcast controller can't replay the current value to one new listener                                                                         | A custom `Stream` subclass                                      |
+| Lifecycle mapping, `inactive` ignored (CLN-6)                                          | `inactive` flickers on iOS for overlays; background isolates opt out                                                                              | Map `inactive` to paused                                        |
+| `OrvanoRow` and `ResultPage` (CLN-4, MDL-5)                                            | `Row` and `Page` clash with Flutter's widgets library in every file that imports both                                                             | Keep the short names and tell apps to hide them                 |
+| `collection` for deep equality; `copyWith` can't clear a field (MDL-1)                 | Lists and maps need element equality; a sentinel `copyWith` would lose type safety                                                                | Generated equality helpers, a sentinel `copyWith`               |
+| `num` reads and timestamps without an offset as UTC (MDL-2, MDL-4)                     | JSON numbers differ between the VM and the web; local time would shift values by the device's offset                                              | `int` and `double` patterns, `DateTime.parse` as is             |
+| Option fields and defaults spelled out (CLN-8)                                         | Builders shouldn't invent defaults                                                                                                                | Leave them to the templates                                     |
+| pana per PR except dependency freshness, which runs weekly (PUB-1)                     | A dependency's new major shouldn't fail unrelated PRs                                                                                             | Gate every category per PR                                      |
+| Interfaces and sealed families frozen after beta (DRT-7)                               | Adding a subtype or an abstract member breaks app code                                                                                            | `abstract base class` with default methods                      |
+| `OrvanoServer` throws on Android and iOS (PLT-3)                                       | `platforms:` only affects pub.dev badges; web builds already fail on `dart:io`                                                                    | Documentation only                                              |
+| Conformance image from the core monorepo's CI, skipped until it exists (DQA-3)         | The SDK repos can wire the job before Slice 1 ships a server                                                                                      | Build the server inside SDK CI                                  |
+| Server SDK on Linux per PR, other OSes and a compile smoke test nightly (DQA-2, DQA-4) | Keeps PRs fast while still testing every claimed platform                                                                                         | Full OS matrix per PR                                           |
+| Abort race and per attempt token callbacks (NET-2, NET-5)                              | Clients that ignore aborting would otherwise hang the caller, and a long lived token would collect listeners                                      | Trust the client's abort support                                |
 
 ### Installed agent skills
 
@@ -172,7 +172,7 @@ Installed into `.claude/skills/` on 2026-10-15, at the engineer's pick: from `da
 
 ### Cross check, 2026-10-15
 
-An independent read of the draft on a different model (Sonnet) raised 51 findings. Code and wording bugs were fixed directly: an abort fallback for clients that ignore abort triggers, the Flutter tool needed to resolve the workspace, `Stream.multi` for the state stream, UTF 8 body decoding and `num` reads, a listener leak and a missing pre send check in the cancel token, catching `Object` in the transport, field paths without values in protocol errors, a lazy `late` and an unawaited future in the samples, empty string defaults in the server sample, per package `dart_test.yaml`, analysis options for `example/` and `tool/`, a fake client that honors aborting, a simulated restart for the nightly tests (`integration_test` can't relaunch the app), and several README notes (Android and iOS cleartext rules, Safari storage eviction, the macOS unsigned build error, testing app code). The engineer accepted the recommended fix for each of 20 decision gaps, listed in the second table under *Calls made without a question*.
+An independent read of the draft on a different model (Sonnet) raised 51 findings. Code and wording bugs were fixed directly: an abort fallback for clients that ignore abort triggers, the Flutter tool needed to resolve the workspace, `Stream.multi` for the state stream, UTF 8 body decoding and `num` reads, a listener leak and a missing pre send check in the cancel token, catching `Object` in the transport, field paths without values in protocol errors, a lazy `late` and an unawaited future in the samples, empty string defaults in the server sample, per package `dart_test.yaml`, analysis options for `example/` and `tool/`, a fake client that honors aborting, a simulated restart for the nightly tests (`integration_test` can't relaunch the app), and several README notes (Android and iOS cleartext rules, Safari storage eviction, the macOS unsigned build error, testing app code). The engineer accepted the recommended fix for each of 20 decision gaps, listed in the second table under _Calls made without a question_.
 
 ### Landscape facts, checked 2026-10-15
 
@@ -186,11 +186,12 @@ An independent read of the draft on a different model (Sonnet) raised 51 finding
 - Macros cancelled January 2025; augmentations planned for 2026, not shipped. `dart:html` deprecated in favor of package:web and `dart:js_interop`. `dart test -p chrome -c dart2wasm` is supported.
 - The official Dart and Flutter MCP server runs as `dart mcp-server` (Dart 3.9 or Flutter 3.35 or later).
 - Verify pass, same day, from package source and API docs: package:http 1.6.0 (Dart ^3.4) declares `AbortableRequest` and `AbortableStreamedRequest` (both `final`, on the `Abortable` mixin, with an `abortTrigger` constructor parameter) and `RequestAbortedException extends ClientException`; its docs say some clients don't support aborting, `MockClient` ignores it, and the browser client aborts through `AbortController` and honors `followRedirects`. flutter_secure_storage 11.2.0 (Dart 3.8, Flutter 3.19) has `AndroidOptions.storageNamespace` and `resetOnError` (default true) but no longer `sharedPreferencesName`; `IOSOptions` and `MacOsOptions` (on `AppleOptions`) have `accountName`, `accessibility` (default `unlocked`), and on macOS `usesDataProtectionKeychain` (default true) and `synchronizable` (default false). `test` 1.33.0 and pana 0.23.19 need Dart 3.11; `shared_preferences` 2.5.6 needs Dart 3.11 and Flutter 3.41. pana has `--json` and `--exit-code-threshold`. 20 of the 21 DRT-4 lint names are listed on dart.dev, none deprecated.
-- Still unconfirmed, so still marked *verify at scaffold* in index.md: the casing of `no_runtimeType_toString`, plugin Swift Package Manager support and wasm readiness, pana's JSON report shape and total maximum, the `dart test` and `flutter test` wasm flags, and the lowest floor compatible versions of the small dependencies.
+- Still unconfirmed, so still marked _verify at scaffold_ in index.md: the casing of `no_runtimeType_toString`, plugin Swift Package Manager support and wasm readiness, pana's JSON report shape and total maximum, the `dart test` and `flutter test` wasm flags, and the lowest floor compatible versions of the small dependencies.
 
 ## References
 
 **Project sources**:
+
 - `docs/scope/index.md`: the six SDKs, one repo per SDK, GA tier, Tracer Bullet, self hosted first
 - `docs/scope/foundations.md`, feature 3 row; `docs/scope/sdks.md`, features 10, 52, 56, 60; `docs/scope/auth.md`, feature 14's done when
 - Spec 0002 (.NET backend practices): LIB-6 error fields, LIB-7 retry and timeout, GEN-5 license allow list, TST-5a Podman, the rule ID and deviation conventions
@@ -199,6 +200,7 @@ An independent read of the draft on a different model (Sonnet) raised 51 finding
 - `docs/.agent-cache/research/dart-flutter-practices.md` and `docs/.agent-cache/tool-discovery/dart-flutter-practices.md`
 
 **Practices & standards**:
+
 - Effective Dart (style, documentation, usage, design)
 - Sound null safety and Dart 3 class modifiers, sealed classes, and patterns
 - Semantic versioning for published packages; lowest compatible dependency bounds
@@ -207,6 +209,7 @@ An independent read of the draft on a different model (Sonnet) raised 51 finding
 - Testing behavior with fakes rather than interaction mocks
 
 **Links** (opened during the 2026-10-15 check):
+
 - pub.dev scoring: https://pub.dev/help/scoring
 - pana platform scoring source: https://raw.githubusercontent.com/dart-lang/pana/master/lib/src/report/multi_platform.dart
 - Dart analysis options and strict modes: https://dart.dev/tools/analysis

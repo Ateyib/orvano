@@ -14,6 +14,7 @@ This is a cross cutting standard, so it has no build plan of its own. The rules 
 **Applies to:** every screen in the Orvano console (the React app built with Vite), across every service: Auth, Databases, Storage, Realtime, Functions, Sites, Messaging, operations, and settings. It must meet WCAG 2.2 AA and keep every string translation ready.
 
 **User stories**:
+
 - As a developer, I want to keep my table list in view while I work inside a table so I can jump between tables without losing my place.
 - As a developer, I want links, refresh, and the back button to bring me back to exactly the view I was in (tab, filters, sort, open row).
 - As a developer, I want to fix a cell right in the grid, undo it if I got it wrong, and never silently overwrite a teammate's change.
@@ -143,7 +144,7 @@ The reasoning, the alternatives for each pattern, the research, and the cross ch
   - **First use**: a short positive title, one sentence, one primary action, and an SDK quick start (UX-37).
   - **No results**: say so, and offer Clear filters.
   - **Not allowed or not set up**: give the reason and the next step.
-  An empty grid drops its header row, and illustrations are decorative (`aria-hidden`).
+    An empty grid drops its header row, and illustrations are decorative (`aria-hidden`).
 - **UX-21 Loading.**
   - Content areas (grids, lists, cards, detail panels) show a skeleton of their layout if loading takes longer than 300 ms. Once shown, the skeleton stays for at least 500 ms so it doesn't flicker. Spinners appear only inside buttons and small inline controls.
   - When you page, filter, sort, or refetch, the current data stays on screen with a busy indicator (`aria-busy`). Data kept on screen this way is tied to its resource, so opening a different table never shows the previous table's rows.
@@ -247,28 +248,29 @@ The reasoning, the alternatives for each pattern, the research, and the cross ch
 // Route: /:orgId/:projectId/databases/:databaseId/tables/:tableId/:tab?filter&sort&cursor&row
 export function TablesSection() {
   return (
-    <ResourceLayout                                   // UX-2: list stays visible
+    <ResourceLayout // UX-2: list stays visible
       list={
         <ResourceList
           kind="table"
           picker={<DatabasePicker />}
-          createLabel={t('tables.create')}           // UX-34: no hard coded strings
-          onCreate={() => openSheet('create-table')}  // UX-6 + UX-27: sheet state in the URL
+          createLabel={t("tables.create")} // UX-34: no hard coded strings
+          onCreate={() => openSheet("create-table")} // UX-6 + UX-27: sheet state in the URL
         />
       }
     >
-      <PageHeader title={table.name} primaryAction={<InsertRowButton />} />  {/* UX-36, UX-38 */}
-      <RouteTabs tabs={['rows', 'columns', 'indexes', 'permissions', 'settings']} /> {/* UX-5 */}
+      <PageHeader title={table.name} primaryAction={<InsertRowButton />} /> {/* UX-36, UX-38 */}
+      <RouteTabs tabs={["rows", "columns", "indexes", "permissions", "settings"]} /> {/* UX-5 */}
       <Outlet />
     </ResourceLayout>
   );
 }
 
 // Destructive action: the tier comes from the resource type map, never hand rolled.  UX-23
-<ConfirmDelete kind="database" resource={database} />   // fetches dependents, applies tier 1
+<ConfirmDelete kind="database" resource={database} />; // fetches dependents, applies tier 1
 ```
 
 **Replaces** (all of these are wrong in the console):
+
 - Hand built modals, drawers, tab widgets, tooltips, or tables outside the design system.
 - A resource list that disappears when one item opens, or a third level of navigation.
 - Tabs that don't change the URL for resource views, and filters or sort kept only in memory.
@@ -279,6 +281,7 @@ export function TablesSection() {
 - Toasts that close themselves for errors.
 
 **Enforcement**:
+
 - **Shared primitives.** Screens use only the primitives above. The underlying component library (feature 2 or 11 picks it) may be imported only inside the design system package, and an import lint rule (feature 7) fails CI otherwise.
 - **Strings.** A lint rule flags literal text in JSX outside message files (with a short allow list, such as code snippets and brand names) and fails CI.
 - **Automated accessibility checks** run in component tests and end to end tests and fail CI on WCAG 2.2 AA violations. They catch only part of WCAG, so:
@@ -288,6 +291,7 @@ export function TablesSection() {
 **Rollout**: new code immediately. No console code exists yet, so nothing needs migrating.
 
 **Exceptions**:
+
 - The SQL editor (feature 27) and code editors have their own keyboard model inside the editor area. The page around them still follows the standard.
 - Pages without the shell (first run setup, console sign in and sign up) follow the form, focus, and message rules but not UX-1 to UX-4.
 - The public docs site (feature 32) is outside this standard.
@@ -295,18 +299,21 @@ export function TablesSection() {
 ## Consequences
 
 **Positive**:
+
 - Every service screen feels the same, so each new service (functions, sites, messaging) mostly composes existing primitives instead of designing new ones.
 - Links, refresh, and Back always restore the view, which makes support and teamwork easier ("here's the filtered view").
 - Version checks on every save mean two people (or two tabs) never silently overwrite each other.
 - Accessibility is designed into the primitives and tested with real screen readers, not checked afterward, which keeps WCAG 2.2 AA realistic for a small team.
 
 **Negative / tradeoffs**:
+
 - The grid is the most expensive part: the APG keyboard model, virtualization, inline editing with version checks and undo, range copy and paste, column reorder with alternatives to dragging, and live updates. Building it by hand is a large job. A proven grid component should be chosen in feature 11 or 2, and wrapping it to meet UX-11 to UX-19 still takes real work.
 - Several rules need API support that doesn't exist yet: dependents counts, row versions, cursors in both directions with an optional count, error responses that name the field and the request ID, allowed actions per resource, a search endpoint, an active jobs list, and all or nothing bulk operations. A console screen can't fully meet its rules until those land, so early slices may meet some rules only partly.
 - Saving preferences in the browser means they don't follow a user to another device or browser. Moving them to the server later needs an API and a migration of the stored keys.
 - Bundling the docs with the install makes the self hosted package bigger and ties docs updates to Orvano releases.
 
 **Neutral**:
+
 - The console looks and behaves much like Appwrite and Supabase, which lowers the learning curve for developers who switch, but it isn't yet a point of difference.
 - The rule IDs (UX-1 to UX-41) become the shared vocabulary for `/check verify` and code review of console work.
 

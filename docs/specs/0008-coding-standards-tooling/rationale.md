@@ -19,11 +19,13 @@ If this isn't decided, each feature invents its own checks, the Enforcement tabl
 Vite+ (Oxfmt, Oxlint, `vp run`, `vp hooks`, `vp staged`) handles every JS, TS, and repo file from a root pnpm workspace. A small ESLint 10 config adds the type aware and plugin rules Oxlint lacks. `tsc` on TypeScript 6 type checks. `dotnet format` and the SDK analyzers (plus BannedApiAnalyzers) handle C#. The pre commit hook formats and lints staged files only. CI is one workflow per area behind a `ci-gate`, and SDK repos call reusable workflows kept in this repo.
 
 **Pros**:
+
 - Matches the project's chosen toolchain and keeps the JS side to one install and one config home
 - Fast hooks and lint (Rust tools), so people keep the hooks on
 - One gate check for the code areas, and one shared setup the SDK repos reuse
 
 **Cons**:
+
 - Two JS linters until TypeScript 7 support lands in the plugins
 - Bets on a one month old 1.0 with known Windows issues, so it needs a fallback rule (TL-5)
 - More CI wiring up front (change detection, the gate, the starters job)
@@ -33,10 +35,12 @@ Vite+ (Oxfmt, Oxlint, `vp run`, `vp hooks`, `vp staged`) handles every JS, TS, a
 The most common setup today. ESLint 9 keeps `eslint-plugin-jsx-a11y` with full strict parity, Prettier formats everything, Husky and lint-staged run hooks, CSharpier formats C#.
 
 **Pros**:
+
 - The most documented and best known stack, with the full jsx-a11y strict preset
 - No dependency on a young toolchain or its Windows issues
 
 **Cons**:
+
 - Goes against the project's Vite+ choice, and ESLint plus Prettier is several times slower than Oxlint plus Oxfmt on every hook and CI run
 - Holds the repo on ESLint 9 until one stale plugin moves
 - Four or five separate tools to install, configure, and keep in step
@@ -46,10 +50,12 @@ The most common setup today. ESLint 9 keeps `eslint-plugin-jsx-a11y` with full s
 Language agnostic Lefthook runs the hooks; the `oxlint` and `oxfmt` CLIs, Vite, Vitest, and tsdown are installed on their own. This is the TL-5 fallback, taken as the first choice.
 
 **Pros**:
+
 - No exposure to Vite+'s Windows issues, and Lefthook suits a mixed .NET and JS repo
 - Same fast Oxc tools for lint and format
 
 **Cons**:
+
 - More tools and configs (one per tool instead of one `vite.config.ts`), and no `vp run` task caching
 - Throws away the project's chosen toolchain over issues that may be fixed by the time SDKs exist
 
@@ -58,9 +64,11 @@ Language agnostic Lefthook runs the hooks; the `oxlint` and `oxfmt` CLIs, Vite, 
 Write configs and CI jobs, but no git hooks and no starter kit. SDK repos copy what they need when they start.
 
 **Pros**:
+
 - The least to build now, and nothing touches a contributor's git setup
 
 **Cons**:
+
 - Mistakes only show after a push, which slows every loop
 - Each SDK repo starts from its own copy, so the six setups drift, which is what this feature exists to stop
 
@@ -118,18 +126,21 @@ Searched with consent, cached at `docs/.agent-cache/tool-discovery/coding-standa
 ## References
 
 **Project sources**:
+
 - Scope feature 7 in `docs/scope/foundations.md` (the Vite+ choice and the TypeScript question)
 - The Enforcement tables of specs 0001, 0002, 0003, 0004, 0005, 0006; spec 0003 WEB-2, A11Y-5, A11Y-6, BDL-1, SEC-5; spec 0005 SDK-1; spec 0002 GEN-2, GEN-5; spec 0006 SUP-1 to SUP-6; spec 0007 layout (`.github/`)
 - `server/Directory.Build.props`, `server/.editorconfig`, `console/package.json`, `deploy/Dockerfile` (console stage)
 - Root `AGENTS.md` (local setup, the "do not invent tooling" rule)
 
 **Practices & standards**:
+
 - Conventional Commits with squash merge, trunk based development
 - Least privilege workflow tokens and SHA pinned actions (GitHub Actions security hardening)
 - Required status check aggregation (one gate job over path filtered jobs)
 - Formatting only commits with `.git-blame-ignore-revs`
 
 **Links** (web verified during the landscape check):
+
 - Vite+ releases: https://github.com/voidzero-dev/vite-plus/releases
 - Vite+ commit hooks guide: https://github.com/voidzero-dev/vite-plus/blob/main/docs/guide/commit-hooks.md
 - Vite+ check guide: https://github.com/voidzero-dev/vite-plus/blob/main/docs/guide/check.md

@@ -19,22 +19,22 @@ Orvano meets OWASP ASVS 5.0 Level 2 through the numbered rules in `## Standard d
 
 ### Scope and boundaries
 
-Applies to the server, the console, every SDK, the CI pipelines, and every release artifact. Rules marked *server*, *console*, *sdk*, or *release* apply to that part only.
+Applies to the server, the console, every SDK, the CI pipelines, and every release artifact. Rules marked _server_, _console_, _sdk_, or _release_ apply to that part only.
 
 Decided elsewhere, not here:
 
-| Topic | Owner |
-|---|---|
-| Who may do what: roles, permission checks, not found versus forbidden | Feature 9, Access control model |
-| Wire format, error body shape, the exact header names for API keys and CSRF | Feature 10, API contract and SDK generation |
-| The generic rate limiting engine and its limits | Feature 23, Rate limits and abuse guards |
-| Audit log storage, search, and retention | Feature 48, Audit logs |
-| File upload scanning and download safety | Feature 29, Buckets and files |
-| Sandbox for user code (isolation, limits, egress) | Feature 37, Function runtimes |
-| License choice and allowed dependency licenses | Feature 57, Open source license (interim list: spec 0002 GEN-5) |
-| Repo settings: branch protection, security policy file, code owners | Feature 58, Repo and community setup |
-| Backups and their encryption | Feature 50, Backups and restore |
-| Service boundaries, hosting, TLS termination in the install | Feature 6, Stack and architecture (decided in [spec 0007](../0007-stack-architecture/index.md)) |
+| Topic                                                                       | Owner                                                                                           |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Who may do what: roles, permission checks, not found versus forbidden       | Feature 9, Access control model                                                                 |
+| Wire format, error body shape, the exact header names for API keys and CSRF | Feature 10, API contract and SDK generation                                                     |
+| The generic rate limiting engine and its limits                             | Feature 23, Rate limits and abuse guards                                                        |
+| Audit log storage, search, and retention                                    | Feature 48, Audit logs                                                                          |
+| File upload scanning and download safety                                    | Feature 29, Buckets and files                                                                   |
+| Sandbox for user code (isolation, limits, egress)                           | Feature 37, Function runtimes                                                                   |
+| License choice and allowed dependency licenses                              | Feature 57, Open source license (interim list: spec 0002 GEN-5)                                 |
+| Repo settings: branch protection, security policy file, code owners         | Feature 58, Repo and community setup                                                            |
+| Backups and their encryption                                                | Feature 50, Backups and restore                                                                 |
+| Service boundaries, hosting, TLS termination in the install                 | Feature 6, Stack and architecture (decided in [spec 0007](../0007-stack-architecture/index.md)) |
 
 ### Verification standard
 
@@ -43,14 +43,14 @@ Decided elsewhere, not here:
 
 ### Threat model (many projects, one install)
 
-| Asset | Who attacks it | Main threats | Rules that answer it |
-|---|---|---|---|
-| End user passwords and sessions | Outsiders, other projects' developers | Stolen database, credential stuffing, token theft, session fixation | PWD-1 to PWD-5, TOK-1 to TOK-10 |
-| Project data (rows, files) | Another project on the same install, a leaked key, a bug | Cross project reads, leaked or over powered keys | TEN-1 to TEN-5, KEY-1 to KEY-6 |
-| Secrets (function variables, provider credentials, database passwords) | Anyone who gets a database copy or a backup | Plaintext at rest, secrets in logs | SCR-1 to SCR-5, LOG-1 to LOG-4 |
-| The operator (console) accounts | Phishing, stolen password | Takeover of every project's keys | CON-1 to CON-7 |
-| The host and internal network | A project developer's webhook or function | SSRF to the database or cloud metadata | OUT-1 to OUT-3 |
-| The released software | A poisoned dependency or build | Supply chain compromise, fake releases | SUP-1 to SUP-8 |
+| Asset                                                                  | Who attacks it                                           | Main threats                                                        | Rules that answer it            |
+| ---------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------- |
+| End user passwords and sessions                                        | Outsiders, other projects' developers                    | Stolen database, credential stuffing, token theft, session fixation | PWD-1 to PWD-5, TOK-1 to TOK-10 |
+| Project data (rows, files)                                             | Another project on the same install, a leaked key, a bug | Cross project reads, leaked or over powered keys                    | TEN-1 to TEN-5, KEY-1 to KEY-6  |
+| Secrets (function variables, provider credentials, database passwords) | Anyone who gets a database copy or a backup              | Plaintext at rest, secrets in logs                                  | SCR-1 to SCR-5, LOG-1 to LOG-4  |
+| The operator (console) accounts                                        | Phishing, stolen password                                | Takeover of every project's keys                                    | CON-1 to CON-7                  |
+| The host and internal network                                          | A project developer's webhook or function                | SSRF to the database or cloud metadata                              | OUT-1 to OUT-3                  |
+| The released software                                                  | A poisoned dependency or build                           | Supply chain compromise, fake releases                              | SUP-1 to SUP-8                  |
 
 Out of scope for this baseline: a hostile operator with root on the host (they hold the root key), physical access, and denial of service beyond the rate limits of feature 23.
 
@@ -74,7 +74,7 @@ Out of scope for this baseline: a hostile operator with root on the host (they h
 - **TOK-7 (MUST)**: Session and access tokens are never accepted in a URL query string. They never appear in logs (LOG-1).
 - **TOK-9 (MUST)**: One time tokens (password reset, email verification, magic link, invite) are 32 random bytes, stored as SHA-256, single use, and invalidated when the password changes. Lifetimes: reset 30 minutes, verification 24 hours, magic link 15 minutes. They travel in the URL path or fragment and are exchanged by a POST, so they never reach logs or referrers. Browser WebSockets authenticate with the first message or a one use ticket valid for 30 seconds. Signed download URLs (feature 29) are scoped, short lived HMAC tokens and are never accepted as access tokens.
 - **TOK-10 (MUST)**: A new session id is issued at sign in and when MFA is enabled or used, so a fixed session id never survives authentication.
-- **TOK-8 (MUST)** *sdk*: Browser, React Native, and Flutter clients hold a bearer access token and a rotating refresh token in app provided storage and send the access token in the `Authorization` header. Browser storage is documented as exposed to script injection (XSS); native clients should use secure storage. Session cookies exist only in the Next.js server flow (feature 21), where `@orvano/nextjs` sets them on the app's own domain as HttpOnly, Secure, SameSite=Lax; the Orvano API cannot set cookies for another origin. This settles the questions left open in specs 0004 (SES-3) and 0005 (RN-2, SHP-10): their designs stand as written.
+- **TOK-8 (MUST)** _sdk_: Browser, React Native, and Flutter clients hold a bearer access token and a rotating refresh token in app provided storage and send the access token in the `Authorization` header. Browser storage is documented as exposed to script injection (XSS); native clients should use secure storage. Session cookies exist only in the Next.js server flow (feature 21), where `@orvano/nextjs` sets them on the app's own domain as HttpOnly, Secure, SameSite=Lax; the Orvano API cannot set cookies for another origin. This settles the questions left open in specs 0004 (SES-3) and 0005 (RN-2, SHP-10): their designs stand as written.
 
 ### Console operator sessions (server, console)
 
@@ -184,16 +184,16 @@ if (row is null || row.RevokedAt is not null || row.ExpiresAt <= clock.GetUtcNow
 
 Feature 7 installs and wires these; this table says what each rule is checked by.
 
-| Mechanism | Rules | Where it lives |
-|---|---|---|
-| Banned API analyzer (`BannedSymbols.txt`) | TOK-1 and KEY-1 (`System.Random` repo wide; `Guid.NewGuid` only in the auth and secrets projects), PWD-1 (`MD5`, `SHA1`, `Rfc2898DeriveBytes` in the auth and secrets projects; `HMACSHA1` is allowed only in the TOTP class), OUT-1 (`new HttpClient` for user URLs outside the shared client) | Each repo root, with extra files for the auth and secrets projects |
-| Architecture tests (ArchUnitNET) | TEN-2 (the project database connection factory accepts only `IProjectContext`, and nothing outside it builds an `NpgsqlDataSource` or connection string), SCR-4 (no endpoint returns a secret field), OUT-1 (only the shared client reaches user URLs) | `tests/Orvano.ArchitectureTests` |
-| Integration tests every module needs | TEN-5 (cross project leak), PWD-5 (same answer for unknown email), TOK-5 (refresh reuse revokes the family), TOK-2 (wrong algorithm and wrong `aud` rejected), CON-2 (state change without CSRF header fails), NET-2 to NET-4 (header and CORS checks), LOG-3 (redaction test) | `tests/Orvano.Host.IntegrationTests` |
-| Unit tests | PWD-1 and PWD-2 (parameters and rehash), SCR-1 (round trip, tampered extra data fails), OUT-2 (every blocked range, including IPv4 mapped IPv6) | Module test projects |
-| Startup checks | SCR-2 (root key present and valid), CFG rules from spec 0002 | `Orvano.Host` |
-| GitHub and CI settings | SUP-1 to SUP-6, VUL-1 | Repo settings, `.github/` workflows, `Directory.Build.props` (NuGetAudit) |
-| Release pipeline | SUP-7, SUP-8 | Features 52 and 59 |
-| Review (`/check review`, people) | STD-1 (ASVS criteria in each feature spec), CON-4, KEY-4, anything not listed above | PR template checklist from feature 7 |
+| Mechanism                                 | Rules                                                                                                                                                                                                                                                                                           | Where it lives                                                            |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Banned API analyzer (`BannedSymbols.txt`) | TOK-1 and KEY-1 (`System.Random` repo wide; `Guid.NewGuid` only in the auth and secrets projects), PWD-1 (`MD5`, `SHA1`, `Rfc2898DeriveBytes` in the auth and secrets projects; `HMACSHA1` is allowed only in the TOTP class), OUT-1 (`new HttpClient` for user URLs outside the shared client) | Each repo root, with extra files for the auth and secrets projects        |
+| Architecture tests (ArchUnitNET)          | TEN-2 (the project database connection factory accepts only `IProjectContext`, and nothing outside it builds an `NpgsqlDataSource` or connection string), SCR-4 (no endpoint returns a secret field), OUT-1 (only the shared client reaches user URLs)                                          | `tests/Orvano.ArchitectureTests`                                          |
+| Integration tests every module needs      | TEN-5 (cross project leak), PWD-5 (same answer for unknown email), TOK-5 (refresh reuse revokes the family), TOK-2 (wrong algorithm and wrong `aud` rejected), CON-2 (state change without CSRF header fails), NET-2 to NET-4 (header and CORS checks), LOG-3 (redaction test)                  | `tests/Orvano.Host.IntegrationTests`                                      |
+| Unit tests                                | PWD-1 and PWD-2 (parameters and rehash), SCR-1 (round trip, tampered extra data fails), OUT-2 (every blocked range, including IPv4 mapped IPv6)                                                                                                                                                 | Module test projects                                                      |
+| Startup checks                            | SCR-2 (root key present and valid), CFG rules from spec 0002                                                                                                                                                                                                                                    | `Orvano.Host`                                                             |
+| GitHub and CI settings                    | SUP-1 to SUP-6, VUL-1                                                                                                                                                                                                                                                                           | Repo settings, `.github/` workflows, `Directory.Build.props` (NuGetAudit) |
+| Release pipeline                          | SUP-7, SUP-8                                                                                                                                                                                                                                                                                    | Features 52 and 59                                                        |
+| Review (`/check review`, people)          | STD-1 (ASVS criteria in each feature spec), CON-4, KEY-4, anything not listed above                                                                                                                                                                                                             | PR template checklist from feature 7                                      |
 
 ### Rollout
 
@@ -208,6 +208,7 @@ New code immediately. There is no existing code, so every rule holds from the fi
 ## Consequences
 
 **Positive**:
+
 - One written bar means every feature spec can point here for its security criteria instead of reopening the debate.
 - A stolen database copy yields no usable passwords, session tokens, or API keys, and secrets are useless without the root key.
 - Per project databases, signing keys, and data keys keep the damage of one bug or leak inside one project.
@@ -215,6 +216,7 @@ New code immediately. There is no existing code, so every rule holds from the fi
 - Most rules are caught by analyzers or tests before review.
 
 **Negative / tradeoffs**:
+
 - The root key is a hard operational duty: lose it and stored secrets are gone. The install guide must say so loudly.
 - Per project signing keys and data keys add rotation and storage work to every new project.
 - Argon2id at 64 MiB costs memory on each sign in; a busy install needs the concurrency limit and enough RAM (PWD-4).
@@ -223,6 +225,7 @@ New code immediately. There is no existing code, so every rule holds from the fi
 - Browser SDK clients keep tokens in script reachable storage (TOK-8); this is documented, not removed.
 
 **Neutral**:
+
 - The 12 month maintenance rule in spec 0002 GEN-5 rules out the best known .NET Argon2 package today; feature 6 picked `NSec.Cryptography` (PWD-6, spec 0007 HSH-1).
 - ES256 was chosen over EdDSA for the widest library and tooling support; this can change before beta because backwards compatibility is not required.
 

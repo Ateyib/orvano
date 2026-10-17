@@ -14,21 +14,24 @@ The console must meet WCAG 2.2 AA and keep every string translation ready (both 
 
 ## Options considered
 
-The pattern choices were made one at a time in the design conversation (see *Pattern choices* below). The options here are about how the standard is enforced.
+The pattern choices were made one at a time in the design conversation (see _Pattern choices_ below). The options here are about how the standard is enforced.
 
 ### Option 1: Shared primitives plus lint and automated accessibility checks
+
 Write the rules, build them into design system primitives, block building around them with a lint rule, and run automated accessibility checks in CI.
 
 **Pros**: the rules hold without anyone remembering them. Violations fail CI, not review. Every new screen is mostly composition.
 **Cons**: more design system work up front. The lint rules need maintenance. Some rules (which surface, which delete tier) still rely on review.
 
 ### Option 2: Document, then rely on review
+
 Write the rules and check them in code review and `/check verify` only.
 
 **Pros**: no tooling to build, fastest to start.
 **Cons**: one developer reviewing their own AI built screens will miss drift. Accessibility regressions slip in silently.
 
 ### Option 3: Adopt one public design system's patterns wholesale
+
 Follow a published system (Carbon, Atlassian, Primer, or similar) for every pattern, and its components too.
 
 **Pros**: the patterns are already documented and tested, and accessibility is mostly handled.
@@ -42,34 +45,35 @@ Option 1 fits the forces here. A single builder with agents gets the most from r
 
 What you chose, and the main alternative turned down, one line each.
 
-| Rule | Chosen | Turned down, and why |
-|---|---|---|
-| UX-1 | Two level sidebar plus top bar | Icon only rail (harder to learn); top tabs for services (runs out of room as services grow) |
-| UX-2 | Resource list visible, collapsible, resizable, searchable | Fixed width (cuts long names, can't make room for wide grids) |
-| UX-3 | Desktop first, sidebars become drawers below 1024 px | Fully responsive (a lot of work for the grid); desktop only (can't check from a phone) |
-| UX-4 | Switchers in the breadcrumbs | Picker at the top of the sidebar (splits "where am I" across two places) |
-| UX-5 | Tabs as URL routes | ARIA tabs with no URL (refresh loses the tab, can't link to it) |
-| UX-6 | Side sheet by default, full page for long flows, modal for confirms | Modals for every create (hides context, cramped); full page for everything (slow for small edits) |
-| UX-9 | Each settings card saves itself | One sticky save bar (one bad field blocks the whole save); autosave (half typed values take effect) |
-| UX-8 | Check on leaving a field, plus a summary on submit | Submit only (mistakes found late); live while typing (NN/g advises against) |
-| UX-12 | Inline cells plus row side sheet | Side sheet only (Appwrite moved away from it); inline only (awkward for JSON and relations) |
-| UX-12 | Save each change on commit, with undo | Queue changes, then save all (easy to leave with unsaved edits) |
-| UX-14 | Cursor based Previous and Next | Numbered pages (needs exact counts, slow on some engines); infinite scroll (loses your place, guidance warns against it) |
-| UX-15 to 18 | Filter builder, header sort, column management, bulk actions, keyboard and clipboard | (all chosen) |
-| UX-20 | One action plus an SDK quick start | Action only (misses the chance to teach the SDKs) |
-| UX-21 | Skeletons, timed by response limits | Spinners everywhere (layout jumps) |
-| UX-23 | Tiers by blast radius; single row delete is a quick confirm you can skip for the session | Always type to confirm (people learn to click through); confirm only (too light for deleting a project); undo by recreating the row (dropped after the cross check, see below); a server side undo window (needs a pending delete state across the rows API and realtime) |
-| UX-24 | Toasts, inline, and banners, each with a job | Toasts for everything (errors far from where they happened) |
-| UX-25 | Command palette with navigation and actions | Navigation only; later |
-| UX-27 | Everything shareable in the URL | Location and tab only (filtered views can't be linked) |
-| UX-28 | Preferences in the browser for now | On the server per user (needs an API now) |
-| UX-29 | Status in place plus a live log panel | Status only (can't watch a build fail as it happens) |
-| UX-19 | Live updates that never move rows under your cursor | Manual refresh only (feels stale next to the competition) |
-| UX-30 | Hide areas, disable actions with a reason | Hide everything (features become invisible); show all, error on use (frustrating) |
-| UX-31 | Docs side pane, in the same place on every page | Open docs in a new tab (you leave your work) |
-| UX-32 | Comfortable default, compact toggle | Compact only (harder to scan and tap) |
+| Rule        | Chosen                                                                                   | Turned down, and why                                                                                                                                                                                                                                                      |
+| ----------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| UX-1        | Two level sidebar plus top bar                                                           | Icon only rail (harder to learn); top tabs for services (runs out of room as services grow)                                                                                                                                                                               |
+| UX-2        | Resource list visible, collapsible, resizable, searchable                                | Fixed width (cuts long names, can't make room for wide grids)                                                                                                                                                                                                             |
+| UX-3        | Desktop first, sidebars become drawers below 1024 px                                     | Fully responsive (a lot of work for the grid); desktop only (can't check from a phone)                                                                                                                                                                                    |
+| UX-4        | Switchers in the breadcrumbs                                                             | Picker at the top of the sidebar (splits "where am I" across two places)                                                                                                                                                                                                  |
+| UX-5        | Tabs as URL routes                                                                       | ARIA tabs with no URL (refresh loses the tab, can't link to it)                                                                                                                                                                                                           |
+| UX-6        | Side sheet by default, full page for long flows, modal for confirms                      | Modals for every create (hides context, cramped); full page for everything (slow for small edits)                                                                                                                                                                         |
+| UX-9        | Each settings card saves itself                                                          | One sticky save bar (one bad field blocks the whole save); autosave (half typed values take effect)                                                                                                                                                                       |
+| UX-8        | Check on leaving a field, plus a summary on submit                                       | Submit only (mistakes found late); live while typing (NN/g advises against)                                                                                                                                                                                               |
+| UX-12       | Inline cells plus row side sheet                                                         | Side sheet only (Appwrite moved away from it); inline only (awkward for JSON and relations)                                                                                                                                                                               |
+| UX-12       | Save each change on commit, with undo                                                    | Queue changes, then save all (easy to leave with unsaved edits)                                                                                                                                                                                                           |
+| UX-14       | Cursor based Previous and Next                                                           | Numbered pages (needs exact counts, slow on some engines); infinite scroll (loses your place, guidance warns against it)                                                                                                                                                  |
+| UX-15 to 18 | Filter builder, header sort, column management, bulk actions, keyboard and clipboard     | (all chosen)                                                                                                                                                                                                                                                              |
+| UX-20       | One action plus an SDK quick start                                                       | Action only (misses the chance to teach the SDKs)                                                                                                                                                                                                                         |
+| UX-21       | Skeletons, timed by response limits                                                      | Spinners everywhere (layout jumps)                                                                                                                                                                                                                                        |
+| UX-23       | Tiers by blast radius; single row delete is a quick confirm you can skip for the session | Always type to confirm (people learn to click through); confirm only (too light for deleting a project); undo by recreating the row (dropped after the cross check, see below); a server side undo window (needs a pending delete state across the rows API and realtime) |
+| UX-24       | Toasts, inline, and banners, each with a job                                             | Toasts for everything (errors far from where they happened)                                                                                                                                                                                                               |
+| UX-25       | Command palette with navigation and actions                                              | Navigation only; later                                                                                                                                                                                                                                                    |
+| UX-27       | Everything shareable in the URL                                                          | Location and tab only (filtered views can't be linked)                                                                                                                                                                                                                    |
+| UX-28       | Preferences in the browser for now                                                       | On the server per user (needs an API now)                                                                                                                                                                                                                                 |
+| UX-29       | Status in place plus a live log panel                                                    | Status only (can't watch a build fail as it happens)                                                                                                                                                                                                                      |
+| UX-19       | Live updates that never move rows under your cursor                                      | Manual refresh only (feels stale next to the competition)                                                                                                                                                                                                                 |
+| UX-30       | Hide areas, disable actions with a reason                                                | Hide everything (features become invisible); show all, error on use (frustrating)                                                                                                                                                                                         |
+| UX-31       | Docs side pane, in the same place on every page                                          | Open docs in a new tab (you leave your work)                                                                                                                                                                                                                              |
+| UX-32       | Comfortable default, compact toggle                                                      | Compact only (harder to scan and tap)                                                                                                                                                                                                                                     |
 
 Decided by `/architect`, not asked (with the runner up):
+
 - **Tables and columns stay at Tier 2.** The cross check suggested Tier 1 for dropping a column, but you put tables at Tier 2, and a column can't need more friction than its whole table. Both dialogs state how many rows are affected instead. The runner up was moving both to Tier 1.
 - **Skeletons appear after 300 ms** so a fast response doesn't flash a skeleton. The runner up was showing one at once.
 - **Filters are joined with AND only at first**, because OR groups double the builder's complexity. The runner up was nested AND and OR groups.
@@ -94,6 +98,7 @@ A read only review on a second model (2026-10-15) found about 30 gaps where buil
 Two read only research passes ran on 2026-10-15. **[V]** means read on a fetched page. **[S]** means seen only in a search result and not verified. **[I]** means inferred.
 
 ### Appwrite
+
 - [V] The TablesDB UI (August 2025) renamed collections, documents, and attributes to tables, rows, and columns. It uses one spreadsheet style view: cells edited inline (the old view was read only), columns reordered by drag and drop, arrow key navigation, copy and paste, undo and redo, and several rows selected at once for bulk delete or update.
 - [S] A row side sheet with up and down chevrons to move between rows, which are hidden on tablet widths.
 - [V] Console IV (August 2026) merges the website, docs, and console into one app. Docs open in a right side pane that keeps its own breadcrumb, so forms stay put. It adds a scoped Cmd+K Command Center, a CLI terminal in the browser (Cmd+;), and an Explorer that sends live API calls from the OpenAPI spec. It's built on ShadCN and Radix with TanStack (relevant to feature 11 and 2, not decided here).
@@ -101,6 +106,7 @@ Two read only research passes ran on 2026-10-15. **[V]** means read on a fetched
 - Not verified from public pages: the exact behavior of the table list sidebar, detail tabs, paging, filters, settings saving, and delete confirmations. UX-2 rests on your stated requirement and general list and detail practice, not on a verified Appwrite source.
 
 ### Supabase Studio
+
 - [V] Table Editor, SQL Editor, and Row Level Security can be toggled from the editor.
 - [V] Studio 2.0: a row side panel, inline cell editing, JSON cells open in the panel, a foreign key picker with "View referencing", and a cascade delete option shown at delete time. It also shows SQL definitions and generated API docs with SQL and JS snippets.
 - [V] May 2025: tabs in the Table Editor and SQL Editor (feature preview), sort moved into the column header menu, and export with all rows selected.
@@ -108,10 +114,12 @@ Two read only research passes ran on 2026-10-15. **[V]** means read on a fetched
 - [S] An operation queue that saves batched edits with Mod+S.
 
 ### Others
+
 - [V] Convex: a function list on the left, a runner with an argument form and live results, "act as a user", and charts per function. [S] Realtime logs filterable by function and status.
 - [V] Firebase Firestore: Data, Rules, Indexes, and Usage tabs; drill in navigation by path; a query builder.
 
 ### Guidance by topic
+
 - **Navigation**: [S] GitLab Pajamas, citing NN/g, allows two levels and no third, with stable top level items. [S] NN/g: vertical navigation suits wide information sets that keep growing, and shallow beats deep.
 - **Tabs**: [V] The APG tabs pattern makes the tab list one tab stop with arrow keys, and uses manual activation when panels take time to load. APG doesn't cover tabs as routes. [I] Use links with `aria-current` when each view has its own URL.
 - **Forms**: [V] NN/g says to validate when the user leaves a field, not while typing, and to put messages next to fields that are explicit, polite, and pair color with an icon. [V] GOV.UK says to show an error summary whenever validation fails, at the top, linking to each field, with focus moved to it and the same wording as the inline message.
@@ -127,10 +135,12 @@ Two read only research passes ran on 2026-10-15. **[V]** means read on a fetched
 ## References
 
 **Project sources**:
+
 - Scope [index.md](../../scope/index.md) (WCAG 2.2 AA, translation ready, Tracer Bullet, GA tier) and feature 54 in [foundations.md](../../scope/foundations.md)
 - Your stated requirement: the table list stays visible while a table is open (Appwrite style)
 
 **Practices & standards**:
+
 - WAI ARIA Authoring Practices: tabs, modal dialog, grid, combobox and listbox
 - WCAG 2.2: 2.4.11, 2.5.7, 2.5.8, 3.2.6, 3.3.7, 3.3.8, 4.1.3
 - NN/g response time limits and form error guidelines
@@ -139,6 +149,7 @@ Two read only research passes ran on 2026-10-15. **[V]** means read on a fetched
 - Shared primitives over written guidelines for consistency
 
 **Links** (fetched and verified during research):
+
 - Appwrite, Announcing an improved Appwrite Databases experience: https://appwrite.io/blog/post/announcing-appwrite-databases-new-ui
 - Appwrite changelog, Announcing new TablesDB UI: https://appwrite.io/changelog/entry/2025-08-26-1
 - Appwrite, Announcing Console IV: https://appwrite.io/blog/post/announcing-console-iv

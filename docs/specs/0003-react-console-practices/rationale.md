@@ -12,7 +12,7 @@ The React ecosystem moves fast. Since 2025, Vite moved to Rolldown (Vite 8), `@v
 
 ## Options considered
 
-The libraries were chosen one area at a time (see *Research by practice area*). The options here are how the standard is enforced.
+The libraries were chosen one area at a time (see _Research by practice area_). The options here are how the standard is enforced.
 
 ### Option 1: Document and enforce from the first line of code
 
@@ -90,39 +90,39 @@ Chosen by the engineer. A rough sum of the chosen runtime (React and React DOM, 
 
 Smaller calls settled while writing, each with its runner up:
 
-| Call | Why | Runner up |
-|---|---|---|
-| TypeScript 6.0, not 7 (WEB-2) | typescript-eslint 8.71 supports `<6.1.0` and `eslint-plugin-lingui` `^5 \|\| ^6`, so 7 would break type aware lint | TypeScript 7 for `tsc` plus 6 for lint, two compilers that can disagree |
-| Node 24 LTS (WEB-3) | Lingui 6 needs 22.19 or later; Node 24 is the active LTS, Node 20 is out of support | Node 22 |
-| React Compiler through Babel (WEB-6) | The plugin's native Rust `compiler` option is marked experimental | The Rust option, revisit when stable |
-| Lingui macros and the compiler in one Babel pass (I18N-2) | Babel runs plugins before presets, so macros still expand first, and each file is parsed once; two passes stay as the fallback | Two passes, as the Lingui setup skill shows |
-| `erasableSyntaxOnly`, no `enum` (WEB-4) | Oxc strips types without transforming; unions plus `as const` cover enums | Allow `const enum` |
-| No `exactOptionalPropertyTypes` (WEB-4) | Clashes with Zod 4, TanStack, React Aria, and openapi-typescript optional types for little gain (changed after the cross check, with the engineer's approval) | Keep it and fight the library types |
-| Loaders: layouts await frame data, leaves only prefetch (RTE-4) | Awaiting grid data would swap the grid for the pending skeleton on every page change, breaking UX-21 | Await everything, simpler |
-| Repeated `filter` params via a custom serializer (URL-2) | Matches UX-15's URL format and keeps links readable | TanStack's JSON encoding |
-| Columns named by name in the URL (URL-2) | Readable links; a rename shows UX-15's ignored filter chip instead of failing silently | Column IDs, which survive renames but are opaque |
-| Filter rules kept as text in the route schema (URL-1) | A navigation validates the search again, and parsed objects would fail a text schema and be wiped by `.catch` | Parsing in the schema |
-| Adding or removing a filter rule pushes; typing a value replaces (URL-3) | UX-27 lists typing as replace but is silent on adding rules; a rule is a meaningful step Back should undo | Replace for every filter change |
-| `staleTime` 30 s, reads retried twice on network and 5xx gateway errors only (QRY-4) | UX-19's 30 second rule and UX-22's retry rule | Shorter staleTime with more refetching |
-| `networkMode: 'always'` (QRY-4) | The default `'online'` pauses requests offline: skeletons hang, and paused writes fire by themselves on reconnect, against UX-22 | The default, plus custom pause handling |
-| Interaction lock held through a counting hook (QRY-4) | UX-19 forbids reloads while editing, selecting, or dirty; a hook with cleanup can't leave the lock stuck | A plain acquire and release API |
-| Placeholder data scoped by resource (QRY-5) | Plain `keepPreviousData` would show the previous table's rows when switching tables | Clearing data on every key change |
-| No optimistic updates; patch the cache on success (QRY-6) | In Query 5 a scoped mutation's `onMutate` runs before its turn, so rollbacks of queued edits can clobber each other; UX-12 asks for a saving state anyway | Optimistic updates with hand ordered rollbacks |
-| Mutation scope per row (QRY-6) | Keeps cell saves and undo in order | Disabling a row while it saves |
-| Focus stays on tab and resource list links (RTE-7) | Moving focus to the `h1` would pull keyboard users off the list they're using; spec 0001 UX-35 amended to match | Literal UX-35, focus to `h1` on every path change |
-| Sign out does a full page load (QRY-9) | Clears every cache and store in one step, no leaks between accounts | Clearing each cache by hand |
-| `theme-boot.js` file reads one key (STO-6) | Right theme on first paint without an inline script under a strict CSP | Accept a flash of the wrong theme |
-| Announcer built on `@react-aria/live-announcer` (A11Y-4) | One live region for both Orvano and React Aria messages (UX-41) | A separate region, risking double reads |
-| PO catalogs with generated IDs, pseudo locale in dev (I18N-3, I18N-7) | PO is what translation tools expect; generated IDs need no naming effort; the pseudo locale exposes UX-34 text growth | Explicit message IDs |
-| `Intl` only, no date library; binary units via a message (I18N-5) | `Intl` covers dates, relative times, numbers, and lists; Temporal isn't Baseline widely available yet; `Intl` has no binary units | date-fns |
-| Zod `jitless` (SEC-2) | Keeps a strict CSP possible | Allowing `unsafe-eval` |
-| Secret creating mutations with `gcTime: 0` (SEC-3) | The secret leaves memory once its component unmounts (UX-33) | Default cache time |
-| pnpm `minimumReleaseAge` 3 days (SEC-5) | Supply chain defense against just published malicious versions | No delay |
-| One test environment (browser mode); primitives in three engines, features in Chromium (QA-1) | Real browser behavior where it matters, CI time where it doesn't | jsdom for logic tests |
-| E2E on Chromium per PR, three engines nightly (QA-5) | Keeps PR feedback fast | Three engines on every PR |
-| 80 KB gzip per lazy route chunk (BDL-1) | Keeps any one navigation quick; screens with editors can raise it in their spec | No per route limit |
-| Commit `routeTree.gen.ts` and `schema.gen.ts` | Type checks work on a fresh clone; drift checks catch staleness | Generate in CI only |
-| Named exports, `kebab-case` files (WEB-9) | Greppable names, safe renames, no casing trouble on Windows | PascalCase component files |
+| Call                                                                                          | Why                                                                                                                                                           | Runner up                                                               |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| TypeScript 6.0, not 7 (WEB-2)                                                                 | typescript-eslint 8.71 supports `<6.1.0` and `eslint-plugin-lingui` `^5 \|\| ^6`, so 7 would break type aware lint                                            | TypeScript 7 for `tsc` plus 6 for lint, two compilers that can disagree |
+| Node 24 LTS (WEB-3)                                                                           | Lingui 6 needs 22.19 or later; Node 24 is the active LTS, Node 20 is out of support                                                                           | Node 22                                                                 |
+| React Compiler through Babel (WEB-6)                                                          | The plugin's native Rust `compiler` option is marked experimental                                                                                             | The Rust option, revisit when stable                                    |
+| Lingui macros and the compiler in one Babel pass (I18N-2)                                     | Babel runs plugins before presets, so macros still expand first, and each file is parsed once; two passes stay as the fallback                                | Two passes, as the Lingui setup skill shows                             |
+| `erasableSyntaxOnly`, no `enum` (WEB-4)                                                       | Oxc strips types without transforming; unions plus `as const` cover enums                                                                                     | Allow `const enum`                                                      |
+| No `exactOptionalPropertyTypes` (WEB-4)                                                       | Clashes with Zod 4, TanStack, React Aria, and openapi-typescript optional types for little gain (changed after the cross check, with the engineer's approval) | Keep it and fight the library types                                     |
+| Loaders: layouts await frame data, leaves only prefetch (RTE-4)                               | Awaiting grid data would swap the grid for the pending skeleton on every page change, breaking UX-21                                                          | Await everything, simpler                                               |
+| Repeated `filter` params via a custom serializer (URL-2)                                      | Matches UX-15's URL format and keeps links readable                                                                                                           | TanStack's JSON encoding                                                |
+| Columns named by name in the URL (URL-2)                                                      | Readable links; a rename shows UX-15's ignored filter chip instead of failing silently                                                                        | Column IDs, which survive renames but are opaque                        |
+| Filter rules kept as text in the route schema (URL-1)                                         | A navigation validates the search again, and parsed objects would fail a text schema and be wiped by `.catch`                                                 | Parsing in the schema                                                   |
+| Adding or removing a filter rule pushes; typing a value replaces (URL-3)                      | UX-27 lists typing as replace but is silent on adding rules; a rule is a meaningful step Back should undo                                                     | Replace for every filter change                                         |
+| `staleTime` 30 s, reads retried twice on network and 5xx gateway errors only (QRY-4)          | UX-19's 30 second rule and UX-22's retry rule                                                                                                                 | Shorter staleTime with more refetching                                  |
+| `networkMode: 'always'` (QRY-4)                                                               | The default `'online'` pauses requests offline: skeletons hang, and paused writes fire by themselves on reconnect, against UX-22                              | The default, plus custom pause handling                                 |
+| Interaction lock held through a counting hook (QRY-4)                                         | UX-19 forbids reloads while editing, selecting, or dirty; a hook with cleanup can't leave the lock stuck                                                      | A plain acquire and release API                                         |
+| Placeholder data scoped by resource (QRY-5)                                                   | Plain `keepPreviousData` would show the previous table's rows when switching tables                                                                           | Clearing data on every key change                                       |
+| No optimistic updates; patch the cache on success (QRY-6)                                     | In Query 5 a scoped mutation's `onMutate` runs before its turn, so rollbacks of queued edits can clobber each other; UX-12 asks for a saving state anyway     | Optimistic updates with hand ordered rollbacks                          |
+| Mutation scope per row (QRY-6)                                                                | Keeps cell saves and undo in order                                                                                                                            | Disabling a row while it saves                                          |
+| Focus stays on tab and resource list links (RTE-7)                                            | Moving focus to the `h1` would pull keyboard users off the list they're using; spec 0001 UX-35 amended to match                                               | Literal UX-35, focus to `h1` on every path change                       |
+| Sign out does a full page load (QRY-9)                                                        | Clears every cache and store in one step, no leaks between accounts                                                                                           | Clearing each cache by hand                                             |
+| `theme-boot.js` file reads one key (STO-6)                                                    | Right theme on first paint without an inline script under a strict CSP                                                                                        | Accept a flash of the wrong theme                                       |
+| Announcer built on `@react-aria/live-announcer` (A11Y-4)                                      | One live region for both Orvano and React Aria messages (UX-41)                                                                                               | A separate region, risking double reads                                 |
+| PO catalogs with generated IDs, pseudo locale in dev (I18N-3, I18N-7)                         | PO is what translation tools expect; generated IDs need no naming effort; the pseudo locale exposes UX-34 text growth                                         | Explicit message IDs                                                    |
+| `Intl` only, no date library; binary units via a message (I18N-5)                             | `Intl` covers dates, relative times, numbers, and lists; Temporal isn't Baseline widely available yet; `Intl` has no binary units                             | date-fns                                                                |
+| Zod `jitless` (SEC-2)                                                                         | Keeps a strict CSP possible                                                                                                                                   | Allowing `unsafe-eval`                                                  |
+| Secret creating mutations with `gcTime: 0` (SEC-3)                                            | The secret leaves memory once its component unmounts (UX-33)                                                                                                  | Default cache time                                                      |
+| pnpm `minimumReleaseAge` 3 days (SEC-5)                                                       | Supply chain defense against just published malicious versions                                                                                                | No delay                                                                |
+| One test environment (browser mode); primitives in three engines, features in Chromium (QA-1) | Real browser behavior where it matters, CI time where it doesn't                                                                                              | jsdom for logic tests                                                   |
+| E2E on Chromium per PR, three engines nightly (QA-5)                                          | Keeps PR feedback fast                                                                                                                                        | Three engines on every PR                                               |
+| 80 KB gzip per lazy route chunk (BDL-1)                                                       | Keeps any one navigation quick; screens with editors can raise it in their spec                                                                               | No per route limit                                                      |
+| Commit `routeTree.gen.ts` and `schema.gen.ts`                                                 | Type checks work on a fresh clone; drift checks catch staleness                                                                                               | Generate in CI only                                                     |
+| Named exports, `kebab-case` files (WEB-9)                                                     | Greppable names, safe renames, no casing trouble on Windows                                                                                                   | PascalCase component files                                              |
 
 ### Installed agent skills
 
@@ -149,6 +149,7 @@ Full notes: `docs/.agent-cache/research/react-console-practices.md` (reusable fo
 ## References
 
 **Project sources**:
+
 - `docs/scope/index.md`: given stack (React with Vite), GA tier, Tracer Bullet, self hosted first
 - `docs/scope/foundations.md`, feature 2 row and the boundaries of features 5 to 11
 - Spec 0001 (console UX patterns): UX-1 to UX-41 and its feature 2 follow up
@@ -156,6 +157,7 @@ Full notes: `docs/.agent-cache/research/react-console-practices.md` (reusable fo
 - Installed agent skills in `.claude/skills/` (listed in index.md `## Decision`)
 
 **Practices & standards**:
+
 - WCAG 2.2 AA; WAI ARIA Authoring Practices Guide patterns
 - ICU MessageFormat; CLDR plural rules
 - Baseline (web platform feature availability)
@@ -165,6 +167,7 @@ Full notes: `docs/.agent-cache/research/react-console-practices.md` (reusable fo
 - Testing by role and accessible name (Testing Library guiding principles)
 
 **Links** (opened during the 2026-10-15 check):
+
 - Announcing Vite 8: https://vite.dev/blog/announcing-vite8
 - React Compiler installation: https://react.dev/learn/react-compiler/installation
 - React blog: https://react.dev/blog

@@ -22,20 +22,20 @@ Orvano's .NET code follows the numbered rules in `## Standard definition`; **MUS
 
 ### Scope and boundaries
 
-Applies to every .NET project in the core monorepo's server tree and in the .NET SDK repo, tests and benchmarks included. Rules marked *shared* apply to both, *server* only to the server, *library* only to the SDK.
+Applies to every .NET project in the core monorepo's server tree and in the .NET SDK repo, tests and benchmarks included. Rules marked _shared_ apply to both, _server_ only to the server, _library_ only to the SDK.
 
 Decided elsewhere, not here (this spec points to them and must not be read as deciding them):
 
-| Topic | Owner |
-|---|---|
-| Wire format: JSON naming, error body shape, error code format, status mapping, pagination, API version header, API key header, idempotency keys, which SDK code is generated and by what tool | Feature 10, API contract & SDK generation |
-| Service boundaries, background jobs, cache backing store (Redis or none), hosting, container images, local dev orchestration (including Aspire), monorepo top level folder names | Feature 6, Stack & architecture (decided in [spec 0007](../0007-stack-architecture/index.md)) |
-| Password hashing, token signing, secrets at rest, PII classification and log redaction, dependency vulnerability and license policy | Feature 5, Security baseline |
-| Platform entities, ID format, column types beyond the rules below | Feature 8, Platform data model |
-| How the caller and project are resolved, permission checks, not found versus forbidden | Feature 9, Access control model |
-| Engine adapter interface shape | Features 15 and 16 |
-| Formatter, lint and CI wiring, git hooks | Feature 7, Coding standards & tooling |
-| NuGet ID prefix reservation, release process, versioning | Feature 52, SDK publishing & versioning |
+| Topic                                                                                                                                                                                         | Owner                                                                                         |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Wire format: JSON naming, error body shape, error code format, status mapping, pagination, API version header, API key header, idempotency keys, which SDK code is generated and by what tool | Feature 10, API contract & SDK generation                                                     |
+| Service boundaries, background jobs, cache backing store (Redis or none), hosting, container images, local dev orchestration (including Aspire), monorepo top level folder names              | Feature 6, Stack & architecture (decided in [spec 0007](../0007-stack-architecture/index.md)) |
+| Password hashing, token signing, secrets at rest, PII classification and log redaction, dependency vulnerability and license policy                                                           | Feature 5, Security baseline                                                                  |
+| Platform entities, ID format, column types beyond the rules below                                                                                                                             | Feature 8, Platform data model                                                                |
+| How the caller and project are resolved, permission checks, not found versus forbidden                                                                                                        | Feature 9, Access control model                                                               |
+| Engine adapter interface shape                                                                                                                                                                | Features 15 and 16                                                                            |
+| Formatter, lint and CI wiring, git hooks                                                                                                                                                      | Feature 7, Coding standards & tooling                                                         |
+| NuGet ID prefix reservation, release process, versioning                                                                                                                                      | Feature 52, SDK publishing & versioning                                                       |
 
 ### Shared rules: language and build
 
@@ -421,18 +421,18 @@ These common patterns are wrong at Orvano, even when a tutorial or an agent skil
 
 Feature 7 installs and wires these; this table says what each rule is checked by.
 
-| Mechanism | Rules | Where it lives |
-|---|---|---|
-| Compiler and .NET analyzers, warnings as errors in CI | GEN-2, GEN-6, GEN-8, GEN-10 (CA1305, CA1307, CA1309, CA1310), ASY-2 (CA2016), ASY-1 (CA1849), ASY-3 (CA2007, SDK only), LOG-1 (CA2254, CA1848), DAT-6 (EF1002), LIB-2 (CS1591 and trim and AOT warnings) | Root `Directory.Build.props` and `.editorconfig` |
-| Banned API analyzer (`Microsoft.CodeAnalysis.BannedApiAnalyzers`) | GEN-9 (clock APIs), ASY-1 (`Task.Wait`, `Task<T>.Result`, `GetResult`), JSN-1 (Newtonsoft types), PRF-3 (`HttpClient` constructor, server only), DAT-10 (`Migrate`, `MigrateAsync` outside the migrate command), DAT-11 (`NpgsqlConnection(string)`), DAT-6 (`ExecuteSqlRaw`, `FromSqlRaw`) | `BannedSymbols.txt` at each repo root |
-| Public API analyzer and package validation | LIB-10 | SDK repo |
-| Central package management, lock files | GEN-3, GEN-4 | `Directory.Packages.props`, CI restore |
-| Architecture tests (ArchUnitNET) | LAY-3, LAY-4 (module and engine references, no Host or Infrastructure references from modules, no cycles, no use of another module's `Features/` or `Domain/`, SharedKernel's allowed references), API-3 (endpoints do not depend on `DbContext`), API-7 (handlers are `internal sealed`), DAT-2a (every entity with a `ProjectId` implements `IProjectScoped`), GEN-11 and GEN-12 (no mapping or scanning packages referenced) | `tests/Orvano.ArchitectureTests` |
-| Endpoint metadata tests (walk `EndpointDataSource` in a test host) | API-2 (unique `<Module>_<Feature>` names), API-4 (every endpoint has authorization or anonymous metadata) | `tests/Orvano.Host.IntegrationTests` |
-| Integration tests every module must have | DAT-2a (cross project leak test), DAT-10 (`HasPendingModelChanges()` is false), VAL-1 and TST-4 (one invalid body test per endpoint, expecting 400 and `validation_failed`; the only guard against a module that skips `AddValidation()`) | `tests/Orvano.Host.IntegrationTests` |
-| Startup checks | CFG-1, CFG-3, CFG-4 (`ValidateOnStart`, `_FILE` errors, variable names in messages), DAT-10 (pending migration check) | `Orvano.Host` |
-| Trait report | TST-4 | `/check verify` reads the `AC` traits |
-| Review (`/check review`, people) | Everything else: log content (LOG-2), cache justification (PRF-2), N+1 queries (DAT-4), test quality (TST-3), license and maintenance of new packages (GEN-5) | PR template checklist from feature 7 |
+| Mechanism                                                          | Rules                                                                                                                                                                                                                                                                                                                                                                                                                           | Where it lives                                   |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Compiler and .NET analyzers, warnings as errors in CI              | GEN-2, GEN-6, GEN-8, GEN-10 (CA1305, CA1307, CA1309, CA1310), ASY-2 (CA2016), ASY-1 (CA1849), ASY-3 (CA2007, SDK only), LOG-1 (CA2254, CA1848), DAT-6 (EF1002), LIB-2 (CS1591 and trim and AOT warnings)                                                                                                                                                                                                                        | Root `Directory.Build.props` and `.editorconfig` |
+| Banned API analyzer (`Microsoft.CodeAnalysis.BannedApiAnalyzers`)  | GEN-9 (clock APIs), ASY-1 (`Task.Wait`, `Task<T>.Result`, `GetResult`), JSN-1 (Newtonsoft types), PRF-3 (`HttpClient` constructor, server only), DAT-10 (`Migrate`, `MigrateAsync` outside the migrate command), DAT-11 (`NpgsqlConnection(string)`), DAT-6 (`ExecuteSqlRaw`, `FromSqlRaw`)                                                                                                                                     | `BannedSymbols.txt` at each repo root            |
+| Public API analyzer and package validation                         | LIB-10                                                                                                                                                                                                                                                                                                                                                                                                                          | SDK repo                                         |
+| Central package management, lock files                             | GEN-3, GEN-4                                                                                                                                                                                                                                                                                                                                                                                                                    | `Directory.Packages.props`, CI restore           |
+| Architecture tests (ArchUnitNET)                                   | LAY-3, LAY-4 (module and engine references, no Host or Infrastructure references from modules, no cycles, no use of another module's `Features/` or `Domain/`, SharedKernel's allowed references), API-3 (endpoints do not depend on `DbContext`), API-7 (handlers are `internal sealed`), DAT-2a (every entity with a `ProjectId` implements `IProjectScoped`), GEN-11 and GEN-12 (no mapping or scanning packages referenced) | `tests/Orvano.ArchitectureTests`                 |
+| Endpoint metadata tests (walk `EndpointDataSource` in a test host) | API-2 (unique `<Module>_<Feature>` names), API-4 (every endpoint has authorization or anonymous metadata)                                                                                                                                                                                                                                                                                                                       | `tests/Orvano.Host.IntegrationTests`             |
+| Integration tests every module must have                           | DAT-2a (cross project leak test), DAT-10 (`HasPendingModelChanges()` is false), VAL-1 and TST-4 (one invalid body test per endpoint, expecting 400 and `validation_failed`; the only guard against a module that skips `AddValidation()`)                                                                                                                                                                                       | `tests/Orvano.Host.IntegrationTests`             |
+| Startup checks                                                     | CFG-1, CFG-3, CFG-4 (`ValidateOnStart`, `_FILE` errors, variable names in messages), DAT-10 (pending migration check)                                                                                                                                                                                                                                                                                                           | `Orvano.Host`                                    |
+| Trait report                                                       | TST-4                                                                                                                                                                                                                                                                                                                                                                                                                           | `/check verify` reads the `AC` traits            |
+| Review (`/check review`, people)                                   | Everything else: log content (LOG-2), cache justification (PRF-2), N+1 queries (DAT-4), test quality (TST-3), license and maintenance of new packages (GEN-5)                                                                                                                                                                                                                                                                   | PR template checklist from feature 7             |
 
 ### Rollout
 
@@ -451,6 +451,7 @@ New code immediately. There is no existing code, so every rule holds from the fi
 ## Consequences
 
 **Positive**:
+
 - One feature folder holds everything for a feature, which matches the scope's slices and keeps diffs small and reviewable.
 - Analyzers, banned APIs, and architecture tests catch most rule breaks before review, so reviews spend time on design.
 - No commercially licensed dependencies; self hosters and forks face no licensing surprises.
@@ -458,6 +459,7 @@ New code immediately. There is no existing code, so every rule holds from the fi
 - OpenTelemetry meters and traces from day one give features 45 to 47 something to build on rather than retrofit.
 
 **Negative / tradeoffs**:
+
 - More projects (one per module) mean slower cold builds and more files to create per module.
 - The own Result type is about 150 lines to write and maintain, plus a mapping step in every endpoint.
 - No mediator means shared behavior must be added on purpose as endpoint filters; there is no single pipeline to hang it on.
@@ -467,6 +469,7 @@ New code immediately. There is no existing code, so every rule holds from the fi
 - EF Core 10 has AOT limits, so the server cannot move to Native AOT without a data access rethink.
 
 **Neutral**:
+
 - Contributors used to controllers, MediatR, or FluentAssertions must learn the Orvano way; the canonical pattern above is the reference.
 - The default performance budget is a starting guess until Slice 1 is measured.
 - Two installed agent skills conflict with this spec (see `## Decision`); agents must apply GEN-0.

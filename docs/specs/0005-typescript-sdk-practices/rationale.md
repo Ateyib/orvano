@@ -16,7 +16,7 @@ No SDK code exists yet. The workflow tier is GA and the build approach Tracer Bu
 
 ## Options considered
 
-The practices were chosen one area at a time with you (see *Research by practice area*). The options here are how the standard is enforced.
+The practices were chosen one area at a time with you (see _Research by practice area_). The options here are how the standard is enforced.
 
 ### Option 1: Document and enforce from the first line of code
 
@@ -122,21 +122,22 @@ A read only review on a different model looked for decisions a builder would hav
 
 ### Landscape facts, checked 2026-10-15
 
-Tags: confirmed on a fetched page (linked in References), or *search only* (seen in search results, not confirmed).
+Tags: confirmed on a fetched page (linked in References), or _search only_ (seen in search results, not confirmed).
 
 - Node 20: end of life 2026-04-30. Node 22: maintenance LTS, end of life 2027-04-30. Node 24: active LTS, moves to maintenance 2026-10-20, end of life 2028-04-30. Node 26: current, LTS from 2026-10-28.
 - `require(esm)`: unflagged in 22.12 and 20.19; warning dropped in 22.13; documented as no longer experimental from 25.4.
 - Global `WebSocket`: unflagged from 22.0, no longer experimental from 22.4.
-- tsdown 0.23.1 on npm; `unbundle`, `dts` (oxc with `isolatedDeclarations`), `publint`, and `attw` options documented. tsup no longer actively maintained (*search only*).
-- TypeScript 7.0.2 is npm's latest; 7.0 announced 2026-07-08. typescript-eslint doesn't support 7 yet (*search only*).
+- tsdown 0.23.1 on npm; `unbundle`, `dts` (oxc with `isolatedDeclarations`), `publint`, and `attw` options documented. tsup no longer actively maintained (_search only_).
+- TypeScript 7.0.2 is npm's latest; 7.0 announced 2026-07-08. typescript-eslint doesn't support 7 yet (_search only_).
 - Next.js 16.4.2 is npm's latest. `middleware.ts` is renamed `proxy.ts` in 16.0, and proxy runs on Node only. Next.js 16 needs Node 20.9+ and TypeScript 5.1+. `cacheComponents` is a top level config, `cacheLife` and `cacheTag` are stable; whether `'use cache'` itself is called stable wasn't confirmed.
 - Metro reads `exports` by default from 0.82 (React Native 0.79), including a `react-native` condition.
-- React Native 0.86 with Expo SDK 57 current (*search only*). Hermes support for the RTM-2 list unconfirmed.
+- React Native 0.86 with Expo SDK 57 current (_search only_). Hermes support for the RTM-2 list unconfirmed.
 - Vitest 5.0.5 is npm's latest. `@cloudflare/vitest-pool-workers` 0.23.0 peers on Vitest 4.1.
 
 ## References
 
 **Project sources**:
+
 - `docs/scope/index.md` and `docs/scope/foundations.md` (feature 4), `docs/scope/sdks.md` (features 10, 21, 52, 56, 60)
 - Spec 0002, .NET backend practices (LIB-5, LIB-6, LIB-7, LIB-10, LIB-12, GEN-5, JSN-2, TST-5a)
 - Spec 0003, React console practices (WEB-2, WEB-5, WEB-7, WEB-9, FLT-1, SEC-5, QA-6)
@@ -144,6 +145,7 @@ Tags: confirmed on a fetched page (linked in References), or *search only* (seen
 - Installed skills: `tsdown`, `vitest`, `pnpm`, `wrangler`, `workers-best-practices`, `deno`, `vercel-react-native-skills`, `react-native-best-practices`, `expo-overview`, `expo-upgrade`, `playwright-cli`, `vercel-react-best-practices` (`.claude/skills/`; the `tsdown` skill's lint reference confirms the attw profiles)
 
 **Practices and standards**:
+
 - WinterTC (Ecma TC55) minimum common web platform API, the shared API subset for server runtimes
 - Baseline widely available (web platform support bar)
 - The dual package hazard (two copies of one package under ESM and CommonJS)
@@ -152,6 +154,7 @@ Tags: confirmed on a fetched page (linked in References), or *search only* (seen
 - Semantic versioning with a public API report
 
 **Links** (web verified on 2026-10-15):
+
 - Node.js release schedule: https://github.com/nodejs/release
 - Node.js modules, `require(esm)`: https://nodejs.org/api/modules.html
 - Node.js globals, `WebSocket`: https://nodejs.org/api/globals.html

@@ -17,11 +17,13 @@ The team is small. The spec has to be something the team can build, test, and op
 Adopt OWASP ASVS 5.0 Level 2 as the bar, record the concrete choices as numbered rules, and back each rule with an analyzer, a test, a CI setting, or a review line.
 
 **Pros**:
+
 - One place to point to; later feature specs stay short.
 - Most rules fail a build instead of relying on memory.
 - Level 2 is the usual target for apps that hold user data and credentials.
 
 **Cons**:
+
 - Real up front effort in features 6, 7, and 13 to wire the checks.
 - Some rules (root key, per project keys) add operating work.
 
@@ -30,9 +32,11 @@ Adopt OWASP ASVS 5.0 Level 2 as the bar, record the concrete choices as numbered
 The same rules, with no automated enforcement.
 
 **Pros**:
+
 - Fastest to write; no tooling to build.
 
 **Cons**:
+
 - Rules decay as contributors change; a missed check becomes a leak in many projects.
 - Review is weakest on subtle items (wrong token algorithm, one forgotten project check).
 
@@ -41,9 +45,11 @@ The same rules, with no automated enforcement.
 Start with the basics and tighten before beta.
 
 **Pros**:
+
 - Less to build in the first slices.
 
 **Cons**:
+
 - Hash and token formats and the isolation model cannot be tightened later without migrating every install.
 - Level 1 is below what a platform holding other people's secrets should accept.
 
@@ -72,6 +78,7 @@ One conflict was found while writing and is recorded rather than hidden: spec 00
 ## References
 
 **Project sources**:
+
 - `AGENTS.md` (Tracer Bullet build approach, GA workflow level)
 - `docs/scope/foundations.md`, feature 5 row and the boundary notes in features 6 to 11
 - Spec 0002: GEN-0, GEN-4, GEN-5, DAT-2a, LOG-2, CFG rules, banned API and architecture test setup
@@ -81,6 +88,7 @@ One conflict was found while writing and is recorded rather than hidden: spec 00
 - The installed `nuget-trusted-publishing` skill
 
 **Practices and standards**:
+
 - OWASP ASVS 5.0, level 2 as the target for applications holding user credentials and personal data
 - OWASP Password Storage Cheat Sheet, Argon2id
 - OWASP cheat sheets for session management, secrets management, SSRF prevention, logging, and JSON Web Tokens (not fetched, cited by name only)
@@ -91,6 +99,7 @@ One conflict was found while writing and is recorded rather than hidden: spec 00
 - GitHub dependency review, Dependabot, CodeQL, secret scanning with push protection, artifact attestations, and private vulnerability reporting (documented on docs.github.com, not fetched here)
 
 **Links** (web verified only):
+
 - OWASP ASVS repository and releases: https://github.com/OWASP/ASVS
 - OWASP Password Storage Cheat Sheet (Argon2id minimum: 19 MiB, 2 iterations, 1 lane): https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 - Konscious.Security.Cryptography.Argon2 on NuGet (version 1.3.1, last published 2024-06-19): https://www.nuget.org/packages/Konscious.Security.Cryptography.Argon2
@@ -101,6 +110,7 @@ One conflict was found while writing and is recorded rather than hidden: spec 00
 ## Research notes and gaps
 
 The web check (one pass, five searches, eight pages) could not confirm the following, so the spec does not depend on them and each is a follow up for the feature that builds it:
+
 - The exact ASVS 5.0 release year (the cross check recalled May 2025, not verified here) and its Level 2 and Level 3 definitions. The spec relies on the common reading that Level 2 is the target for most applications; the feature specs name the ASVS chapters and requirements they meet, which will exercise the official text.
 - Whether .NET 10 has a built in Argon2id. Not verified; feature 6 checks before choosing a library. `BouncyCastle.Cryptography` is named from knowledge and not verified here.
 - The `Isopoh.Cryptography.Argon2` package status.

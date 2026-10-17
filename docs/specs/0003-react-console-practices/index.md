@@ -13,6 +13,7 @@ This is the one playbook for writing the Orvano console in React and Vite: spec 
 This is a cross cutting standard, so it has no build plan of its own. The rules in **Standard definition** are the contract: all console code meets every rule that applies to it, and `/check review` and `/check verify` cite the IDs. The console scaffold (feature 6) and tooling (feature 7) set up what the rules need. Each screen's spec lists the UX IDs it touches; these code rules apply to every screen without being listed.
 
 **User stories**:
+
 - As a console developer, I want one way to route, fetch, hold state, and build forms, so any screen reads like the last one I worked on.
 - As a developer using the console, I want links, Back, and refresh to restore my exact view, and paging to keep my rows on screen.
 - As a keyboard or screen reader user, I want every screen built from tested accessible primitives.
@@ -23,7 +24,7 @@ This is a cross cutting standard, so it has no build plan of its own. The rules 
 
 **Chosen option**: Option 1: Document the standard and enforce it from the first line of console code (type checks, lint rules, accessibility checks, catalog and API drift checks, and the bundle budget fail CI; review covers the rest).
 
-Console code follows the numbered rules below. **MUST** rules fail the build or the review. **SHOULD** rules need a written reason to skip. Rules marked *verify with feature 11* or *verify with the first API screen* name a current library API that work must confirm; if it differs, that work records the working form here. The feature 6 scaffold confirmed the rest (see Follow-up).
+Console code follows the numbered rules below. **MUST** rules fail the build or the review. **SHOULD** rules need a written reason to skip. Rules marked _verify with feature 11_ or _verify with the first API screen_ name a current library API that work must confirm; if it differs, that work records the working form here. The feature 6 scaffold confirmed the rest (see Follow-up).
 
 **Implementation skills**: `vite` (`antfu/skills`, `.claude/skills/vite/`) · `vitest` (`antfu/skills`, `.claude/skills/vitest/`) · `pnpm` (`antfu/skills`, `.claude/skills/pnpm/`) · `lingui-framework-setup` (`lingui/skills`, `.claude/skills/lingui-framework-setup/`) · `lingui-best-practices` (`lingui/skills`, `.claude/skills/lingui-best-practices/`) · `playwright-cli` (`microsoft/playwright-cli`, `.claude/skills/playwright-cli/`) · `accessibility` (`addyosmani/web-quality-skills`, `.claude/skills/accessibility/`) · `vercel-react-best-practices` (`vercel-labs/agent-skills`, `.claude/skills/vercel-react-best-practices/`)
 
@@ -37,20 +38,20 @@ Applies to all code in the console app in the core monorepo: screens, the design
 
 Decided elsewhere, not here (this spec points to them and must not be read as deciding them):
 
-| Topic | Owner |
-|---|---|
-| How every screen behaves: layout, forms, grid, states, deletes, messages, URL contents, focus, shortcuts (UX-1 to UX-41) | Spec 0001, Console UX patterns |
-| Visual language, tokens, themes, density values, **styling technology**, the **data grid library**, the primitives' look, CSS budget, any component workbench | Feature 11, Design system & console shell |
-| Wire format: error body and codes, field errors, request ID, cursors, row versions, allowed actions, dependents counts, the session and runtime config endpoints, the API contract file and its location | Feature 10, API contract & SDK generation |
-| The console's folder in the monorepo, its fixed base path, how the server serves it (same origin), the dev proxy, container images | Feature 6, Stack & architecture (decided in [spec 0007](../0007-stack-architecture/index.md): REP-1, CSL-1 to CSL-3, IMG-1) |
-| ESLint, format, and CI wiring; which lint plugins carry each rule below; pre commit hooks | Feature 7, Coding standards & tooling |
-| Content Security Policy and `Referrer-Policy` headers, session cookie and CSRF design, dependency vulnerability policy, the final license policy | Feature 5, Security baseline (interim license list: spec 0002 GEN-5) |
-| Console sign in flow, the account's locale setting | Feature 13, Console accounts & projects |
-| Column naming rules (this spec needs: no `:` in a column name) | Feature 24, Schema management |
-| Realtime client protocol and how it updates the cache | Features 33 and 34 |
-| Upload transport and progress | Features 29 and 30 |
-| Reporting browser errors to the server | Feature 47 |
-| Shipping more languages | Deferred item, Console translations |
+| Topic                                                                                                                                                                                                    | Owner                                                                                                                       |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| How every screen behaves: layout, forms, grid, states, deletes, messages, URL contents, focus, shortcuts (UX-1 to UX-41)                                                                                 | Spec 0001, Console UX patterns                                                                                              |
+| Visual language, tokens, themes, density values, **styling technology**, the **data grid library**, the primitives' look, CSS budget, any component workbench                                            | Feature 11, Design system & console shell                                                                                   |
+| Wire format: error body and codes, field errors, request ID, cursors, row versions, allowed actions, dependents counts, the session and runtime config endpoints, the API contract file and its location | Feature 10, API contract & SDK generation                                                                                   |
+| The console's folder in the monorepo, its fixed base path, how the server serves it (same origin), the dev proxy, container images                                                                       | Feature 6, Stack & architecture (decided in [spec 0007](../0007-stack-architecture/index.md): REP-1, CSL-1 to CSL-3, IMG-1) |
+| ESLint, format, and CI wiring; which lint plugins carry each rule below; pre commit hooks                                                                                                                | Feature 7, Coding standards & tooling                                                                                       |
+| Content Security Policy and `Referrer-Policy` headers, session cookie and CSRF design, dependency vulnerability policy, the final license policy                                                         | Feature 5, Security baseline (interim license list: spec 0002 GEN-5)                                                        |
+| Console sign in flow, the account's locale setting                                                                                                                                                       | Feature 13, Console accounts & projects                                                                                     |
+| Column naming rules (this spec needs: no `:` in a column name)                                                                                                                                           | Feature 24, Schema management                                                                                               |
+| Realtime client protocol and how it updates the cache                                                                                                                                                    | Features 33 and 34                                                                                                          |
+| Upload transport and progress                                                                                                                                                                            | Features 29 and 30                                                                                                          |
+| Reporting browser errors to the server                                                                                                                                                                   | Feature 47                                                                                                                  |
+| Shipping more languages                                                                                                                                                                                  | Deferred item, Console translations                                                                                         |
 
 ### General rules: toolchain and language
 
@@ -101,6 +102,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
       test/                       render helpers, MSW handlers, axe helper
     e2e/                          Playwright tests, fixtures, global setup
   ```
+
 - **DIR-2 (MUST)**: Imports flow one way: `routes` → `features` → `shared` and `ui`; `ui` → `shared` only; `shared` imports neither. A route file imports its feature's modules by direct path (the schema from `schemas/`, the component from `components/`), so code splitting keeps components out of the main chunk. One area imports another area only through its `index.ts` (keep that file small: only what other areas need). No import cycles. Generated files (`routeTree.gen.ts`, `schema.gen.ts`) are excluded from lint and format.
 - **DIR-3 (MUST)**: Only `src/ui` imports `react-aria-components`, `react-aria`, `react-stately`, or `@react-aria/*` (the import rule spec 0001 requires). Feature code composes `ui` primitives and never renders raw `<input>`, `<select>`, `<dialog>`, or `<table>`.
 - **DIR-4 (SHOULD)**: Tests sit next to the code they test (`rows-page.test.tsx` beside `rows-page.tsx`). End to end tests live only in `e2e/`.
@@ -124,6 +126,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
   ```
 
   The resource list's query lives in the service layout route's component, so switching the open resource changes only child params. A link to a resource points at its root, so switching resources lands on the default tab.
+
 - **RTE-3 (MUST)**: Router defaults, set once in `createAppRouter` (`src/router.ts`): `context: { queryClient }`, `basepath` from `shared/config.ts`, `parseSearch` and `stringifySearch` from `shared/url` (URL-2), `defaultPreload: 'intent'`, `defaultPreloadStaleTime: 0` (TanStack Query decides freshness), `defaultPendingComponent` (the content area skeleton), `defaultPendingMs: 300` and `defaultPendingMinMs: 500` (the UX-21 timing), `scrollRestoration: true`, and the default error and not found components. The shell's scrolling panes (content, resource list) carry scroll restoration IDs, since only the window is restored otherwise (the attribute is `data-scroll-restoration-id`, confirmed 2026-10-16 on `@tanstack/router-core` 1.171; `useElementScrollRestoration` covers a pane without the attribute).
 - **RTE-4 (MUST)**: Loaders feed the query cache; they never return data for `useLoaderData`, since there is one cache and it's TanStack Query's.
   - **Layout routes** (`_shell`, org, project, service, resource) await (`queryClient.ensureQueryData`) only the small frame data the frame renders: the session, the project and its capabilities, that the resource exists, and its name for the heading, crumbs, and title. Each one owns the pending skeleton for its content area; the shell and resource list never go blank while a child loads.
@@ -135,7 +138,7 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
   - The default tab redirect is `beforeLoad: () => { throw redirect({ to: ..., params, replace: true }) }`.
   - A delete removes the deleted resource's cached queries (`queryClient.removeQueries`) before it navigates away, then invalidates the list, so nothing refetches a 404.
 - **RTE-6 (MUST)**: Links and navigation:
-  - `src/ui` exports one `Link`, made with TanStack's `createLink` over React Aria's `Link`, so links keep typed `to`, `params`, and `search` and the router's preload behavior (*verify with feature 11*: preload on hover and focus still fires; checked when `src/ui` builds this `Link`). Feature code uses only this `Link` or `useNavigate`.
+  - `src/ui` exports one `Link`, made with TanStack's `createLink` over React Aria's `Link`, so links keep typed `to`, `params`, and `search` and the router's preload behavior (_verify with feature 11_: preload on hover and focus still fires; checked when `src/ui` builds this `Link`). Feature code uses only this `Link` or `useNavigate`.
   - The root route renders React Aria's `RouterProvider` with the router's `navigate` and `buildLocation` based `useHref`, so React Aria widgets that take `href` (menu items, crumbs, list items) navigate through the router.
   - Never build URL strings by hand or assign `window.location`; the exception is the full reload in QRY-9.
   - `RouteTabs` is a `nav` of links (UX-5), not React Aria `Tabs`. Its links never pass `search: true`, so the Rows tab's filters don't carry over to other tabs. A key that really is shared across tabs is kept with the `retainSearchParams` middleware on the parent route.
@@ -157,15 +160,16 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 - **URL-2 (MUST)**: The router uses Orvano's own `parseSearch` and `stringifySearch` (built on `URLSearchParams`) instead of TanStack's JSON encoding. A key that appears more than once becomes an array, so each filter rule is its own repeated `filter` param (UX-15), percent encoded. Values stay strings, and schemas coerce them (`z.coerce.number()`). Columns are named by their **name** in the URL, so links stay readable; a renamed or deleted column shows UX-15's "ignored filter" chip. A filter rule splits at its first two colons (column names can't contain `:`, a rule feature 24 must keep), so a value may contain colons. `sort` is `column:asc` or `column:desc`, split at its last colon (the `sortParam` helper). `searchList(itemSchema, { max })` accepts one value or many, drops malformed items one by one, and keeps at most `max` (10 for filters, UX-15).
 - **URL-3 (MUST)**: Components never write search params directly. Each route with query state exposes one `use<Route>View()` hook (for example `useRowsView()`) whose setters apply the UX-27 history rules through `setSearch(navigate, patch, mode)` in `shared/url`:
 
-  | Change | History |
-  |---|---|
-  | path, sort, page cursor, page size, open a row, open or close a sheet | push |
-  | add or remove a filter rule, Clear filters | push |
+  | Change                                                                                 | History |
+  | -------------------------------------------------------------------------------------- | ------- |
+  | path, sort, page cursor, page size, open a row, open or close a sheet                  | push    |
+  | add or remove a filter rule, Clear filters                                             | push    |
   | edit an applied rule's value (applied 300 ms after typing stops, on blur, or on Enter) | replace |
-  | Previous or Next inside the row sheet | replace |
-  | default tab redirect, dropping an expired cursor or missing row | replace |
+  | Previous or Next inside the row sheet                                                  | replace |
+  | default tab redirect, dropping an expired cursor or missing row                        | replace |
 
   Changing filters, sort, or page size also clears the cursor (UX-14). Setting a param to its current value adds no history entry. A filter rule that's still being built (no column, or no value for an operator that needs one) lives in the filter builder's local state and reaches the URL only when complete. The pending 300 ms commit is cancelled when the component unmounts or the history moves (Back or Forward), and the builder's draft resyncs from the URL whenever the URL changes from outside.
+
 - **URL-4 (MUST)**: When the API reports an expired or invalid cursor, the view drops `cursor` with replace and shows the UX-27 toast. A `row` that doesn't exist is dropped the same way. Neither is an error page.
 - **URL-5 (MUST)**: The URL holds IDs, names, and view state only, never tokens, keys, or passwords. A token that arrives in a link (for example a console invite) is read once and removed from the URL with replace. The sign in `redirect` param (RTE-9) is a path, never a full URL.
 - **URL-6 (MUST)**: Sheets in the URL: `sheet` values are named for what they open (`create-table` on the service layout, `create-row` on the rows route), and each route that opens a sheet declares its own values in its schema. `row` and `sheet` never coexist: the rows route's search middleware drops `row` when `sheet` is set. A detail sheet (the row sheet) reads its own detail query, seeded from the page in the cache with `initialData` and `initialDataUpdatedAt`, so a link to a row on another page still opens.
@@ -212,16 +216,17 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 - **STO-1 (MUST)**: Only `src/shared/storage` touches `localStorage`, `sessionStorage`, or IndexedDB (lint: restricted globals everywhere else).
 - **STO-2 (MUST)**: Every stored item is declared once, in `shared/storage/items.ts`, with `defineStored({ key, schema, fallback })`. The keys:
 
-  | Item | Key |
-  |---|---|
-  | Table layout (column visibility, width, order by column ID) | `orvano:v1:{userId}:{projectId}:table:{tableId}` |
-  | Last used index for those tables (`{ [tableId]: lastUsedMs }`) | `orvano:v1:{userId}:{projectId}:tables` |
-  | Resource list collapsed state and width, per service | `orvano:v1:{userId}:{projectId}:svc:{service}` |
-  | Primary sidebar collapsed state, density, last SDK | `orvano:v1:{userId}:layout` |
-  | Command palette recents | `orvano:v1:{userId}:palette` |
-  | Theme (read before sign in) | `orvano:v1:theme` |
+  | Item                                                           | Key                                              |
+  | -------------------------------------------------------------- | ------------------------------------------------ |
+  | Table layout (column visibility, width, order by column ID)    | `orvano:v1:{userId}:{projectId}:table:{tableId}` |
+  | Last used index for those tables (`{ [tableId]: lastUsedMs }`) | `orvano:v1:{userId}:{projectId}:tables`          |
+  | Resource list collapsed state and width, per service           | `orvano:v1:{userId}:{projectId}:svc:{service}`   |
+  | Primary sidebar collapsed state, density, last SDK             | `orvano:v1:{userId}:layout`                      |
+  | Command palette recents                                        | `orvano:v1:{userId}:palette`                     |
+  | Theme (read before sign in)                                    | `orvano:v1:theme`                                |
 
   `userId` comes from the session, which boot loads before any screen renders (RTE-10), so only the theme is read without a user. Every read and every write is wrapped in try and catch. A read that fails to parse JSON or fails its Zod schema returns the fallback and removes the bad entry. A new item is added to `items.ts`, never declared elsewhere.
+
 - **STO-3 (MUST)**: Availability is probed once at startup (write and remove a test key). If storage is blocked or the probe throws, every item lives in memory for the session, and the console works the same apart from forgetting on reload (UX-28). The last used index is written at most once a minute per table, and keeps 50 tables per project; a write that hits the quota first evicts the least recently used tables, then retries once, then falls back to memory.
 - **STO-4 (MUST)**: A change that isn't backward compatible bumps the key version (`v1` to `v2`). Old versions are ignored, and at startup keys from older versions are removed.
 - **STO-5 (MUST)**: The storage module listens for the `storage` event, so a preference changed in another tab updates this tab (through the store's subscription).
@@ -303,86 +308,99 @@ Decided elsewhere, not here (this spec points to them and must not be read as de
 
 ### Canonical pattern
 
-The shape every screen follows. API paths are placeholders until feature 10 fixes them, and any API a rule still marks *verify with …* may change form.
+The shape every screen follows. API paths are placeholders until feature 10 fixes them, and any API a rule still marks _verify with …_ may change form.
 
 ```ts
 // vite.config.ts
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
-import { tanstackRouter } from '@tanstack/router-plugin/vite'
-import { lingui } from '@lingui/vite-plugin'
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from "vite";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { lingui } from "@lingui/vite-plugin";
 
 export default defineConfig({
   plugins: [
-    tanstackRouter({ target: 'react', autoCodeSplitting: true }), // RTE-1: before react()
+    tanstackRouter({ target: "react", autoCodeSplitting: true }), // RTE-1: before react()
     react(),
-    lingui(),                                                     // I18N-2: .po compiles on import
-    babel({                                                       // WEB-6, I18N-2: one pass;
-      plugins: ['@lingui/babel-plugin-lingui-macro'],             // plugins run before presets,
-      presets: [reactCompilerPreset()],                           // so macros expand first
+    lingui(), // I18N-2: .po compiles on import
+    babel({
+      // WEB-6, I18N-2: one pass;
+      plugins: ["@lingui/babel-plugin-lingui-macro"], // plugins run before presets,
+      presets: [reactCompilerPreset()], // so macros expand first
     }),
   ],
-  base: '/console/',                                              // WEB-8, spec 0007 CSL-1
+  base: "/console/", // WEB-8, spec 0007 CSL-1
   server: {
     port: 5173,
-    proxy: {                                                      // spec 0007 CSL-3: one origin in dev
-      '^/(?!console(/|$))': { target: 'http://localhost:5080' },  // every path outside /console
+    proxy: {
+      // spec 0007 CSL-3: one origin in dev
+      "^/(?!console(/|$))": { target: "http://localhost:5080" }, // every path outside /console
     },
   },
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-  build: { manifest: true },                                      // BDL-1
-})
+  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
+  build: { manifest: true }, // BDL-1
+});
 ```
 
 ```tsx
 // src/router.ts
-import { createRouter, type RouterHistory } from '@tanstack/react-router'
-import type { QueryClient } from '@tanstack/react-query'
-import { routeTree } from './routeTree.gen'
+import { createRouter, type RouterHistory } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+import { routeTree } from "./routeTree.gen";
 
-export interface RouterContext { queryClient: QueryClient }
+export interface RouterContext {
+  queryClient: QueryClient;
+}
 
 export function createAppRouter(opts: { queryClient: QueryClient; history?: RouterHistory }) {
   return createRouter({
     routeTree,
-    history: opts.history,                                        // QA-3: memory history in tests
+    history: opts.history, // QA-3: memory history in tests
     context: { queryClient: opts.queryClient },
-    basepath: config.basePath,                                    // WEB-8: fixed, same for every install
-    parseSearch,                                                  // URL-2
+    basepath: config.basePath, // WEB-8: fixed, same for every install
+    parseSearch, // URL-2
     stringifySearch,
-    defaultPreload: 'intent',
-    defaultPreloadStaleTime: 0,                                   // RTE-3: Query owns freshness
-    defaultPendingComponent: ContentSkeleton,                     // UX-21
+    defaultPreload: "intent",
+    defaultPreloadStaleTime: 0, // RTE-3: Query owns freshness
+    defaultPendingComponent: ContentSkeleton, // UX-21
     defaultPendingMs: 300,
     defaultPendingMinMs: 500,
     scrollRestoration: true,
-    defaultErrorComponent: RouteError,                            // FLT-2
+    defaultErrorComponent: RouteError, // FLT-2
     defaultNotFoundComponent: RouteNotFound,
-  })
+  });
 }
 
-declare module '@tanstack/react-router' {
-  interface Register { router: ReturnType<typeof createAppRouter> }
-  interface StaticDataRouteOption { crumb?: Crumb }               // RTE-7
-  interface HistoryState { keepFocus?: boolean }
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: ReturnType<typeof createAppRouter>;
+  }
+  interface StaticDataRouteOption {
+    crumb?: Crumb;
+  } // RTE-7
+  interface HistoryState {
+    keepFocus?: boolean;
+  }
 }
-declare module '@tanstack/react-query' {
-  interface Register { defaultError: ApiError; mutationMeta: { surface?: 'toast' } } // QRY-4
+declare module "@tanstack/react-query" {
+  interface Register {
+    defaultError: ApiError;
+    mutationMeta: { surface?: "toast" };
+  } // QRY-4
 }
 ```
 
 ```tsx
 // src/main.tsx
-const rootElement = document.getElementById('root')
-if (!rootElement) throw new Error('index.html has no #root element')
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("index.html has no #root element");
 const root = createRoot(rootElement, {
-  onCaughtError: reportConsoleError,                              // WEB-10, FLT-4
+  onCaughtError: reportConsoleError, // WEB-10, FLT-4
   onUncaughtError: reportConsoleError,
-})
-const queryClient = createQueryClient()                           // QRY-4
-const boot = await bootConsole(queryClient)                       // RTE-10: jitless, config + session, locale
+});
+const queryClient = createQueryClient(); // QRY-4
+const boot = await bootConsole(queryClient); // RTE-10: jitless, config + session, locale
 
 root.render(
   <StrictMode>
@@ -391,156 +409,172 @@ root.render(
         <RouterProvider router={createAppRouter({ queryClient })} />
       </AppProviders>
     ) : (
-      <BootError error={boot.error} />                            // FLT-2
+      <BootError error={boot.error} /> // FLT-2
     )}
   </StrictMode>,
-)
+);
 ```
 
 ```ts
 // src/features/databases/schemas/rows-search.ts
-import { z } from 'zod'
-import type { SearchMiddleware } from '@tanstack/react-router'
-import { searchList, sortParam } from '@/shared/url/search'
-import { filterRuleText } from './filter-rule'
+import { z } from "zod";
+import type { SearchMiddleware } from "@tanstack/react-router";
+import { searchList, sortParam } from "@/shared/url/search";
+import { filterRuleText } from "./filter-rule";
 
-export const rowsSearchSchema = z.object({                        // URL-1: every field falls back
-  filter: searchList(filterRuleText, { max: 10 }).catch([]),      // URL-2: repeated, kept as text
-  sort: sortParam.optional().catch(undefined),                    // column:asc|desc, split at the last colon
+export const rowsSearchSchema = z.object({
+  // URL-1: every field falls back
+  filter: searchList(filterRuleText, { max: 10 }).catch([]), // URL-2: repeated, kept as text
+  sort: sortParam.optional().catch(undefined), // column:asc|desc, split at the last colon
   cursor: z.string().optional().catch(undefined),
-  size: z.coerce.number().pipe(z.union([z.literal(25), z.literal(50), z.literal(100)])).catch(50),
+  size: z.coerce
+    .number()
+    .pipe(z.union([z.literal(25), z.literal(50), z.literal(100)]))
+    .catch(50),
   row: z.string().optional().catch(undefined),
-  sheet: z.literal('create-row').optional().catch(undefined),     // URL-6: named for what it opens
-})
-export type RowsSearch = z.output<typeof rowsSearchSchema>
+  sheet: z.literal("create-row").optional().catch(undefined), // URL-6: named for what it opens
+});
+export type RowsSearch = z.output<typeof rowsSearchSchema>;
 
-export const rowsSearchDefaults: Pick<RowsSearch, 'filter' | 'size'> = { filter: [], size: 50 }
+export const rowsSearchDefaults: Pick<RowsSearch, "filter" | "size"> = { filter: [], size: 50 };
 
 // Only what changes the data goes in loaderDeps and the query key (RTE-4)
-export type RowsKey = Pick<RowsSearch, 'filter' | 'sort' | 'cursor' | 'size'>
-export const toRowsKey = ({ filter, sort, cursor, size }: RowsSearch): RowsKey => ({ filter, sort, cursor, size })
+export type RowsKey = Pick<RowsSearch, "filter" | "sort" | "cursor" | "size">;
+export const toRowsKey = ({ filter, sort, cursor, size }: RowsSearch): RowsKey => ({
+  filter,
+  sort,
+  cursor,
+  size,
+});
 
 export const dropRowWhenSheetOpen: SearchMiddleware<RowsSearch> = ({ search, next }) => {
-  const result = next(search)
-  return result.sheet ? { ...result, row: undefined } : result    // URL-6
-}
+  const result = next(search);
+  return result.sheet ? { ...result, row: undefined } : result; // URL-6
+};
 ```
 
 ```tsx
 // src/routes/_shell/$orgId/$projectId/databases/$databaseId/tables/$tableId/rows.tsx
-import { createFileRoute, stripSearchParams } from '@tanstack/react-router'
+import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import {
-  dropRowWhenSheetOpen, rowsSearchDefaults, rowsSearchSchema, toRowsKey,
-} from '@/features/databases/schemas/rows-search'
-import { rowQueries } from '@/features/databases/api/queries'
-import { RowsPage } from '@/features/databases/components/rows-page' // DIR-2: direct path, split out
-import { TabError } from '@/features/databases/components/tab-error'
+  dropRowWhenSheetOpen,
+  rowsSearchDefaults,
+  rowsSearchSchema,
+  toRowsKey,
+} from "@/features/databases/schemas/rows-search";
+import { rowQueries } from "@/features/databases/api/queries";
+import { RowsPage } from "@/features/databases/components/rows-page"; // DIR-2: direct path, split out
+import { TabError } from "@/features/databases/components/tab-error";
 
 export const Route = createFileRoute(
-  '/_shell/$orgId/$projectId/databases/$databaseId/tables/$tableId/rows',
+  "/_shell/$orgId/$projectId/databases/$databaseId/tables/$tableId/rows",
 )({
   validateSearch: rowsSearchSchema,
   search: { middlewares: [stripSearchParams(rowsSearchDefaults), dropRowWhenSheetOpen] },
-  loaderDeps: ({ search }) => toRowsKey(search),                  // RTE-4: row and sheet never refetch
+  loaderDeps: ({ search }) => toRowsKey(search), // RTE-4: row and sheet never refetch
   loader: ({ context: { queryClient }, params, deps }) => {
-    void queryClient.prefetchQuery(rowQueries.page(params, deps)) // RTE-4: prefetch, never await grid data
+    void queryClient.prefetchQuery(rowQueries.page(params, deps)); // RTE-4: prefetch, never await grid data
   },
-  errorComponent: TabError,                                       // RTE-5: the tab bar stays
+  errorComponent: TabError, // RTE-5: the tab bar stays
   component: RowsPage,
-})
+});
 ```
 
 ```ts
 // src/features/databases/api/queries.ts
-import { queryOptions } from '@tanstack/react-query'
-import { get } from '@/shared/api/client'
-import { keepPreviousForSameResource } from '@/shared/api/placeholder'
-import type { RowsKey } from '../schemas/rows-search'
-import { toRowsQuery, type TableParams } from './types'
+import { queryOptions } from "@tanstack/react-query";
+import { get } from "@/shared/api/client";
+import { keepPreviousForSameResource } from "@/shared/api/placeholder";
+import type { RowsKey } from "../schemas/rows-search";
+import { toRowsQuery, type TableParams } from "./types";
 
 export const rowQueries = {
-  all: (projectId: string) => ['databases', projectId, 'rows'] as const,     // QRY-2
+  all: (projectId: string) => ["databases", projectId, "rows"] as const, // QRY-2
   page: (p: TableParams, k: RowsKey) =>
     queryOptions({
       // resource ID second to last, params last (QRY-2, QRY-5)
       queryKey: [...rowQueries.all(p.projectId), p.databaseId, p.tableId, k] as const,
       queryFn: ({ signal }) =>
-        get('/projects/{projectId}/databases/{databaseId}/tables/{tableId}/rows', {
+        get("/projects/{projectId}/databases/{databaseId}/tables/{tableId}/rows", {
           params: { path: p, query: toRowsQuery(k) },
-          signal,                                                 // QRY-3: required by get's type
+          signal, // QRY-3: required by get's type
         }),
-      placeholderData: keepPreviousForSameResource(p.tableId),    // QRY-5: never another table's rows
+      placeholderData: keepPreviousForSameResource(p.tableId), // QRY-5: never another table's rows
     }),
-}
+};
 ```
 
 ```tsx
 // src/features/databases/components/rows-page.tsx
-import { getRouteApi } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useLingui } from '@lingui/react/macro'
-import { DataGrid } from '@/ui/data-grid'                         // BDL-2: heavy primitive by its own path
-import { ErrorState, GridSkeleton, InlineError, useDelayedPending } from '@/ui'
-import { rowQueries } from '../api/queries'
-import { toRowsKey } from '../schemas/rows-search'
-import { useRowsView } from '../hooks/use-rows-view'
+import { getRouteApi } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useLingui } from "@lingui/react/macro";
+import { DataGrid } from "@/ui/data-grid"; // BDL-2: heavy primitive by its own path
+import { ErrorState, GridSkeleton, InlineError, useDelayedPending } from "@/ui";
+import { rowQueries } from "../api/queries";
+import { toRowsKey } from "../schemas/rows-search";
+import { useRowsView } from "../hooks/use-rows-view";
 
-const route = getRouteApi('/_shell/$orgId/$projectId/databases/$databaseId/tables/$tableId/rows')
+const route = getRouteApi("/_shell/$orgId/$projectId/databases/$databaseId/tables/$tableId/rows");
 
 export function RowsPage() {
-  const params = route.useParams()
-  const search = route.useSearch()
-  const view = useRowsView()                                      // URL-3: the UX-27 push or replace rules
-  const rows = useQuery(rowQueries.page(params, toRowsKey(search)))
-  const showSkeleton = useDelayedPending(rows.isPending)          // UX-21: shows after 300 ms, stays 500 ms
-  const { t } = useLingui()
+  const params = route.useParams();
+  const search = route.useSearch();
+  const view = useRowsView(); // URL-3: the UX-27 push or replace rules
+  const rows = useQuery(rowQueries.page(params, toRowsKey(search)));
+  const showSkeleton = useDelayedPending(rows.isPending); // UX-21: shows after 300 ms, stays 500 ms
+  const { t } = useLingui();
 
-  if (showSkeleton) return <GridSkeleton />
+  if (showSkeleton) return <GridSkeleton />;
   if (rows.data === undefined) {
-    return rows.isError ? <ErrorState error={rows.error} onRetry={() => void rows.refetch()} /> : null
+    return rows.isError ? (
+      <ErrorState error={rows.error} onRetry={() => void rows.refetch()} />
+    ) : null;
   }
   return (
     <>
-      {rows.isError && <InlineError error={rows.error} onRetry={() => void rows.refetch()} />} {/* QRY-5 */}
+      {rows.isError && <InlineError error={rows.error} onRetry={() => void rows.refetch()} />}{" "}
+      {/* QRY-5 */}
       <DataGrid
-        aria-label={t`Rows`}                                      // I18N-1
+        aria-label={t`Rows`} // I18N-1
         rows={rows.data.items}
-        busy={rows.isPlaceholderData || rows.isFetching}          // QRY-5: aria-busy
+        busy={rows.isPlaceholderData || rows.isFetching} // QRY-5: aria-busy
         sort={search.sort}
-        onSortChange={view.setSort}                               // push, clears the cursor
-        onPageChange={view.setPage}                               // push, then focus moves to the grid
-        onOpenRow={view.openRow}                                  // push
+        onSortChange={view.setSort} // push, clears the cursor
+        onPageChange={view.setPage} // push, then focus moves to the grid
+        onOpenRow={view.openRow} // push
       />
     </>
-  )
+  );
 }
 ```
 
 ```ts
 // src/features/databases/hooks/use-rows-view.ts (excerpt)
 export function useRowsView() {
-  const navigate = route.useNavigate()
-  const focusGrid = useGridFocus()
+  const navigate = route.useNavigate();
+  const focusGrid = useGridFocus();
   return {
-    setSort: (sort: string | undefined) => setSearch(navigate, { sort, cursor: undefined }, 'push'),
+    setSort: (sort: string | undefined) => setSearch(navigate, { sort, cursor: undefined }, "push"),
     setPage: (cursor: string | undefined) => {
-      setSearch(navigate, { cursor }, 'push')
-      focusGrid()                                                 // RTE-7, UX-35
+      setSearch(navigate, { cursor }, "push");
+      focusGrid(); // RTE-7, UX-35
     },
-    openRow: (row: string) => setSearch(navigate, { row }, 'push'),
-    stepRow: (row: string) => setSearch(navigate, { row }, 'replace'), // Previous or Next in the sheet
-  }
+    openRow: (row: string) => setSearch(navigate, { row }, "push"),
+    stepRow: (row: string) => setSearch(navigate, { row }, "replace"), // Previous or Next in the sheet
+  };
 }
 ```
 
 ```ts
 // src/shared/storage/items.ts (excerpt)
-export const tableLayout = defineStored({                         // STO-2
+export const tableLayout = defineStored({
+  // STO-2
   key: (ids: { userId: string; projectId: string; tableId: string }) =>
     `orvano:v1:${ids.userId}:${ids.projectId}:table:${ids.tableId}`,
-  schema: tableLayoutSchema,                                      // column IDs, widths, order
+  schema: tableLayoutSchema, // column IDs, widths, order
   fallback: defaultTableLayout,
-})
+});
 // reads and writes never throw: a parse or schema failure returns the fallback (STO-2),
 // and blocked storage falls back to memory (STO-3)
 ```
@@ -566,17 +600,17 @@ These common patterns are wrong in the Orvano console, even when a tutorial or a
 
 Feature 7 installs and wires these; this table says what each rule is checked by.
 
-| Mechanism | Rules | Where it lives |
-|---|---|---|
-| TypeScript (`tsc --noEmit`, the WEB-4 options) | WEB-4, A11Y-3 (required accessible names), FRM-3 (the mapper's return type), QRY-3 (`signal` required by `get`), URL-1 (typed search output) | `tsconfig.json`, `tsconfig.node.json`, CI |
-| ESLint: typescript-eslint strict type checked (including no non null assertion), react-hooks recommended (compiler diagnostics as errors), TanStack Query and Router plugins, JSX accessibility rules, Lingui rules, no console | WEB-4, WEB-6, WEB-9, QRY-7, A11Y-2, A11Y-6, I18N-4, I18N-8, FLT-4 | ESLint flat config (feature 7) |
-| ESLint restricted imports, globals, and syntax, plus an import boundary rule | DIR-2, DIR-3, STO-1, QRY-1 (`fetch` and openapi-fetch outside `shared/api`), QRY-2 (`queryKey` outside `api/queries.ts`), URL-3 (`useSearch` writes and `navigate({ search })` outside view hooks and `shared/url`), WEB-8 (`import.meta.env` outside `shared/config`), SEC-2, Replaces list (banned packages) | ESLint flat config |
-| Drift checks: regenerate and `git diff --exit-code` | QRY-1 (`schema.gen.ts`), RTE-1 (`routeTree.gen.ts`), I18N-3 (`lingui check sync`) | CI |
-| Vitest browser mode with axe (WCAG tags) | A11Y-5, QA-1 to QA-4, FRM-2 | `vitest.config.ts`, CI |
-| Playwright with axe (WCAG tags plus `best-practice`) against a real server | QA-5, A11Y-3, A11Y-5, I18N-9 | `playwright.config.ts`, CI (PR and nightly) |
-| Bundle size check on the Vite manifest | BDL-1 | CI |
-| pnpm settings | WEB-3, SEC-5 | `package.json`, `pnpm-workspace.yaml` |
-| Review (`/check review`, people) | Everything else: loader await versus prefetch (RTE-4), history modes (URL-3), state placement (STA-1), dependency weight and license (WEB-7, BDL-3), cache patching after writes (QRY-6), test quality | PR template checklist from feature 7 |
+| Mechanism                                                                                                                                                                                                                       | Rules                                                                                                                                                                                                                                                                                                          | Where it lives                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| TypeScript (`tsc --noEmit`, the WEB-4 options)                                                                                                                                                                                  | WEB-4, A11Y-3 (required accessible names), FRM-3 (the mapper's return type), QRY-3 (`signal` required by `get`), URL-1 (typed search output)                                                                                                                                                                   | `tsconfig.json`, `tsconfig.node.json`, CI   |
+| ESLint: typescript-eslint strict type checked (including no non null assertion), react-hooks recommended (compiler diagnostics as errors), TanStack Query and Router plugins, JSX accessibility rules, Lingui rules, no console | WEB-4, WEB-6, WEB-9, QRY-7, A11Y-2, A11Y-6, I18N-4, I18N-8, FLT-4                                                                                                                                                                                                                                              | ESLint flat config (feature 7)              |
+| ESLint restricted imports, globals, and syntax, plus an import boundary rule                                                                                                                                                    | DIR-2, DIR-3, STO-1, QRY-1 (`fetch` and openapi-fetch outside `shared/api`), QRY-2 (`queryKey` outside `api/queries.ts`), URL-3 (`useSearch` writes and `navigate({ search })` outside view hooks and `shared/url`), WEB-8 (`import.meta.env` outside `shared/config`), SEC-2, Replaces list (banned packages) | ESLint flat config                          |
+| Drift checks: regenerate and `git diff --exit-code`                                                                                                                                                                             | QRY-1 (`schema.gen.ts`), RTE-1 (`routeTree.gen.ts`), I18N-3 (`lingui check sync`)                                                                                                                                                                                                                              | CI                                          |
+| Vitest browser mode with axe (WCAG tags)                                                                                                                                                                                        | A11Y-5, QA-1 to QA-4, FRM-2                                                                                                                                                                                                                                                                                    | `vitest.config.ts`, CI                      |
+| Playwright with axe (WCAG tags plus `best-practice`) against a real server                                                                                                                                                      | QA-5, A11Y-3, A11Y-5, I18N-9                                                                                                                                                                                                                                                                                   | `playwright.config.ts`, CI (PR and nightly) |
+| Bundle size check on the Vite manifest                                                                                                                                                                                          | BDL-1                                                                                                                                                                                                                                                                                                          | CI                                          |
+| pnpm settings                                                                                                                                                                                                                   | WEB-3, SEC-5                                                                                                                                                                                                                                                                                                   | `package.json`, `pnpm-workspace.yaml`       |
+| Review (`/check review`, people)                                                                                                                                                                                                | Everything else: loader await versus prefetch (RTE-4), history modes (URL-3), state placement (STA-1), dependency weight and license (WEB-7, BDL-3), cache patching after writes (QRY-6), test quality                                                                                                         | PR template checklist from feature 7        |
 
 ### Rollout
 
@@ -594,6 +628,7 @@ New code immediately. No console code exists, so every rule holds from the first
 ## Consequences
 
 **Positive**:
+
 - One cache (TanStack Query) and typed URL state (TanStack Router) make UX-21 and UX-27 the default behavior instead of something each screen rebuilds.
 - Generated API types plus drift checks mean the console and server can't silently disagree, and E2E tests against a real server catch what types can't.
 - React Aria brings the APG keyboard models, RTL, and locale aware fields, so WCAG 2.2 AA and translation readiness rest on tested primitives.
@@ -601,6 +636,7 @@ New code immediately. No console code exists, so every rule holds from the first
 - No commercial dependencies and no third party telemetry, which suits self hosters.
 
 **Negative / tradeoffs**:
+
 - Three TanStack libraries plus React Aria and Lingui is a lot to learn for new contributors. The canonical pattern and the installed skills are the on ramp.
 - The custom search serializer, the history helper, the storage module, the placeholder helper, the interaction lock, and the boot sequence are Orvano code to write and maintain (a few hundred lines with tests).
 - A Babel pass (Lingui macros and the React Compiler) makes builds slower than a pure Oxc pipeline, and a wrong wiring fails silently, so the scaffold and I18N-9 must prove both transforms ran.
@@ -608,9 +644,10 @@ New code immediately. No console code exists, so every rule holds from the first
 - TypeScript stays on 6.0 until the lint ecosystem supports 7, which gives up 7's much faster type checking for now.
 - Browser mode tests in three engines and E2E tests against real containers are slower and need Playwright browsers plus a container engine (Docker or Podman, spec 0007 DEV-1) on every machine and runner.
 - `eslint-plugin-jsx-a11y` doesn't declare ESLint 10 support yet, so feature 7 must choose ESLint 9 or another source for those rules.
-- Two rules name library APIs still marked *verify with feature 11* or *verify with the first API screen* (RTE-6, QA-2); their exact form may change then.
+- Two rules name library APIs still marked _verify with feature 11_ or _verify with the first API screen_ (RTE-6, QA-2); their exact form may change then.
 
 **Neutral**:
+
 - The data grid library, styling, and the visual design stay open for feature 11; this spec only fixes how they get data and strings.
 - Contributors used to React Hook Form, React Router, or Radix need to adjust; the Replaces list names the swaps.
 - One installed skill (`vercel-react-best-practices`) partly conflicts with this spec (see `## Decision`); agents apply WEB-0.

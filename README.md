@@ -6,13 +6,13 @@ Open source, self hostable backend as a service: auth, databases, storage, realt
 
 ## Repository layout
 
-| Folder | What lives there |
-|---|---|
-| `server/` | The .NET 10 solution (`Orvano.slnx`): `Orvano.Host` (the `orvano` executable), `Orvano.SharedKernel`, `Orvano.Infrastructure`, one project per module, and benchmarks |
-| `console/` | The React and Vite console, served by the server at `/console` |
-| `api/` | The OpenAPI contract and generator config (feature 10) |
-| `deploy/` | `Dockerfile`, `compose.yaml` (the reference install), `compose.dev.yaml`, `Caddyfile`, `.env.example` |
-| `docs/` | Planning: scope and specs. Read [AGENTS.md](AGENTS.md) before writing code. |
+| Folder     | What lives there                                                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `server/`  | The .NET 10 solution (`Orvano.slnx`): `Orvano.Host` (the `orvano` executable), `Orvano.SharedKernel`, `Orvano.Infrastructure`, one project per module, and benchmarks |
+| `console/` | The React and Vite console, served by the server at `/console`                                                                                                        |
+| `api/`     | The OpenAPI contract and generator config (feature 10)                                                                                                                |
+| `deploy/`  | `Dockerfile`, `compose.yaml` (the reference install), `compose.dev.yaml`, `Caddyfile`, `.env.example`                                                                 |
+| `docs/`    | Planning: scope and specs. Read [AGENTS.md](AGENTS.md) before writing code.                                                                                           |
 
 ## Local development
 
@@ -58,13 +58,13 @@ Every compose file runs unchanged with `podman compose`. For Testcontainers, poi
 
 ## The `orvano` command
 
-| Command | What it does |
-|---|---|
-| `orvano serve` | Runs the server (the default). `ORVANO_ROLES` picks `api`, `worker`, or both. |
-| `orvano migrate` | Applies database migrations under an advisory lock, then exits. `serve` never migrates. |
-| `orvano init --out <dir> --domain <domain>` | Writes `root.key` and `.env` for a new install. Never overwrites. |
-| `orvano healthcheck` | Exits 0 when the local server is ready. Used by the container health check. |
-| `orvano admin selftest` | Checks that the Argon2id password hasher's native library loads. |
+| Command                                     | What it does                                                                            |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `orvano serve`                              | Runs the server (the default). `ORVANO_ROLES` picks `api`, `worker`, or both.           |
+| `orvano migrate`                            | Applies database migrations under an advisory lock, then exits. `serve` never migrates. |
+| `orvano init --out <dir> --domain <domain>` | Writes `root.key` and `.env` for a new install. Never overwrites.                       |
+| `orvano healthcheck`                        | Exits 0 when the local server is ready. Used by the container health check.             |
+| `orvano admin selftest`                     | Checks that the Argon2id password hasher's native library loads.                        |
 
 Configuration comes from `ORVANO_` environment variables (`ORVANO_DATABASE__HOST`, with `__` for nesting); any key also takes a `_FILE` form that reads its value from a file. [`deploy/.env.example`](deploy/.env.example) lists them.
 

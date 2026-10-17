@@ -1,6 +1,6 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
-import { playwright } from '@vitest/browser-playwright'
-import viteConfig from './vite.config'
+import { defineConfig, mergeConfig } from "vitest/config";
+import { playwright } from "@vitest/browser-playwright";
+import viteConfig from "./vite.config";
 
 // Spec 0003 QA-1: browser mode only, on the app's own Vite config, so tests run the same router plugin, Lingui
 // macros, and React Compiler as the app. The src/ui project (Chromium, Firefox, WebKit) joins with feature 11.
@@ -11,27 +11,32 @@ export default mergeConfig(
     test: {
       // Spec 0008 CI-6: coverage runs with --coverage (CI), and is reported, never gated.
       coverage: {
-        provider: 'v8',
-        include: ['src/**/*.{ts,tsx}'],
-        exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/routeTree.gen.ts', 'src/locales/**'],
-        reporter: ['text', 'json-summary'],
+        provider: "v8",
+        include: ["src/**/*.{ts,tsx}"],
+        exclude: [
+          "src/**/*.test.{ts,tsx}",
+          "src/test/**",
+          "src/routeTree.gen.ts",
+          "src/locales/**",
+        ],
+        reporter: ["text", "json-summary"],
       },
       projects: [
         {
           extends: true,
           test: {
-            name: 'app',
-            include: ['src/**/*.test.{ts,tsx}'],
-            exclude: ['src/ui/**'],
+            name: "app",
+            include: ["src/**/*.test.{ts,tsx}"],
+            exclude: ["src/ui/**"],
             browser: {
               enabled: true,
               headless: true,
               provider: playwright(),
-              instances: [{ browser: 'chromium' }],
+              instances: [{ browser: "chromium" }],
             },
           },
         },
       ],
     },
   }),
-)
+);

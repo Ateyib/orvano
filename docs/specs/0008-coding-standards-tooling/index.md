@@ -11,7 +11,7 @@ This spec picks the tools that enforce the rules in specs 0001 to 0007, and says
 
 **Chosen option**: Option 1: One Vite+ toolchain for every JavaScript and repo file, native .NET tooling for C#, enforced by staged hooks and path aware CI behind one gate, with shared SDK workflows and starter files kept in this repo.
 
-Every rule in this spec has an ID; a practice spec says *what* is checked, this spec says *which tool checks it and where*. Rule **TL-0** sets that split.
+Every rule in this spec has an ID; a practice spec says _what_ is checked, this spec says _which tool checks it and where_. Rule **TL-0** sets that split.
 
 **Implementation skills**: `migrate-oxlint` (`oxc-project/oxc`, `.claude/skills/migrate-oxlint/`) for the Oxlint and ESLint split · `migrate-oxfmt` (`oxc-project/oxc`, `.claude/skills/migrate-oxfmt/`) for Oxfmt setup · `authoring-github-workflows` (`dotnet/skills`, `.claude/skills/authoring-github-workflows/`) for the workflow files · `github-actions-hardening` (`github/awesome-copilot`, `.claude/skills/github-actions-hardening/`) for CI-4 · `dependabot` (`github/awesome-copilot`, `.claude/skills/dependabot/`) for DPB rules · `pnpm` (`antfu/skills`, `.claude/skills/pnpm/`) for the root workspace · `msbuild` (`.claude/skills/msbuild/`) for the analyzer wiring · `vite` (`antfu/skills`, `.claude/skills/vite/`) for config files. Where a skill disagrees with this spec, this spec wins (TL-0).
 
@@ -25,7 +25,7 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
 
 ### TL: precedence, layout, versions
 
-- **TL-0 (MUST)**: The practice specs (0001 to 0007) own *what* a rule says. This spec owns *which tool enforces it and how it is configured*. Where a practice spec's Enforcement table names a tool this spec replaces (ESLint for the JSX accessibility rules, see LNT-4), this spec wins and the practice spec gets a one line update (see Follow-up). Where an installed skill disagrees, this spec wins.
+- **TL-0 (MUST)**: The practice specs (0001 to 0007) own _what_ a rule says. This spec owns _which tool enforces it and how it is configured_. Where a practice spec's Enforcement table names a tool this spec replaces (ESLint for the JSX accessibility rules, see LNT-4), this spec wins and the practice spec gets a one line update (see Follow-up). Where an installed skill disagrees, this spec wins.
 - **TL-1 (MUST)**: The repo root is a pnpm workspace. Root `package.json` is `"name": "orvano-repo"`, `"private": true`, `"type": "module"`, holds `packageManager: "pnpm@12.12.1"` and the Node `engines` range (both moved from `console/package.json`), the shared dev tools (TL-4), and the repo scripts (TL-6). Root `pnpm-workspace.yaml` lists `console` (and later JS packages such as feature 11's design system) and keeps the SEC-5 settings (`minimumReleaseAge: 4320`, install scripts blocked, with its comment). There is one `pnpm-lock.yaml`, at the root. `console/pnpm-lock.yaml` and `console/pnpm-workspace.yaml` are deleted. A root `.node-version` (moved from `console/`, holding the full version, `24.22.0`) is the one Node version: `engines`, setup-vp, and the Dockerfile's `node` tag follow it. pnpm's one pin is `packageManager`; everything else (CI, Dockerfile) gets pnpm through corepack, never by naming a version again. The console keeps its own `vite` and `vitest` dependencies and its scripts (`dev`, `build`, `test`); Vite+ is used for `fmt`, `lint`, `staged`, `hooks`, and `run`, not as a replacement for the console's Vite and Vitest, so no package aliases or overrides are needed. `tooling/starters/**` is excluded from the workspace.
 - **TL-2 (MUST)**: Vite+ is a pinned devDependency of the root (`vite-plus`, exact version), and every script calls the local `vp`. A global Vite+ install is optional and never required, so the Windows global installer issues (PATH, Defender flags on shims) don't block anyone. CI installs it through `pnpm install` after `voidzero-dev/setup-vp` (pinned by SHA, TL-4) sets up Node and pnpm.
 - **TL-3 (MUST)**: Config homes, all at the repo root:
@@ -35,23 +35,23 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
   - `console/vite.config.ts` stays the app's build config, with no `fmt`, `lint`, or `staged` block. If Vite+ turns out to need these blocks per package, the console config imports them from `tooling/vp/shared.ts` and the root stays the source (VER-2).
 - **TL-4 (MUST)**: Tool versions, pinned exactly in the root `package.json` (`"vite-plus": "1.3.0"`, not `^1.3.0`), because a lint or format minor can change results across the whole repo:
 
-  | Tool | Version | Where |
-  |---|---|---|
-  | vite-plus (bundles Oxlint, Oxfmt) | 1.3.0 | root devDependency |
-  | eslint | 10.13.0 | root devDependency |
-  | typescript-eslint | 8.71.2 | root devDependency |
-  | eslint-plugin-react-hooks | 7.1.1 | root devDependency |
-  | eslint-plugin-lingui | 0.16.0 | root devDependency |
-  | @tanstack/eslint-plugin-query | 5.104.3 | root devDependency |
-  | @tanstack/eslint-plugin-router | 1.162.0 | root devDependency |
-  | eslint-plugin-oxlint | the Oxlint version `vp --version` reports for vite-plus 1.3.0 | root devDependency |
-  | jiti | latest at build time, pinned exactly | root devDependency (loads `eslint.config.ts`) |
-  | typescript | `~6.0.3` (WEB-2, SDK-1) | console and root |
-  | size-limit, @size-limit/file | latest at build time, pinned exactly | console devDependency |
-  | @vitest/coverage-v8 | same version as the console's `vitest` | console devDependency |
-  | Microsoft.CodeAnalysis.BannedApiAnalyzers | latest stable at build time, pinned in central package management | `server/Directory.Packages.props` |
-  | Microsoft.Testing.Extensions.CodeCoverage | latest stable at build time | `server/Directory.Packages.props`, referenced from `server/tests/Directory.Build.props` |
-  | actionlint, zizmor, hadolint, typos | through their actions, pinned by SHA | CI only (TL-6) |
+  | Tool                                      | Version                                                           | Where                                                                                   |
+  | ----------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+  | vite-plus (bundles Oxlint, Oxfmt)         | 1.3.0                                                             | root devDependency                                                                      |
+  | eslint                                    | 10.13.0                                                           | root devDependency                                                                      |
+  | typescript-eslint                         | 8.71.2                                                            | root devDependency                                                                      |
+  | eslint-plugin-react-hooks                 | 7.1.1                                                             | root devDependency                                                                      |
+  | eslint-plugin-lingui                      | 0.16.0                                                            | root devDependency                                                                      |
+  | @tanstack/eslint-plugin-query             | 5.104.3                                                           | root devDependency                                                                      |
+  | @tanstack/eslint-plugin-router            | 1.162.0                                                           | root devDependency                                                                      |
+  | eslint-plugin-oxlint                      | the Oxlint version `vp --version` reports for vite-plus 1.3.0     | root devDependency                                                                      |
+  | jiti                                      | latest at build time, pinned exactly                              | root devDependency (loads `eslint.config.ts`)                                           |
+  | typescript                                | `~6.0.3` (WEB-2, SDK-1)                                           | console and root                                                                        |
+  | size-limit, @size-limit/file              | latest at build time, pinned exactly                              | console devDependency                                                                   |
+  | @vitest/coverage-v8                       | same version as the console's `vitest`                            | console devDependency                                                                   |
+  | Microsoft.CodeAnalysis.BannedApiAnalyzers | latest stable at build time, pinned in central package management | `server/Directory.Packages.props`                                                       |
+  | Microsoft.Testing.Extensions.CodeCoverage | latest stable at build time                                       | `server/Directory.Packages.props`, referenced from `server/tests/Directory.Build.props` |
+  | actionlint, zizmor, hadolint, typos       | through their actions, pinned by SHA                              | CI only (TL-6)                                                                          |
 
   "At build time" means `/develop` picks the then current version, pins it exactly, and writes it into this table. This applies to the JS tools only; the console's runtime dependencies keep their caret ranges, since the lockfile pins them.
 
@@ -88,6 +88,7 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
   - vendored skills (`.claude/skills/`, `.agents/skills/`, `skills-lock.json`), which are third party content that a reformat would make drift from upstream
 
   typos uses the same ignore list (in `typos.toml`).
+
 - **FMT-3 (MUST)**: C# is formatted by `dotnet format` reading `server/.editorconfig` (GEN-2 stays: severities change only there). CI runs `dotnet format server/Orvano.slnx --verify-no-changes` (whitespace, style, and analyzer fixes). EF Core migrations match `[**/Migrations/*.cs]` with `generated_code = true` in `server/.editorconfig`, which covers the `*.Designer.cs` and model snapshot files there too.
 - **FMT-4 (MUST)**: A root `.editorconfig` (`root = true`) sets the basics for every file:
   - UTF8, LF, final newline, trimmed trailing whitespace (not in Markdown), no `max_line_length`
@@ -110,19 +111,20 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
 - **LNT-1 (MUST)**: Oxlint (through `vp lint`, configured in `.oxlintrc.json`) runs first on all JS and TS. Plugins on: `eslint`, `typescript`, `unicorn`, `oxc`, `react` (including the hooks rules), `jsx-a11y`, `import`, `promise`, `vitest`. Categories `correctness` and `suspicious` are errors; `perf` warns. CI denies warnings (`--deny-warnings`). Config files (`*.config.ts`) may default export; nothing else may.
 - **LNT-1a (MUST)**: Which linter owns the named rules from the 0003 and 0005 Enforcement tables:
 
-  | Rule | Owner | Spec rules |
-  |---|---|---|
-  | `no-console` | Oxlint | WEB-9, DSC-3 equivalent |
-  | `import/no-default-export` | Oxlint | WEB-9, SDK no default exports |
-  | `typescript/no-explicit-any`, `typescript/ban-ts-comment`, `typescript/no-non-null-assertion`, `typescript/no-enum` equivalents | Oxlint where it has the rule, else typescript-eslint | WEB-4, TYP-2 |
-  | type aware rules (`no-floating-promises`, `no-unsafe-*`, `strict-boolean-expressions` and the rest of `strictTypeChecked`) | ESLint (typescript-eslint) | WEB-4, TYP-2 |
-  | React Compiler diagnostics, rules of hooks | ESLint (react-hooks); Oxlint's hooks rules are off via `eslint-plugin-oxlint` to avoid doubles | WEB-6 |
-  | TanStack Query and Router rules | ESLint | QRY-7, FLT-4 |
-  | Lingui rules | ESLint | I18N-4, I18N-8 |
-  | jsx-a11y | Oxlint | A11Y-2, A11Y-6 (LNT-4) |
-  | restrictions | ESLint core | LNT-3 |
+  | Rule                                                                                                                            | Owner                                                                                          | Spec rules                    |
+  | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------- |
+  | `no-console`                                                                                                                    | Oxlint                                                                                         | WEB-9, DSC-3 equivalent       |
+  | `import/no-default-export`                                                                                                      | Oxlint                                                                                         | WEB-9, SDK no default exports |
+  | `typescript/no-explicit-any`, `typescript/ban-ts-comment`, `typescript/no-non-null-assertion`, `typescript/no-enum` equivalents | Oxlint where it has the rule, else typescript-eslint                                           | WEB-4, TYP-2                  |
+  | type aware rules (`no-floating-promises`, `no-unsafe-*`, `strict-boolean-expressions` and the rest of `strictTypeChecked`)      | ESLint (typescript-eslint)                                                                     | WEB-4, TYP-2                  |
+  | React Compiler diagnostics, rules of hooks                                                                                      | ESLint (react-hooks); Oxlint's hooks rules are off via `eslint-plugin-oxlint` to avoid doubles | WEB-6                         |
+  | TanStack Query and Router rules                                                                                                 | ESLint                                                                                         | QRY-7, FLT-4                  |
+  | Lingui rules                                                                                                                    | ESLint                                                                                         | I18N-4, I18N-8                |
+  | jsx-a11y                                                                                                                        | Oxlint                                                                                         | A11Y-2, A11Y-6 (LNT-4)        |
+  | restrictions                                                                                                                    | ESLint core                                                                                    | LNT-3                         |
 
   When Oxlint gains a rule ESLint holds today, it moves to Oxlint in a normal PR, and `eslint-plugin-oxlint` turns off the ESLint copy.
+
 - **LNT-2 (MUST)**: ESLint 10 runs second, from the one root `eslint.config.ts` (TL-3), only for what Oxlint can't do today: `typescript-eslint` `strictTypeChecked` (type aware, needs TS 6), `eslint-plugin-react-hooks` recommended with the React Compiler diagnostics as errors, `@tanstack/eslint-plugin-query`, `@tanstack/eslint-plugin-router`, `eslint-plugin-lingui` (I18N-4, I18N-8), and the restriction rules (LNT-3). `eslint-plugin-oxlint` comes last in the config, built from `.oxlintrc.json`, so no rule runs twice. CI runs `eslint --max-warnings=0`, and `linterOptions.reportUnusedDisableDirectives` is `error`.
 - **LNT-3 (MUST)**: Restriction rules live in ESLint core rules, never in a plugin: `no-restricted-imports` (patterns), `no-restricted-globals`, and `no-restricted-syntax` (selectors).
   - The allowed file for each restriction is a `files` override that turns that one rule off, never an inline disable. See the canonical pattern below.
@@ -134,18 +136,19 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
 - **LNT-5 (MUST)**: Turning a rule off for one line needs a reason in the same comment: `// eslint-disable-next-line <rule> -- <reason>`, `// oxlint-disable-next-line <rule> -- <reason>`, and in C# `[SuppressMessage(..., Justification = "<reason>")]` or `#pragma warning disable <id> // <reason>`. File wide disables are not allowed; a file that needs one gets an override in the config, with a comment.
 - **LNT-6 (MUST)**: .NET analyzers are the SDK's own (`latest-recommended`, GEN-2) plus `Microsoft.CodeAnalysis.BannedApiAnalyzers`, referenced once in `server/Directory.Build.props` (`PrivateAssets="all"`, so tests inherit it) with `server/BannedSymbols.txt` as an `AdditionalFiles` item. Each line ends with `; <rule ID>: <use this instead>`. What is a banned symbol and what isn't:
 
-  | Rule | Banned symbols | Allowed exception |
-  |---|---|---|
-  | GEN-9 | `DateTime.Now`, `DateTime.UtcNow`, `DateTimeOffset.Now`, `DateTimeOffset.UtcNow` | none |
-  | ASY-1 | `Task.Wait` (all overloads), `Task<T>.Result`, `TaskAwaiter.GetResult`, `TaskAwaiter<T>.GetResult` | none |
-  | JSN-1 | every type in `Newtonsoft.Json` | none |
-  | PRF-3, OUT-1 | `HttpClient` constructors | none in the server (the factory builds clients) |
-  | DAT-6 | `RelationalQueryableExtensions.FromSqlRaw`, `RelationalDatabaseFacadeExtensions.ExecuteSqlRaw*` | none |
-  | DAT-10 | `RelationalDatabaseFacadeExtensions.Migrate`, `MigrateAsync` | the migrate command, with an LNT-5 suppression |
-  | DAT-11 | `NpgsqlConnection(string)` constructor | none |
-  | TOK-1, KEY-1 | `System.Random` (type and `Random.Shared`) | none |
+  | Rule         | Banned symbols                                                                                     | Allowed exception                               |
+  | ------------ | -------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+  | GEN-9        | `DateTime.Now`, `DateTime.UtcNow`, `DateTimeOffset.Now`, `DateTimeOffset.UtcNow`                   | none                                            |
+  | ASY-1        | `Task.Wait` (all overloads), `Task<T>.Result`, `TaskAwaiter.GetResult`, `TaskAwaiter<T>.GetResult` | none                                            |
+  | JSN-1        | every type in `Newtonsoft.Json`                                                                    | none                                            |
+  | PRF-3, OUT-1 | `HttpClient` constructors                                                                          | none in the server (the factory builds clients) |
+  | DAT-6        | `RelationalQueryableExtensions.FromSqlRaw`, `RelationalDatabaseFacadeExtensions.ExecuteSqlRaw*`    | none                                            |
+  | DAT-10       | `RelationalDatabaseFacadeExtensions.Migrate`, `MigrateAsync`                                       | the migrate command, with an LNT-5 suppression  |
+  | DAT-11       | `NpgsqlConnection(string)` constructor                                                             | none                                            |
+  | TOK-1, KEY-1 | `System.Random` (type and `Random.Shared`)                                                         | none                                            |
 
   `server/src/Orvano.Modules.Auth/BannedSymbols.Auth.txt` (and the same file in a secrets project once one exists) adds `Guid.NewGuid` (TOK-1, KEY-1), `MD5`, `SHA1`, `Rfc2898DeriveBytes` (PWD-1), and `HMACSHA1`, which is allowed only in the TOTP class with an LNT-5 suppression. The behavioral parts of these rules (which client reaches user URLs, where the connection factory lives) stay with the architecture tests in specs 0002 and 0006. No other analyzer packs (Meziantou, Roslynator, Sonar) are added; one is added later only for a named rule, through a spec update.
+
 - **LNT-7 (MUST)**: Dart SDK repos use the shared `analysis_options.yaml` from the Dart starter (KIT-2), with the strict modes and the DRT-4 lint list from spec 0004, run as `dart analyze --fatal-infos`. The `tool/check_*.dart` scripts spec 0004 names are written when the first Dart SDK repo is created (KIT-3), not in feature 7.
 
 ### TYC: type checking
@@ -161,6 +164,7 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
   - `*.cs`: `node tooling/scripts/format-cs.mjs`, which turns the staged paths into paths relative to `server/`, runs `dotnet format whitespace server --folder --include <paths>` in chunks of 50 (Windows command lines are short), and exits with dotnet's code
 
   Partly staged files (`git add -p`) are protected by lint-staged's own stash and restore, which covers the C# command too, because it is just another staged task. ESLint, `tsc`, full `dotnet format`, builds, and tests are not in the hook: they are slow, and CI runs them.
+
 - **HOK-3 (MUST)**: The hook should finish within 10 seconds for a typical commit (up to 20 files), measured at build (VER-4). Hooks are a convenience: `git commit --no-verify` is allowed, and CI (CI-2) repeats every check, so nothing depends on hooks having run.
 
 ### GIT: branches, titles, history
@@ -183,28 +187,28 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
   - A **global** path list marks every area as changed: root `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.node-version`, `vite.config.ts`, `eslint.config.ts`, `.oxlintrc.json`, `tsconfig.json`, `.editorconfig`, `.gitattributes`, `tooling/scripts/**`, `.github/workflows/ci.yml`, and `.github/workflows/_*.yml`.
   - Area workflows are reusable (`workflow_call` only), each called from `ci.yml` when its paths changed:
 
-    | Workflow | Paths |
-    |---|---|
-    | `_server.yml` | `server/**` |
-    | `_console.yml` | `console/**`, `tooling/lint-fixtures/**` |
-    | `_deploy.yml` | `deploy/**`, `.dockerignore`, and also `server/**` or `console/**` (for the image build) |
-    | `_repo.yml` | always runs |
+    | Workflow       | Paths                                                                                                         |
+    | -------------- | ------------------------------------------------------------------------------------------------------------- |
+    | `_server.yml`  | `server/**`                                                                                                   |
+    | `_console.yml` | `console/**`, `tooling/lint-fixtures/**`                                                                      |
+    | `_deploy.yml`  | `deploy/**`, `.dockerignore`, and also `server/**` or `console/**` (for the image build)                      |
+    | `_repo.yml`    | always runs                                                                                                   |
     | `_windows.yml` | `console/**`, `.vite-hooks/**`, `tooling/scripts/format-cs.mjs`, `server/.editorconfig`, plus the global list |
 
   - `ci-gate` runs with `if: always()` and needs `changes` and every area job. It fails when `changes` didn't succeed, or when any area job failed or was cancelled. An area job skipped because its paths didn't change counts as passing.
   - Branch protection (feature 58) requires `ci-gate` plus the two CI-3 checks. No merge queue for now, so there is no `merge_group` trigger. Adding a merge queue later means adding `merge_group` to all three workflows in the same PR.
 - **CI-2 (MUST)**: What each area runs:
 
-  | Workflow | Jobs |
-  |---|---|
-  | `_server.yml` | `dotnet restore server/Orvano.slnx --locked-mode`; `check:dotnet` (FMT-3, build with `-p:CI=true`: warnings as errors, NuGetAudit errors, SUP-5); `dotnet test --solution server/Orvano.slnx` with coverage (CI-6). PostgreSQL comes from the existing `PostgresFixture` (Testcontainers, `postgres:18.6`, the same tag as the compose files) on the runner's Docker, so no service container, credentials, or connection string env var is needed |
+  | Workflow       | Jobs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+  | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `_server.yml`  | `dotnet restore server/Orvano.slnx --locked-mode`; `check:dotnet` (FMT-3, build with `-p:CI=true`: warnings as errors, NuGetAudit errors, SUP-5); `dotnet test --solution server/Orvano.slnx` with coverage (CI-6). PostgreSQL comes from the existing `PostgresFixture` (Testcontainers, `postgres:18.6`, the same tag as the compose files) on the runner's Docker, so no service container, credentials, or connection string env var is needed                                                                                              |
   | `_console.yml` | `check:js` and `check:lint-fixtures` (LNT-3); drift checks: `pnpm --filter @orvano/console exec lingui check sync` (I18N-3; if Lingui 6 has no `check` command, `lingui extract --clean` then `git diff --exit-code console/src/locales`), and the console build regenerating `src/routeTree.gen.ts` (committed, RTE-1) followed by `git diff --exit-code console/src/routeTree.gen.ts`; `pnpm --filter @orvano/console test` (Vitest browser mode, Chromium, coverage); size check (BDL-1, below); `pnpm audit --audit-level moderate` (SUP-5) |
-  | `_deploy.yml` | hadolint on `deploy/Dockerfile`; `docker compose config` on both compose files; the `.node-version` and Dockerfile `node` tag match (TL-7); image build for `linux/amd64` without push |
-  | `_repo.yml` | calls `repo-hygiene.yml` (KIT-1) by local path: `pr-title` (GIT-2), Oxfmt check of Markdown, YAML, JSON, and TOML outside `console/`, `actionlint`, `zizmor` (fails on findings), `typos` |
-  | `_windows.yml` | CI-8 |
-
+  | `_deploy.yml`  | hadolint on `deploy/Dockerfile`; `docker compose config` on both compose files; the `.node-version` and Dockerfile `node` tag match (TL-7); image build for `linux/amd64` without push                                                                                                                                                                                                                                                                                                                                                          |
+  | `_repo.yml`    | calls `repo-hygiene.yml` (KIT-1) by local path: `pr-title` (GIT-2), Oxfmt check of Markdown, YAML, JSON, and TOML outside `console/`, `actionlint`, `zizmor` (fails on findings), `typos`                                                                                                                                                                                                                                                                                                                                                       |
+  | `_windows.yml` | CI-8                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
   - **Size check (BDL-1)**: the console build writes Vite's manifest. `console/scripts/size-entries.mjs` reads it, maps each route's source file to its built chunks, and writes `.size-limit.json` entries with spec 0003's gzip budgets (copied from BDL-1, not restated here). `size-limit` then fails over budget. Hashed file names are fine, because entries are rebuilt from the manifest on every run.
   - Playwright E2E against a real server (QA-5) joins `_console.yml` with the first API screen, as spec 0003 plans. The workflow keeps a commented placeholder job for it.
+
 - **CI-3 (MUST)**: Security checks run in their own workflows, not through `ci-gate` (a job can't `need` another workflow), and branch protection requires them directly:
   - `codeql.yml`: a matrix over `csharp` and `javascript-typescript`, `build-mode: none`, the `security-extended` query suite, on PRs, pushes to `main`, and weekly (SUP-3). It is a workflow file, not repo default setup, so it is pinned and reviewed like the rest. Each analysis job grants `security-events: write`.
   - `dependency-review.yml` runs on every PR, failing on moderate or worse vulnerabilities and on licenses outside `.github/dependency-review-config.yml`. Until feature 57 decides, its `allow-licenses` is GEN-5's list as SPDX IDs: `MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`, `ISC`, `PostgreSQL` (SUP-2).
@@ -228,6 +232,7 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
   - the Playwright Chromium download, keyed on the `playwright` version in `pnpm-lock.yaml`, installed with `pnpm --filter @orvano/console exec playwright install --with-deps chromium` (Linux) or without `--with-deps` (Windows)
 
   A cache miss only costs time, so no job depends on one.
+
 - **CI-8 (MUST)**: The Windows job (`_windows.yml` on `windows-2025`) runs on the paths in CI-1 and weekly (CI-9). Steps:
   - setup-vp and `actions/setup-dotnet` (from `global.json`); `pnpm install --frozen-lockfile`
   - `pnpm check:js`
@@ -274,29 +279,39 @@ Versions below are as of 2026-10-16 (the landscape check in rationale.md). Minor
 - **EDT-1 (MUST)**: `.vscode/extensions.json` recommends the Oxc, ESLint, EditorConfig, and C# Dev Kit extensions. No `.vscode/settings.json` is committed, and the editor never decides formatting: the root `.editorconfig` and FMT rules do.
 
 **Canonical pattern** (LNT-3, a restriction with its one allowed home):
+
 ```ts
 // eslint.config.ts (repo root, TL-3)
 export default defineConfig(
   // ...typescript-eslint strictTypeChecked, react-hooks, tanstack, lingui
   {
-    files: ['console/src/**/*.{ts,tsx}'],
+    files: ["console/src/**/*.{ts,tsx}"],
     rules: {
-      'no-restricted-imports': ['error', { patterns: [
-        { group: ['openapi-fetch'], message: 'QRY-1: call the API through src/shared/api.' },
-      ] }],
-      'no-restricted-syntax': ['error',
-        { selector: "MemberExpression[object.type='MetaProperty'][property.name='env']",
-          message: 'WEB-8: read import.meta.env only in src/shared/config.ts.' },
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            { group: ["openapi-fetch"], message: "QRY-1: call the API through src/shared/api." },
+          ],
+        },
+      ],
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "MemberExpression[object.type='MetaProperty'][property.name='env']",
+          message: "WEB-8: read import.meta.env only in src/shared/config.ts.",
+        },
       ],
     },
   },
-  { files: ['console/src/shared/api/**'], rules: { 'no-restricted-imports': 'off' } },   // QRY-1 home
-  { files: ['console/src/shared/config.ts'], rules: { 'no-restricted-syntax': 'off' } }, // WEB-8 home
-  oxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),                                  // LNT-2: last
-)
+  { files: ["console/src/shared/api/**"], rules: { "no-restricted-imports": "off" } }, // QRY-1 home
+  { files: ["console/src/shared/config.ts"], rules: { "no-restricted-syntax": "off" } }, // WEB-8 home
+  oxlint.buildFromOxlintConfigFile("./.oxlintrc.json"), // LNT-2: last
+);
 ```
 
 **Replaces**:
+
 - Vite and `tsc` scripts run from `console/` with their own lockfile, pnpm settings, and Node pin (TL-1)
 - A second pnpm pin in the Dockerfile (TL-7)
 - Any Prettier, Biome, or ESLint stylistic setup; `eslint-plugin-jsx-a11y` (LNT-4)
@@ -310,23 +325,24 @@ export default defineConfig(
 
 **Enforcement**:
 
-| Mechanism | Rules | Where it lives |
-|---|---|---|
-| `pnpm check` and the area workflows | FMT-1 to FMT-4, FMT-6, LNT-1 to LNT-4, LNT-6, TYC-1, TL-6 | root `package.json`, `.github/workflows/_*.yml` |
-| Lint fixtures that must fire | LNT-3 | `tooling/lint-fixtures/`, `check:lint-fixtures` |
-| ESLint `reportUnusedDisableDirectives`, Oxlint and C# rules for justifications | LNT-5 | configs; review for the reason's quality |
-| `pr-title` job | GIT-2 | `repo-hygiene.yml` |
-| actionlint, zizmor | CI-1, CI-4, CI-5 | `repo-hygiene.yml` |
-| Windows job | TL-2, TL-5, HOK-1, HOK-2, GIT-4 | `_windows.yml` |
-| Image build, Node tag check | TL-1, TL-7 | `_deploy.yml` |
-| CodeQL, dependency review | SUP-2, SUP-3 (CI-3) | `codeql.yml`, `dependency-review.yml` |
-| Branch protection requiring `ci-gate` and the CI-3 checks, squash only | CI-1, CI-3, GIT-2 | feature 58 |
-| The first SDK repo's CI | KIT-1 to KIT-3 | each SDK repo |
-| Review (`/check review`, people) | TL-0, TL-4 (no unpinned tools), GIT-1, LNT-5 reasons, DPB-2 toolchain steps, PRT-1 use | PR template |
+| Mechanism                                                                      | Rules                                                                                  | Where it lives                                  |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `pnpm check` and the area workflows                                            | FMT-1 to FMT-4, FMT-6, LNT-1 to LNT-4, LNT-6, TYC-1, TL-6                              | root `package.json`, `.github/workflows/_*.yml` |
+| Lint fixtures that must fire                                                   | LNT-3                                                                                  | `tooling/lint-fixtures/`, `check:lint-fixtures` |
+| ESLint `reportUnusedDisableDirectives`, Oxlint and C# rules for justifications | LNT-5                                                                                  | configs; review for the reason's quality        |
+| `pr-title` job                                                                 | GIT-2                                                                                  | `repo-hygiene.yml`                              |
+| actionlint, zizmor                                                             | CI-1, CI-4, CI-5                                                                       | `repo-hygiene.yml`                              |
+| Windows job                                                                    | TL-2, TL-5, HOK-1, HOK-2, GIT-4                                                        | `_windows.yml`                                  |
+| Image build, Node tag check                                                    | TL-1, TL-7                                                                             | `_deploy.yml`                                   |
+| CodeQL, dependency review                                                      | SUP-2, SUP-3 (CI-3)                                                                    | `codeql.yml`, `dependency-review.yml`           |
+| Branch protection requiring `ci-gate` and the CI-3 checks, squash only         | CI-1, CI-3, GIT-2                                                                      | feature 58                                      |
+| The first SDK repo's CI                                                        | KIT-1 to KIT-3                                                                         | each SDK repo                                   |
+| Review (`/check review`, people)                                               | TL-0, TL-4 (no unpinned tools), GIT-1, LNT-5 reasons, DPB-2 toolchain steps, PRT-1 use | PR template                                     |
 
 **Rollout**: New code immediately, plus one migration PR for what already exists: the scaffold's console moves under the root workspace (TL-1, TL-7), and the first repo wide format lands as its own commit (FMT-5). Existing lint and style findings from the scaffold are fixed in the same build, not tracked as debt, since the codebase is small (87 source files).
 
 **Exceptions**:
+
 - Generated files, starters, and vendored skills (FMT-2) are never formatted or linted in this repo.
 - `*.config.ts` files may default export (LNT-1).
 - Until the repo is pushed to GitHub (feature 58), the CI proof (CI-1 to CI-9) can't run. The proof for now is local only (Rollout order, step 9).
@@ -348,6 +364,7 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 11. Later, once the repo is on GitHub (feature 58): CI green, CodeQL on fork PRs checked (CI-3), the NuGet lock file question answered (DPB-3), the Windows job green and TL-5 decided (within two weeks), the weekly run seen once
 
 **Verify at build** (record each result here and in rationale.md):
+
 - **VER-1**: `vp hooks` and `vp staged` work from the root workspace, and `vp staged` passes the staged `.cs` paths to `format-cs.mjs` so it can make them relative (HOK-2).
 - **VER-2**: Vite+ reads `fmt` and `lint` from the root `vite.config.ts` for files under `console/` (TL-3).
 - **VER-3**: List the jsx-a11y strict rules Oxlint lacks, and confirm each is covered by axe (LNT-4).
@@ -358,12 +375,14 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 ## Consequences
 
 **Positive**:
+
 - One toolchain and one command (`pnpm check`) for the JS side and the repo, and one familiar .NET path for C#. New contributors learn two things, not ten.
 - Oxlint and Oxfmt are fast, so the hook stays in seconds and CI's lint step is short.
 - Every check in specs 0001 to 0007 now has a named tool and a place it runs, and protecting `main` is three required checks.
 - SDK repos start from shared configs and CI instead of six copies that drift.
 
 **Negative / tradeoffs**:
+
 - Two linters on the JS side (Oxlint and a small ESLint) until TypeScript 7 lands across the plugins, so two configs to keep in step (`eslint-plugin-oxlint` limits the overlap, and the `toolchain` Dependabot group moves them together).
 - Vite+ is a month past 1.0, with open Windows issues. TL-5 means a real fallback PR may be needed, and TL-4's exact pins mean tool upgrades are deliberate work.
 - Oxlint's jsx-a11y set is smaller than the plugin's strict preset, so a few a11y checks move from lint time to test time (axe).
@@ -374,6 +393,7 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 - The FMT-6 style baseline produces a first wave of fixes in the scaffold's C#.
 
 **Neutral**:
+
 - `console/` commands now run from the root (`pnpm --filter @orvano/console ...` or the root scripts). The console and root `AGENTS.md` change through `/sync`.
 - The first format commit touches most specs once.
 

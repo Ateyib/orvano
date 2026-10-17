@@ -61,18 +61,19 @@ The per layer picks follow the same forces. NSec over BouncyCastle: both pass GE
 
 The scaffold showed that a 0600 `root.key` owned by the operator cannot be read by the container's uid 1654, because compose file secrets are bind mounts that keep host ownership (Docker Desktop on macOS hides this). Options weighed:
 
-| Option | Gains | Costs | Verdict |
-|---|---|---|---|
-| `root.key` 0644 inside a 0700 install folder, init runs as the operator | Works the same on rootful Docker, rootful Podman, and rootless Podman; stays a file secret; the operator backs it up without sudo | Protection lives in the folder: a copy taken out keeps 0644, so the warning must say so | **Chosen** |
-| Key in `.env` as `ORVANO_ROOT_KEY` | No file modes at all | The key shows in `docker inspect` and the process environment, and sits beside the database passwords | Runner up |
-| Compose runs Orvano as the operator (`user: "${UID}:${GID}"`) so 0600 works | No world readable file anywhere | The image's storage volume belongs to 1654 (IMG-2), so it would need chowning; uid plumbing differs per engine | Rejected |
-| init runs as uid 1654 | Key stays 0600 | The operator needs sudo to prepare and back up the folder, and compose cannot read a 1654 owned `.env` | Rejected |
+| Option                                                                      | Gains                                                                                                                             | Costs                                                                                                          | Verdict    |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------- |
+| `root.key` 0644 inside a 0700 install folder, init runs as the operator     | Works the same on rootful Docker, rootful Podman, and rootless Podman; stays a file secret; the operator backs it up without sudo | Protection lives in the folder: a copy taken out keeps 0644, so the warning must say so                        | **Chosen** |
+| Key in `.env` as `ORVANO_ROOT_KEY`                                          | No file modes at all                                                                                                              | The key shows in `docker inspect` and the process environment, and sits beside the database passwords          | Runner up  |
+| Compose runs Orvano as the operator (`user: "${UID}:${GID}"`) so 0600 works | No world readable file anywhere                                                                                                   | The image's storage volume belongs to 1654 (IMG-2), so it would need chowning; uid plumbing differs per engine | Rejected   |
+| init runs as uid 1654                                                       | Key stays 0600                                                                                                                    | The operator needs sudo to prepare and back up the folder, and compose cannot read a 1654 owned `.env`         | Rejected   |
 
 A read only cross check on another model then found the gaps that INS-5's ordered steps now close (refuse before any change, verify the mode reads back, clean up partial writes, rootful Podman, SELinux `:Z`, no key for `migrate`).
 
 ## References
 
 **Project sources** (verifiable, in this repo):
+
 - `docs/scope/index.md` and `docs/scope/foundations.md`, feature 6 and the given stack
 - Spec 0002 (LAY-1, LAY-3, LAY-4, API-7, ASY-5, GEN-5, PRF-2, TST-5, TST-5a, LOG-4, LOG-6, CFG-5)
 - Spec 0003 (WEB-8, QA-5) · Spec 0004 (DQA-3) · Spec 0005 (repo naming premise note)
@@ -80,12 +81,14 @@ A read only cross check on another model then found the gaps that INS-5's ordere
 - Installed skills: `containerize-aspnetcore`, `docker-compose-patterns`, `caching`, `opentelemetry`
 
 **Practices & standards**:
+
 - Monolith first; database backed queue first
 - Transactional outbox pattern; at least once delivery with idempotent handlers
 - PostgreSQL `FOR UPDATE SKIP LOCKED` queues and `LISTEN/NOTIFY`
 - Least privilege database roles; distroless (chiseled) non root containers
 
 **Links** (web verified during the landscape check on 2026-10-16):
+
 - NSec.Cryptography on NuGet (26.4.0, April 2026, Argon2id): https://www.nuget.org/packages/NSec.Cryptography
 - BouncyCastle.Cryptography on NuGet (2.7.0, July 2026): https://www.nuget.org/packages/BouncyCastle.Cryptography
 - Microsoft.Extensions.Caching.Hybrid on NuGet (10.11.0, October 2026): https://www.nuget.org/packages/Microsoft.Extensions.Caching.Hybrid
@@ -99,12 +102,12 @@ A read only cross check on another model then found the gaps that INS-5's ordere
 
 Summary of the researcher's check; the full notes are in `docs/.agent-cache/research/stack-architecture.md`.
 
-| Layer | Finding | Verified |
-|---|---|---|
-| Jobs | Wolverine 6.51 MIT, active; TickerQ dual MIT and Apache, young; Hangfire core LGPL (fails GEN-5); hand rolled `SKIP LOCKED` has no license risk | Wolverine and TickerQ fetched; Hangfire license from memory |
-| Cache | HybridCache 10.11 stable, MIT, tag invalidation in .NET 10; no PostgreSQL `IDistributedCache` provider confirmed | Fetched |
-| Argon2id | NSec 26.4 exposes Argon2id via libsodium; BouncyCastle 2.7 managed | Fetched |
-| TLS | Caddy 2.11.7 current; LettuceEncrypt last release 1.3.3 in May 2024 | Caddy fetched; LettuceEncrypt from search only |
-| Aspire | Now named "Aspire", 13.6.1; AppHost is a local orchestrator | Fetched |
-| PostgreSQL | 18.6 reported as latest 18 minor; Npgsql 10.0.3 | Version from secondary sources only; pin the exact minor at scaffold (PG-1) |
-| Pooling | PgBouncer transaction mode breaks session features such as `LISTEN` | From knowledge, not fetched |
+| Layer      | Finding                                                                                                                                         | Verified                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Jobs       | Wolverine 6.51 MIT, active; TickerQ dual MIT and Apache, young; Hangfire core LGPL (fails GEN-5); hand rolled `SKIP LOCKED` has no license risk | Wolverine and TickerQ fetched; Hangfire license from memory                 |
+| Cache      | HybridCache 10.11 stable, MIT, tag invalidation in .NET 10; no PostgreSQL `IDistributedCache` provider confirmed                                | Fetched                                                                     |
+| Argon2id   | NSec 26.4 exposes Argon2id via libsodium; BouncyCastle 2.7 managed                                                                              | Fetched                                                                     |
+| TLS        | Caddy 2.11.7 current; LettuceEncrypt last release 1.3.3 in May 2024                                                                             | Caddy fetched; LettuceEncrypt from search only                              |
+| Aspire     | Now named "Aspire", 13.6.1; AppHost is a local orchestrator                                                                                     | Fetched                                                                     |
+| PostgreSQL | 18.6 reported as latest 18 minor; Npgsql 10.0.3                                                                                                 | Version from secondary sources only; pin the exact minor at scaffold (PG-1) |
+| Pooling    | PgBouncer transaction mode breaks session features such as `LISTEN`                                                                             | From knowledge, not fetched                                                 |

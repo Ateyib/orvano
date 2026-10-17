@@ -8,6 +8,7 @@ msgstr ""
 "Language: pseudo-LOCALE\n"
 
 #: src/features/welcome/components/welcome-page.tsx:8
+#: src/shared/i18n/index.test.ts:23
 msgid "Orvano console"
 msgstr ""
 
