@@ -21,3 +21,9 @@ extend-exclude = [
 ]
 
 [default.extend-words]
+# Rule ID prefix from spec 0005 (SIZ-1, SIZ-2).
+SIZ = "SIZ"
+# The wrk HTTP benchmark tool.
+wrk = "wrk"
+# A valid spelling, used in spec 0004.
+unparseable = "unparseable"

@@ -8,3 +8,10 @@ packages:
 # Dependency install scripts stay blocked (pnpm's default); allow one only by name here, with a reason.
 # A just published version waits 3 days before it can be installed.
 minimumReleaseAge: 4320
+
+# pnpm audit (spec 0006 SUP-5) ignores an advisory only here, with the reason and when to remove it.
+auditConfig:
+  ignoreGhsas:
+    # braces: stack exhaustion on deeply nested patterns. Reached only through @lingui/cli (a build tool; nothing
+    # ships in the console bundle), and no patched release exists (2026-10-17). Remove when one ships.
+    - GHSA-vfj7-8cjw-p6xm
