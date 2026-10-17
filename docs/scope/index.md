@@ -23,7 +23,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5   | [Security baseline](foundations.md)               | Foundation    | done        |
 | 57  | [Open source license](foundations.md)             | Foundation    | in-progress |
 | 6   | [Stack & architecture](foundations.md)            | Foundation    | done        |
-| 7   | [Coding standards & tooling](foundations.md)      | Foundation    | in-progress |
+| 7   | [Coding standards & tooling](foundations.md)      | Foundation    | done        |
 | 58  | [Repo & community setup](foundations.md)          | Foundation    | planned     |
 | 8   | [Platform data model](foundations.md)             | Foundation    | planned     |
 | 9   | [Access control model](foundations.md)            | Foundation    | planned     |

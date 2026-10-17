@@ -1,7 +1,7 @@
 # 0008. Coding standards and tooling for the core monorepo and SDK starters
 
 **Date**: 2026-10-16
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
