@@ -90,6 +90,20 @@ The sub decisions follow the same forces:
 
 The main risk is RUL-5: whether GitHub accepts CodeQL uploads from fork PRs and Dependabot PRs (both get a read only token by default). A code scanning merge rule waits for results, so a refused upload would leave a PR stuck with only an emergency ruleset edit to free it. That's why RUL-4 ships deferred: the `analyze` checks are required from day one, and the alert gate is added only after a fork PR and a Dependabot PR prove the upload works. The cross check on 2026-10-16 raised this, along with the private plan limits on secret scanning and private reporting, the `pull-requests: read` ceiling on the reusable workflow callers, and the trailers and file contents a mailmap alone wouldn't rewrite. All of them are folded into the rules.
 
+## The bot skip (decided 2026-10-16, after the review)
+
+The fresh model review (`docs/reviews/2026-10-16-review-repo-community-setup.md`) found that skipping every commit whose GitHub author has `type: "Bot"` can be faked. GitHub sets a commit's `author` to whichever account the author email maps to, and it never checks that the person pushing owns that email. A contributor who sets `user.email` to `49699333+dependabot[bot]@users.noreply.github.com` gets a `Bot` author and no sign off check. Nobody reproduced it live, but it follows from how GitHub links emails, so it is treated as real.
+
+Options weighed:
+
+- **Accept it as a residual risk.** No code. The maintainer reads and merges every PR. Rejected: the cost of closing the hole is a few lines and one test, and a sign off record with a known bypass is weaker evidence if someone ever asks where a contribution came from. A bot author on an outside PR is also easy to miss in review.
+- **Also require the PR author to be a bot (chosen).** `pull_request.user` is the account that opened the PR, which no commit field can fake. Dependabot, Renovate, and Copilot agent PRs all have `user.type` `Bot`, so their commits are still skipped with no name list (CTB-3's intent holds). A maintainer who rebases a Dependabot branch or pushes the DPB-3 lock file commit onto it leaves the PR author as Dependabot, and their own commits are checked as usual (CTB-5). The one case that gets worse is a person's PR holding a real bot commit (a cherry picked Dependabot commit, say). That is rare here (no workflow pushes bot commits onto PRs), and the error tells the person to make themselves its author and add their sign off, which is also what DCO asks for: the person submitting the change certifies it. The SDK repos get it for free, because a reusable workflow sees the caller's `pull_request` event.
+- **Skip every commit in a bot's PR, whoever wrote it.** Simpler, but a maintainer's unsigned commit pushed onto a Dependabot branch would pass, breaking CTB-5.
+- **Require a verified signature on the bot commit.** Rejected: GitHub verifies a signature against the committer, not the author, so someone can sign with their own key and still author as Dependabot. Commits pushed by `github-actions[bot]` with `git push` aren't signed either.
+- **A list of bot names or emails.** Rejected: the email is the part that gets faked, so a list blocks nothing and needs upkeep.
+
+Legal intent: DCO is a statement by the person submitting the code. A bot's commit has no person to sign it off, and the maintainer who turned the bot on answers for it. So the skip should follow who submitted the PR, not whose name is on a commit.
+
 ## Skills license inventory
 
 _Filled by the build (SKL-1) before the history rewrite: one row per skill in `skills-lock.json`, with its source, the source license, and whether it stays (license file added) or is removed from history._
