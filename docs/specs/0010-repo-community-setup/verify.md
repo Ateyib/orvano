@@ -21,7 +21,9 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 - [ ] A Dependabot PR's bot commits and a merge commit from "Update branch" are skipped by `dco` → AC-7
 - [ ] A PR opened by a person with a commit authored as `dependabot[bot]` (the `noreply` email) and no sign off fails `dco` with the reset author fix → AC-7, DCO-2
 - [ ] The weekly `Scheduled` run starts (the `pull-requests: read` grant reaches `dco`, which skips) → AC-7
-- [ ] `github-settings.mjs --org orvanohq` (with `gh auth refresh -s admin:org`) exits 0, or SHA pinning is ticked here by hand if the API doesn't return it; fork PR approval setting name written here → AC-12
+- [x] `github-settings.mjs --org orvanohq` (with `gh auth refresh -s admin:org`) exits 0, or SHA pinning is ticked here by hand if the API doesn't return it; fork PR approval setting name written here → AC-12
+  - 2026-10-17: `node tooling/scripts/github-settings.mjs --org orvanohq` printed `orvanohq: matches ORG-1.` and exited 0. The API returned all four fields (2FA required, SHA pinning required, workflow token `read`, Actions can't approve PRs), so no manual tick was needed.
+  - Fork settings, left at GitHub's defaults: "Approval for running fork pull request workflows from contributors" is "Require approval for first-time contributors"; "Fork pull request workflows in private and internal repositories" has "Run workflows from fork pull requests" off.
 - [ ] Skills inventory table in `rationale.md`; each kept skill has its `LICENSE` → AC-14
 - [ ] HIS-4 sweep on the rewritten clone and again on a fresh clone right before the flip: only `atteprojects@gmail.com` and `noreply` emails, no `the employer word`, gitleaks clean or every finding explained; `git ls-remote origin` right after the push lists only `refs/heads/main` and `HEAD` → AC-13
 
