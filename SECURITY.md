@@ -7,7 +7,7 @@ Orvano holds other people's users, data, and secrets, and runs their code. We ta
 ## How to report
 
 1. **GitHub private vulnerability reporting (preferred):** open a report at <https://github.com/orvanohq/orvano/security/advisories/new>. This works for the server, the console, the image, and every SDK. If the problem is in an SDK, say which package; we move the advisory to that SDK's repo.
-2. **Email (fallback):** if you can't use GitHub, write to `{{SECURITY_EMAIL}}`.
+2. **Email (fallback):** if you can't use GitHub, write to [security@orvano.dev](mailto:security@orvano.dev).
 
 Helpful details: the affected component and version (the image tag or `orvano --version`, or the SDK package and version), steps to reproduce, what an attacker gains, and any proof of concept. You don't need a full write up to report.
 

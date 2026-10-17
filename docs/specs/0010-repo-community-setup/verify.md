@@ -6,7 +6,8 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 
 - [x] `pnpm check` → exits 0 → AC-19
 - [x] `pnpm test:tooling` → `dco.test.mjs`, `github-settings.test.mjs`, `export-template.test.mjs` all pass → AC-7, AC-8, AC-16, AC-19
-- [ ] `git grep -n '{{SECURITY_EMAIL}}'` → lists only `SECURITY.md`, `CODE_OF_CONDUCT.md`, `TRADEMARKS.md` before VRP-1's mailbox exists, and nothing after (OPN-1 item 1) → AC-1, AC-2
+- [x] `git grep -n '{{SECURITY_EMAIL}}'` → lists only `SECURITY.md`, `CODE_OF_CONDUCT.md`, `TRADEMARKS.md` before VRP-1's mailbox exists, and nothing after (OPN-1 item 1) → AC-1, AC-2
+  - 2026-10-17 (OPN-1 item 1): the mailbox is `security@orvano.dev`, and a test mail to it arrived. `git grep -n '{{SECURITY_EMAIL}}' -- ':!docs'` finds nothing. The only matches left are under `docs/`, where the specs and reviews name the placeholder itself.
 - [x] Diff `CODE_OF_CONDUCT.md` against the official Contributor Covenant 3.0 Markdown → only the reporting contact line changed, and the template's enforcement "NOTE" removed → AC-2
 - [x] Read `CONTRIBUTING.md` → the COM-2 sections in order, the full DCO 1.1 text, the CTB-6 sentence, the `git rebase --signoff origin/main` fix, the DPB-3 step, the Windows notes → AC-3
 - [x] `ls SUPPORT.md TRADEMARKS.md .github/CODEOWNERS` and `README.md` has the status line and a Community section linking all five files → AC-4
@@ -48,7 +49,8 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 
 ## Value sourcing
 
-- [ ] Contact address: the same `{{SECURITY_EMAIL}}` value in `SECURITY.md`, `CODE_OF_CONDUCT.md`, and `TRADEMARKS.md` after VRP-1 → VRP-1, COC-1, TMK-1
+- [x] Contact address: the same `{{SECURITY_EMAIL}}` value in `SECURITY.md`, `CODE_OF_CONDUCT.md`, and `TRADEMARKS.md` after VRP-1 → VRP-1, COC-1, TMK-1
+  - 2026-10-17: all three link to `security@orvano.dev`.
 - [ ] Required check names: each name in the `core` profile matches a job `name:` in `ci.yml`, `codeql.yml`, `dependency-review.yml`, and the first public run → RUL-3
 - [ ] `integration_id`: a status from another app (for example a commit status set with the API) does not satisfy a required check → RUL-3
 - [ ] Template pin: the exported `ci.yml` SHA equals `git rev-parse origin/main` in the core and the date is the export day; `--check` later keeps that pin → TPL-3
