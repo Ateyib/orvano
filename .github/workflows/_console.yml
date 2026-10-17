@@ -26,6 +26,8 @@ jobs:
       # vp check, ESLint, tsc, and the drift checks (catalogs, route tree). The drift check's build feeds the size check.
       - run: pnpm check:js
       - run: pnpm check:lint-fixtures
+      # The tooling scripts' own tests (changes, fixtures, format-cs, size entries, coverage summary).
+      - run: pnpm test:tooling
       - id: playwright
         name: Find the Playwright version
         run: echo "version=$(pnpm --filter @orvano/console exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"

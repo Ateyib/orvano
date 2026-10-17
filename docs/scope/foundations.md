@@ -80,7 +80,7 @@ spec [0008](../specs/0008-coding-standards-tooling/index.md) · code in `package
 - [x] Design it (spec): `/architect coding standards & tooling`
 - [x] Capture conventions + tooling choices: `/audit`
 - [x] Install the tooling: `/develop tooling`
-- [ ] Check it runs clean: `/test`
+- [x] Check it runs clean: `/test`
 
 ### 58. Repo & community setup
 
