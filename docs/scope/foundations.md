@@ -93,7 +93,7 @@ spec [0010](../specs/0010-repo-community-setup/index.md) · code in the root com
 
 - [x] Design it (spec): `/architect repo & community setup`
 - [ ] Build it: `/develop repo & community setup`
-  - [ ] Community files, issue forms, CODEOWNERS, and the `dco` job on `main` (AC-1 to AC-5, AC-7)
+  - [x] Community files, issue forms, CODEOWNERS, and the `dco` job on `main` (AC-1 to AC-5, AC-7)
   - [x] `github-settings.mjs`, `export-template.mjs`, and the SDK starter CodeQL and dependency review workflows (AC-8, AC-16 to AC-19)
   - [ ] Clean history: skills license check, rewrite, sweep, repo recreated, org settings (AC-12 to AC-14)
   - [ ] Go public and prove it: the flip, settings applied, Discussions, the proof PR (AC-6, AC-9 to AC-11, AC-15)
