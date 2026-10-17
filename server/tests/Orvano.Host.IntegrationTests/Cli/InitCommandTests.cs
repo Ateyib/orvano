@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Orvano.Testing;
 
 namespace Orvano.Host.IntegrationTests.Cli;
@@ -16,7 +18,7 @@ public sealed class InitCommandTests : IDisposable
     [Fact, Trait("Spec", "0007:INS-3")]
     public async Task Init_writes_a_32_byte_root_key_when_the_folder_is_empty()
     {
-        var result = await InitAsync("--domain", "orvano.example.com");
+        OrvanoCli.Result result = await InitAsync("--domain", "orvano.example.com");
 
         result.ExitCode.ShouldBe(0);
         Convert.FromBase64String((await File.ReadAllTextAsync(KeyPath, TestContext.Current.CancellationToken)).Trim()).Length.ShouldBe(32);
@@ -27,10 +29,10 @@ public sealed class InitCommandTests : IDisposable
     {
         await InitAsync("--domain", "orvano.example.com");
 
-        var env = await ReadEnvAsync();
+        Dictionary<string, string> env = await ReadEnvAsync();
         env["ORVANO_DOMAIN"].ShouldBe("orvano.example.com");
         env["ORVANO_PUBLIC_URL"].ShouldBe("https://orvano.example.com");
-        foreach (var name in new[] { "POSTGRES_PASSWORD", "ORVANO_DB_PASSWORD", "ORVANO_PROVISIONER_PASSWORD" })
+        foreach (string? name in new[] { "POSTGRES_PASSWORD", "ORVANO_DB_PASSWORD", "ORVANO_PROVISIONER_PASSWORD" })
         {
             env[name].Length.ShouldBeGreaterThanOrEqualTo(40);
         }
@@ -72,10 +74,10 @@ public sealed class InitCommandTests : IDisposable
         }
 
         File.SetUnixFileMode(_install.FullName, (UnixFileMode)0b111_101_101);
-        var keep = Path.Combine(_install.FullName, "compose.yaml");
+        string keep = Path.Combine(_install.FullName, "compose.yaml");
         await File.WriteAllTextAsync(keep, "name: orvano\n", TestContext.Current.CancellationToken);
 
-        var result = await InitAsync("--domain", "orvano.example.com");
+        OrvanoCli.Result result = await InitAsync("--domain", "orvano.example.com");
 
         result.ExitCode.ShouldBe(0, result.Error);
         result.Output.ShouldContain("0700");
@@ -92,9 +94,9 @@ public sealed class InitCommandTests : IDisposable
             return;
         }
 
-        var fresh = Path.Combine(_install.FullName, "new-install");
+        string fresh = Path.Combine(_install.FullName, "new-install");
 
-        var result = await OrvanoCli.RunAsync(["init", "--out", fresh, "--domain", "orvano.example.com"], null,
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["init", "--out", fresh, "--domain", "orvano.example.com"], null,
             TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(0, result.Error);
@@ -110,18 +112,18 @@ public sealed class InitCommandTests : IDisposable
             return;
         }
 
-        var start = OrvanoCli.StartInfo(["init", "--out", _install.FullName, "--domain", "orvano.example.com"]);
+        ProcessStartInfo start = OrvanoCli.StartInfo(["init", "--out", _install.FullName, "--domain", "orvano.example.com"]);
         var shell = new System.Diagnostics.ProcessStartInfo("/bin/sh") { RedirectStandardOutput = true, RedirectStandardError = true };
         shell.ArgumentList.Add("-c");
         shell.ArgumentList.Add("umask 077; exec \"$@\"");
         shell.ArgumentList.Add("sh");
         shell.ArgumentList.Add(start.FileName);
-        foreach (var arg in start.ArgumentList)
+        foreach (string arg in start.ArgumentList)
         {
             shell.ArgumentList.Add(arg);
         }
 
-        using var process = System.Diagnostics.Process.Start(shell)!;
+        using Process process = System.Diagnostics.Process.Start(shell)!;
         await process.WaitForExitAsync(TestContext.Current.CancellationToken);
 
         process.ExitCode.ShouldBe(0);
@@ -140,7 +142,7 @@ public sealed class InitCommandTests : IDisposable
         File.SetUnixFileMode(_install.FullName, (UnixFileMode)0b111_101_101);
         await File.WriteAllTextAsync(KeyPath, "existing\n", TestContext.Current.CancellationToken);
 
-        var result = await InitAsync("--domain", "orvano.example.com");
+        OrvanoCli.Result result = await InitAsync("--domain", "orvano.example.com");
 
         result.ExitCode.ShouldBe(1);
         File.GetUnixFileMode(_install.FullName).ShouldBe((UnixFileMode)0b111_101_101);
@@ -149,7 +151,7 @@ public sealed class InitCommandTests : IDisposable
     [Fact, Trait("Spec", "0006:SCR-2")]
     public async Task Init_prints_the_backup_warning_without_the_key_when_it_succeeds()
     {
-        var result = await InitAsync("--domain", "orvano.example.com");
+        OrvanoCli.Result result = await InitAsync("--domain", "orvano.example.com");
 
         result.Output.ShouldContain("BACK UP root.key");
         result.Output.ShouldContain("safe only inside this folder");
@@ -160,9 +162,9 @@ public sealed class InitCommandTests : IDisposable
     public async Task Init_refuses_and_keeps_the_existing_key_when_root_key_already_exists()
     {
         await InitAsync("--domain", "orvano.example.com");
-        var before = await File.ReadAllTextAsync(KeyPath, TestContext.Current.CancellationToken);
+        string before = await File.ReadAllTextAsync(KeyPath, TestContext.Current.CancellationToken);
 
-        var result = await InitAsync("--domain", "other.example.com");
+        OrvanoCli.Result result = await InitAsync("--domain", "other.example.com");
 
         result.ExitCode.ShouldBe(1);
         result.Error.ShouldContain("already exists");
@@ -174,7 +176,7 @@ public sealed class InitCommandTests : IDisposable
     {
         await File.WriteAllTextAsync(EnvPath, "MINE=1\n", TestContext.Current.CancellationToken);
 
-        var result = await InitAsync("--domain", "orvano.example.com");
+        OrvanoCli.Result result = await InitAsync("--domain", "orvano.example.com");
 
         result.ExitCode.ShouldBe(1);
         File.Exists(KeyPath).ShouldBeFalse();
@@ -186,7 +188,7 @@ public sealed class InitCommandTests : IDisposable
     [InlineData("--domain", "bad\nORVANO_ROOT_KEY=injected")]
     public async Task Init_refuses_and_writes_nothing_when_the_domain_is_invalid(string option, string value)
     {
-        var result = await InitAsync(option, value);
+        OrvanoCli.Result result = await InitAsync(option, value);
 
         result.ExitCode.ShouldBe(1);
         File.Exists(KeyPath).ShouldBeFalse();
@@ -199,7 +201,7 @@ public sealed class InitCommandTests : IDisposable
     [InlineData("/relative/path")]
     public async Task Init_refuses_when_the_public_url_is_not_http_or_https(string publicUrl)
     {
-        var result = await InitAsync("--domain", "orvano.example.com", "--public-url", publicUrl);
+        OrvanoCli.Result result = await InitAsync("--domain", "orvano.example.com", "--public-url", publicUrl);
 
         result.ExitCode.ShouldBe(1);
         result.Error.ShouldContain("--public-url must be an absolute http or https URL");
@@ -210,7 +212,7 @@ public sealed class InitCommandTests : IDisposable
     [Fact, Trait("Spec", "0007:INS-3")]
     public async Task Init_fails_with_usage_when_the_domain_is_missing()
     {
-        var result = await OrvanoCli.RunAsync(["init", "--out", _install.FullName], null, TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["init", "--out", _install.FullName], null, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldNotBe(0);
         File.Exists(KeyPath).ShouldBeFalse();

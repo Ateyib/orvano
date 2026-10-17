@@ -1,0 +1,21 @@
+# Spec 0008 CI-9: every Monday, run all of CI against main, so upstream breaks (a runner image, a tool release, a new
+# advisory for pnpm audit or NuGetAudit) show within a week. ci.yml under workflow_call counts every area as
+# changed, so this includes the Windows job (CI-8).
+name: Scheduled
+
+on:
+  schedule:
+    - cron: "41 5 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: scheduled-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read

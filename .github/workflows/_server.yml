@@ -1,0 +1,48 @@
+# Spec 0008 CI-2: the .NET server. Called by ci.yml when server/** or a global path changed.
+name: Server
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  server:
+    name: server
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    # server/global.json pins the SDK and picks the Microsoft.Testing.Platform runner; dotnet finds it from here.
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: server/global.json
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('server/**/packages.lock.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Restore (locked mode, spec 0002 GEN-4)
+        run: dotnet restore Orvano.slnx --locked-mode
+      # The same two commands as `pnpm check:dotnet` (TL-6), without setting up Node here.
+      - name: Format check (FMT-3, FMT-6)
+        run: dotnet format Orvano.slnx --verify-no-changes --no-restore
+      - name: Build with warnings as errors (NuGetAudit, analyzers, banned APIs)
+        run: dotnet build Orvano.slnx -p:CI=true --no-incremental --no-restore
+      # PostgreSQL comes from PostgresFixture (Testcontainers) on the runner's Docker.
+      - name: Test with coverage (CI-6)
+        run: >-
+          dotnet test --solution Orvano.slnx --no-build
+          --coverage --coverage-output-format cobertura --results-directory "$GITHUB_WORKSPACE/server/TestResults"
+      - name: Coverage summary
+        if: always()
+        working-directory: .
+        run: node tooling/scripts/coverage-summary.mjs

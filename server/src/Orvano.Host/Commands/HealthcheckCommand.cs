@@ -26,11 +26,12 @@ internal static class HealthcheckCommand
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5), TimeProvider.System);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
 
-        // Deviation PRF-3: a one shot probe in a process with no service container; nothing is reused.
-        using var http = new HttpClient();
+        // Spec 0002 PRF-3: clients come from the factory, even for this one shot probe.
+        await using ServiceProvider services = new ServiceCollection().AddHttpClient().BuildServiceProvider();
+        using HttpClient http = services.GetRequiredService<IHttpClientFactory>().CreateClient();
         try
         {
-            using var response = await http.GetAsync(
+            using HttpResponseMessage response = await http.GetAsync(
                 new Uri(string.Create(CultureInfo.InvariantCulture, $"http://127.0.0.1:{port}/health/ready")), linked.Token);
             return response.IsSuccessStatusCode ? 0 : 1;
         }
@@ -42,8 +43,8 @@ internal static class HealthcheckCommand
 
     private static int DefaultPort()
     {
-        var ports = Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS");
-        var first = ports?.Split([',', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        return int.TryParse(first, NumberStyles.None, CultureInfo.InvariantCulture, out var port) ? port : 8080;
+        string? ports = Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS");
+        string? first = ports?.Split([',', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        return int.TryParse(first, NumberStyles.None, CultureInfo.InvariantCulture, out int port) ? port : 8080;
     }
 }

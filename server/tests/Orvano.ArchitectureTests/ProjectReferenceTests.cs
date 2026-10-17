@@ -1,8 +1,11 @@
 using System.Reflection;
+
 using Orvano.Infrastructure;
 using Orvano.Modules.Auth;
 using Orvano.SharedKernel;
+
 using Shouldly;
+
 using Xunit;
 
 namespace Orvano.ArchitectureTests;
@@ -21,7 +24,7 @@ public sealed class ProjectReferenceTests
     [MemberData(nameof(Modules))]
     public void Module_does_not_reference_Infrastructure_or_Host_when_built(string module)
     {
-        var references = OrvanoReferences(Assembly.Load(module));
+        List<string> references = OrvanoReferences(Assembly.Load(module));
 
         references.ShouldNotContain(Infrastructure.GetName().Name!);
         references.ShouldNotContain(Host.GetName().Name!);

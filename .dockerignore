@@ -1,7 +1,14 @@
-# The image builds from server/ and console/ only.
+# The image builds from server/ and console/, plus the root pnpm workspace files the console stage needs
+# (package.json, pnpm-workspace.yaml, pnpm-lock.yaml, .node-version; spec 0008 TL-7).
 .git
+.github
 .claude
+.agents
+.vite-hooks
 docs
+tooling
+# pnpm runs the root prepare script, which exits at once on ORVANO_SKIP_HOOKS=1 (HOK-1).
+!tooling/scripts/prepare.mjs
 **/node_modules
 **/dist
 **/bin

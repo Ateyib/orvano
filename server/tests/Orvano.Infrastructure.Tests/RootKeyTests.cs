@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Configuration;
+
 using Orvano.Infrastructure.RootKeys;
 using Orvano.SharedKernel.Configuration;
+
 using Shouldly;
+
 using Xunit;
 
 namespace Orvano.Infrastructure.Tests;
@@ -12,7 +15,7 @@ public sealed class RootKeyTests
     [Fact]
     public void Generate_returns_32_bytes_of_base64_when_called()
     {
-        var key = RootKey.Generate();
+        string key = RootKey.Generate();
 
         Convert.FromBase64String(key).Length.ShouldBe(32);
     }
@@ -24,7 +27,7 @@ public sealed class RootKeyTests
     [Fact]
     public void EnsureConfigured_accepts_the_key_when_it_has_a_trailing_newline_from_the_file()
     {
-        var configuration = With(RootKey.Generate() + "\n");
+        IConfiguration configuration = With(RootKey.Generate() + "\n");
 
         Should.NotThrow(() => RootKey.EnsureConfigured(configuration));
     }
@@ -35,7 +38,7 @@ public sealed class RootKeyTests
     [InlineData("   ")]
     public void EnsureConfigured_fails_naming_both_variables_when_no_key_is_set(string? value)
     {
-        var error = Should.Throw<ConfigurationException>(() => RootKey.EnsureConfigured(With(value)));
+        ConfigurationException error = Should.Throw<ConfigurationException>(() => RootKey.EnsureConfigured(With(value)));
 
         error.Message.ShouldContain("ORVANO_ROOT_KEY_FILE");
         error.Message.ShouldContain("ORVANO_ROOT_KEY");
@@ -47,7 +50,7 @@ public sealed class RootKeyTests
     [InlineData("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==")] // 33 bytes
     public void EnsureConfigured_fails_when_the_key_is_not_32_bytes_of_base64(string value)
     {
-        var error = Should.Throw<ConfigurationException>(() => RootKey.EnsureConfigured(With(value)));
+        ConfigurationException error = Should.Throw<ConfigurationException>(() => RootKey.EnsureConfigured(With(value)));
 
         error.Message.ShouldContain("32 bytes");
     }
@@ -57,7 +60,7 @@ public sealed class RootKeyTests
     {
         const string wrong = "c2hvcnQta2V5LXRoYXQtaXMtc2VjcmV0";
 
-        var error = Should.Throw<ConfigurationException>(() => RootKey.EnsureConfigured(With(wrong)));
+        ConfigurationException error = Should.Throw<ConfigurationException>(() => RootKey.EnsureConfigured(With(wrong)));
 
         error.Message.ShouldNotContain(wrong);
     }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+
 using Npgsql;
 
 namespace Orvano.Host.Database;

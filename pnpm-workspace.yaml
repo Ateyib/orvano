@@ -1,0 +1,10 @@
+# The root pnpm workspace (spec 0008 TL-1). One lockfile, at the root.
+# tooling/starters/** holds template files for SDK repos and is never a workspace package (KIT-2).
+packages:
+  - console
+  - "!tooling/starters/**"
+
+# Spec 0003 SEC-5, spec 0006 SUP-6:
+# Dependency install scripts stay blocked (pnpm's default); allow one only by name here, with a reason.
+# A just published version waits 3 days before it can be installed.
+minimumReleaseAge: 4320

@@ -1,7 +1,10 @@
 using System.CommandLine;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+
 using Npgsql;
+
 using Orvano.Host.Configuration;
 using Orvano.Host.Database;
 using Orvano.Host.Startup;
@@ -34,7 +37,7 @@ internal static class MigrateCommand
         try
         {
             // Same environment variable as `serve` (spec 0002 CFG-2); the generic host alone reads only DOTNET_ENVIRONMENT.
-            var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+            HostApplicationBuilder builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
             {
                 Args = configArgs,
                 EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
@@ -43,21 +46,23 @@ internal static class MigrateCommand
             builder.AddOrvanoLogging();
             builder.AddPlatformDatabase();
 
-            using var host = builder.Build();
-            var logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Orvano.Host.Migrate");
-            var dataSource = host.Services.GetRequiredService<NpgsqlDataSource>();
+            using IHost host = builder.Build();
+            ILogger logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Orvano.Host.Migrate");
+            NpgsqlDataSource dataSource = host.Services.GetRequiredService<NpgsqlDataSource>();
             await PostgresVersion.EnsureSupportedAsync(dataSource, cancellationToken);
 
-            await using var lockConnection = await dataSource.OpenConnectionAsync(cancellationToken);
+            await using NpgsqlConnection lockConnection = await dataSource.OpenConnectionAsync(cancellationToken);
             await ExecuteAsync(lockConnection, "SELECT pg_advisory_lock(@key)", cancellationToken);
             try
             {
-                foreach (var type in MigrationOrder.DbContexts)
+                foreach (Type type in MigrationOrder.DbContexts)
                 {
                     logger.MigrationsApplying(type.Name);
-                    await using var scope = host.Services.CreateAsyncScope();
+                    await using AsyncServiceScope scope = host.Services.CreateAsyncScope();
                     var db = (DbContext)scope.ServiceProvider.GetRequiredService(type);
+#pragma warning disable RS0030 // DAT-10: the migrate command is the one place migrations run.
                     await db.Database.MigrateAsync(cancellationToken);
+#pragma warning restore RS0030
                 }
             }
             finally

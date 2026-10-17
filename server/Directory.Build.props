@@ -1,5 +1,5 @@
 <Project>
-  <!-- Spec 0002 GEN-1, GEN-2, GEN-4 and spec 0006 SUP-5. Analyzer rule severities belong in .editorconfig (feature 7). -->
+  <!-- Spec 0002 GEN-1, GEN-2, GEN-4 and spec 0006 SUP-5. Analyzer rule severities belong in .editorconfig (spec 0008 FMT-6). -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -14,5 +14,14 @@
     <NuGetAuditMode>all</NuGetAuditMode>
     <NuGetAuditLevel>moderate</NuGetAuditLevel>
     <WarningsAsErrors Condition="'$(CI)' == 'true'">$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
+    <!-- Spec 0008 FMT-6: IDE0005 (unused usings) needs the documentation file; the server doesn't require XML docs. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
+  <!-- Spec 0008 LNT-6: banned APIs, each line naming its rule and what to use instead. Tests inherit it. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)/BannedSymbols.*.txt" />
+  </ItemGroup>
 </Project>

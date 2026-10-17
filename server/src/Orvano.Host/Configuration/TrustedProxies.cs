@@ -1,5 +1,7 @@
 using System.Net;
+
 using Microsoft.AspNetCore.HttpOverrides;
+
 using Orvano.SharedKernel.Configuration;
 
 namespace Orvano.Host.Configuration;
@@ -24,13 +26,13 @@ internal static class TrustedProxies
         options.KnownProxies.Clear();
         options.KnownIPNetworks.Clear();
 
-        foreach (var entry in (value ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        foreach (string entry in (value ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
         {
-            if (IPAddress.TryParse(entry, out var address))
+            if (IPAddress.TryParse(entry, out IPAddress? address))
             {
                 options.KnownProxies.Add(address);
             }
-            else if (System.Net.IPNetwork.TryParse(entry, out var network))
+            else if (System.Net.IPNetwork.TryParse(entry, out System.Net.IPNetwork network))
             {
                 options.KnownIPNetworks.Add(network);
             }

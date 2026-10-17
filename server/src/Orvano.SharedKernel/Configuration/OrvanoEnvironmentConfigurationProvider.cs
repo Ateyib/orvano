@@ -1,4 +1,5 @@
 using System.Collections;
+
 using Microsoft.Extensions.Configuration;
 
 namespace Orvano.SharedKernel.Configuration;
@@ -17,7 +18,7 @@ internal sealed class OrvanoEnvironmentConfigurationProvider(IDictionary variabl
 
         foreach (DictionaryEntry entry in variables)
         {
-            var name = entry.Key.ToString();
+            string? name = entry.Key.ToString();
             if (name is null
                 || !name.StartsWith(ConfigurationNames.Prefix, StringComparison.OrdinalIgnoreCase)
                 || name.Equals(ConfigFileVariable, StringComparison.OrdinalIgnoreCase))
@@ -25,7 +26,7 @@ internal sealed class OrvanoEnvironmentConfigurationProvider(IDictionary variabl
                 continue;
             }
 
-            var key = name[ConfigurationNames.Prefix.Length..];
+            string key = name[ConfigurationNames.Prefix.Length..];
             if (key.EndsWith(FileSuffix, StringComparison.OrdinalIgnoreCase))
             {
                 files[ToKey(key[..^FileSuffix.Length])] = entry.Value?.ToString() ?? string.Empty;
@@ -37,11 +38,11 @@ internal sealed class OrvanoEnvironmentConfigurationProvider(IDictionary variabl
         }
 
         var data = new Dictionary<string, string?>(plain, StringComparer.OrdinalIgnoreCase);
-        foreach (var (key, path) in files)
+        foreach ((string? key, string? path) in files)
         {
             if (plain.ContainsKey(key))
             {
-                var variable = ConfigurationNames.ToEnvironmentVariable(key);
+                string variable = ConfigurationNames.ToEnvironmentVariable(key);
                 throw new ConfigurationException($"Set {variable} or {variable}{FileSuffix}, not both.");
             }
 

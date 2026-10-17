@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using Npgsql;
 
 namespace Orvano.Host.Database;
@@ -10,7 +11,7 @@ internal sealed class PlatformDatabaseHealthCheck(NpgsqlDataSource dataSource, I
     {
         try
         {
-            await using var command = dataSource.CreateCommand("SELECT 1");
+            await using NpgsqlCommand command = dataSource.CreateCommand("SELECT 1");
             await command.ExecuteScalarAsync(cancellationToken);
         }
         catch (NpgsqlException ex)
@@ -18,7 +19,7 @@ internal sealed class PlatformDatabaseHealthCheck(NpgsqlDataSource dataSource, I
             return HealthCheckResult.Unhealthy("The platform database does not answer.", ex);
         }
 
-        var pending = await MigrationOrder.GetPendingAsync(services, cancellationToken);
+        IReadOnlyList<string> pending = await MigrationOrder.GetPendingAsync(services, cancellationToken);
         return pending.Count == 0
             ? HealthCheckResult.Healthy()
             : HealthCheckResult.Unhealthy("Migrations are pending.");

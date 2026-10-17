@@ -1,0 +1,9 @@
+{
+  // Spec 0008 EDT-1: the editor never decides formatting; .editorconfig and the FMT rules do.
+  "recommendations": [
+    "oxc.oxc-vscode",
+    "dbaeumer.vscode-eslint",
+    "editorconfig.editorconfig",
+    "ms-dotnettools.csdevkit"
+  ]
+}

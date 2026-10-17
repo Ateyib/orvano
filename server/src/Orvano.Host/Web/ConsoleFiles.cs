@@ -1,5 +1,4 @@
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Net.Http.Headers;
 
 namespace Orvano.Host.Web;
 
@@ -34,7 +33,7 @@ internal static class ConsoleFiles
     /// <summary>The <c>/</c> redirect (spec 0007 RUN-4) and the <c>index.html</c> fallback for client side routes.</summary>
     public static WebApplication MapConsole(this WebApplication app)
     {
-        var files = Files(app);
+        IFileProvider files = Files(app);
         app.MapGet("/", () => TypedResults.Redirect(BasePath + "/")).ExcludeFromDescription().AllowAnonymous();
         app.MapGet(BasePath, (HttpContext context) => IndexPage(context, files)).ExcludeFromDescription().AllowAnonymous();
         app.MapGet(BasePath + "/{**path}", (HttpContext context) => IndexPage(context, files)).ExcludeFromDescription().AllowAnonymous();
@@ -43,13 +42,13 @@ internal static class ConsoleFiles
 
     private static IFileProvider Files(WebApplication app)
     {
-        var root = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "console");
+        string root = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "console");
         return Directory.Exists(root) ? new PhysicalFileProvider(root) : new NullFileProvider();
     }
 
     private static IResult IndexPage(HttpContext context, IFileProvider files)
     {
-        var index = files.GetFileInfo("index.html");
+        IFileInfo index = files.GetFileInfo("index.html");
         if (!index.Exists)
         {
             return TypedResults.NotFound();

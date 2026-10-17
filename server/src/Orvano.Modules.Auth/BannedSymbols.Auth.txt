@@ -1,0 +1,5 @@
+M:System.Guid.NewGuid; TOK-1, KEY-1: use RandomNumberGenerator for tokens and keys (Guid.CreateVersion7 for row IDs)
+T:System.Security.Cryptography.MD5; PWD-1: hash passwords with IPasswordHasher (Argon2id)
+T:System.Security.Cryptography.SHA1; PWD-1: hash passwords with IPasswordHasher (Argon2id)
+T:System.Security.Cryptography.Rfc2898DeriveBytes; PWD-1: hash passwords with IPasswordHasher (Argon2id)
+T:System.Security.Cryptography.HMACSHA1; TOK-1: HMACSHA1 is allowed only in the TOTP class, with a suppression (LNT-5)

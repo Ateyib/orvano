@@ -19,19 +19,19 @@ public static class OrvanoCli
             WorkingDirectory = workingDirectory ?? Path.GetTempPath(),
         };
         info.ArgumentList.Add(Assembly);
-        foreach (var arg in args)
+        foreach (string arg in args)
         {
             info.ArgumentList.Add(arg);
         }
 
         // Nothing from the developer's shell leaks in.
-        foreach (var name in info.Environment.Keys.Where(IsOrvanoOrHostSetting).ToList())
+        foreach (string? name in info.Environment.Keys.Where(IsOrvanoOrHostSetting).ToList())
         {
             info.Environment.Remove(name);
         }
 
         info.Environment["ASPNETCORE_ENVIRONMENT"] = "Production";
-        foreach (var (key, value) in environment ?? new Dictionary<string, string>())
+        foreach ((string? key, string? value) in environment ?? new Dictionary<string, string>())
         {
             info.Environment[key] = value;
         }
@@ -42,10 +42,10 @@ public static class OrvanoCli
     public static async Task<Result> RunAsync(IEnumerable<string> args, IReadOnlyDictionary<string, string>? environment,
         CancellationToken cancellationToken, string? workingDirectory = null)
     {
-        using var process = Process.Start(StartInfo(args, environment, workingDirectory))
+        using Process process = Process.Start(StartInfo(args, environment, workingDirectory))
             ?? throw new InvalidOperationException("dotnet did not start");
-        var output = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var error = process.StandardError.ReadToEndAsync(cancellationToken);
+        Task<string> output = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        Task<string> error = process.StandardError.ReadToEndAsync(cancellationToken);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromMinutes(1));
         try

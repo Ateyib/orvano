@@ -1,0 +1,55 @@
+# Spec 0008 CI-2: the React console. Called by ci.yml when console/**, the lint fixtures, or a global path changed.
+name: Console
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  console:
+    name: console
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Node from .node-version; Vite+ from the root package.json; pnpm from its packageManager field.
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          node-version-file: .node-version
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      # vp check, ESLint, tsc, and the drift checks (catalogs, route tree). The drift check's build feeds the size check.
+      - run: pnpm check:js
+      - run: pnpm check:lint-fixtures
+      - id: playwright
+        name: Find the Playwright version
+        run: echo "version=$(pnpm --filter @orvano/console exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Cache the Playwright browser (CI-7)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - run: pnpm --filter @orvano/console exec playwright install --with-deps chromium
+      - name: Tests (Vitest browser mode, Chromium) with coverage
+        run: pnpm --filter @orvano/console test:coverage
+      - name: Bundle size (spec 0003 BDL-1)
+        run: pnpm --filter @orvano/console size
+      - name: Audit dependencies (spec 0006 SUP-5)
+        run: pnpm audit --audit-level moderate
+      - name: Coverage summary
+        if: always()
+        run: node tooling/scripts/coverage-summary.mjs
+
+  # Spec 0003 QA-5: Playwright E2E against a real server joins here with the first API screen.
+  # e2e:
+  #   name: e2e
+  #   runs-on: ubuntu-24.04
+  #   timeout-minutes: 30
+  #   permissions:
+  #     contents: read
+  #   steps: []

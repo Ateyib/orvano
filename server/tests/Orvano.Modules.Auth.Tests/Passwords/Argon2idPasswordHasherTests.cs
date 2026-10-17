@@ -1,6 +1,9 @@
 using System.Text.RegularExpressions;
+
 using Orvano.Modules.Auth.Passwords;
+
 using Shouldly;
+
 using Xunit;
 
 namespace Orvano.Modules.Auth.Tests.Passwords;
@@ -16,7 +19,7 @@ public sealed partial class Argon2idPasswordHasherTests
     [Fact]
     public void Hash_writes_a_PHC_string_at_the_PWD1_default_when_using_the_default_cost()
     {
-        var hash = new Argon2idPasswordHasher().Hash(Password);
+        string hash = new Argon2idPasswordHasher().Hash(Password);
 
         hash.ShouldStartWith("$argon2id$v=19$m=65536,t=3,p=1$");
     }
@@ -24,9 +27,9 @@ public sealed partial class Argon2idPasswordHasherTests
     [Fact]
     public void Hash_uses_a_16_byte_salt_and_unpadded_base64_when_written()
     {
-        var hash = _hasher.Hash(Password);
+        string hash = _hasher.Hash(Password);
 
-        var match = PhcPattern().Match(hash);
+        Match match = PhcPattern().Match(hash);
         match.Success.ShouldBeTrue(hash); // the salt and hash parts allow no '=' padding
         Convert.FromBase64String(Pad(match.Groups["salt"].Value)).Length.ShouldBe(16);
     }
@@ -49,7 +52,7 @@ public sealed partial class Argon2idPasswordHasherTests
     [Fact]
     public void Verify_reads_the_cost_from_the_hash_when_the_hasher_is_configured_differently()
     {
-        var stored = _hasher.Hash(Password);
+        string stored = _hasher.Hash(Password);
 
         new Argon2idPasswordHasher(Argon2Cost.Default).Verify(Password, stored).ShouldBeTrue();
     }
@@ -65,9 +68,11 @@ public sealed partial class Argon2idPasswordHasherTests
     [Fact]
     public void Verify_returns_false_when_the_stored_hash_was_tampered_with()
     {
-        var stored = _hasher.Hash(Password);
-        var last = stored[^1];
-        var tampered = stored[..^1] + (last == 'A' ? 'B' : 'A');
+        string stored = _hasher.Hash(Password);
+        // Not the last character: in unpadded base64 its low bits are unused, so changing it can decode to the same
+        // bytes. Every bit of the second to last character counts.
+        char target = stored[^2];
+        string tampered = stored[..^2] + (target == 'A' ? 'B' : 'A') + stored[^1];
 
         _hasher.Verify(Password, tampered).ShouldBeFalse();
     }
@@ -91,7 +96,7 @@ public sealed partial class Argon2idPasswordHasherTests
     [Fact]
     public void Hash_accepts_the_password_when_it_is_exactly_1024_bytes_of_UTF8()
     {
-        var password = new string('a', 1024);
+        string password = new string('a', 1024);
 
         _hasher.Verify(password, _hasher.Hash(password)).ShouldBeTrue();
     }
@@ -99,7 +104,7 @@ public sealed partial class Argon2idPasswordHasherTests
     [Fact]
     public void Hash_throws_when_the_password_is_over_1024_bytes_of_UTF8()
     {
-        var password = new string('é', 513); // 2 bytes each: 1026 bytes
+        string password = new string('é', 513); // 2 bytes each: 1026 bytes
 
         Should.Throw<ArgumentException>(() => _hasher.Hash(password));
     }
@@ -107,7 +112,7 @@ public sealed partial class Argon2idPasswordHasherTests
     [Fact]
     public void Verify_returns_false_when_the_password_is_over_1024_bytes_of_UTF8()
     {
-        var stored = _hasher.Hash(Password);
+        string stored = _hasher.Hash(Password);
 
         _hasher.Verify(new string('a', 1025), stored).ShouldBeFalse();
     }
@@ -123,7 +128,7 @@ public sealed partial class Argon2idPasswordHasherTests
     [Fact]
     public void Hash_never_contains_the_password_when_written()
     {
-        var hash = _hasher.Hash(Password);
+        string hash = _hasher.Hash(Password);
 
         hash.ShouldNotContain(Password);
         hash.ShouldNotContain(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(Password)).TrimEnd('='));

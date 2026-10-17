@@ -1,0 +1,99 @@
+# Spec 0008 CI-1: one workflow, path aware, behind a single required check (ci-gate).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      server: ${{ steps.changes.outputs.server }}
+      console: ${{ steps.changes.outputs.console }}
+      deploy: ${{ steps.changes.outputs.deploy }}
+      windows: ${{ steps.changes.outputs.windows }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: changes
+        name: Find changed areas
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        # Every area runs on workflow_dispatch and workflow_call, and when the base can't be resolved.
+        run: |
+          base=""
+          case "$EVENT_NAME" in
+            pull_request) base="$PR_BASE" ;;
+            push) base="$PUSH_BEFORE" ;;
+          esac
+          node tooling/scripts/changes.mjs "$base"
+
+  server:
+    needs: changes
+    if: needs.changes.outputs.server == 'true'
+    uses: ./.github/workflows/_server.yml
+    permissions:
+      contents: read
+
+  console:
+    needs: changes
+    if: needs.changes.outputs.console == 'true'
+    uses: ./.github/workflows/_console.yml
+    permissions:
+      contents: read
+
+  deploy:
+    needs: changes
+    if: needs.changes.outputs.deploy == 'true'
+    uses: ./.github/workflows/_deploy.yml
+    permissions:
+      contents: read
+
+  repo:
+    needs: changes
+    uses: ./.github/workflows/_repo.yml
+    permissions:
+      contents: read
+
+  windows:
+    needs: changes
+    if: needs.changes.outputs.windows == 'true'
+    uses: ./.github/workflows/_windows.yml
+    permissions:
+      contents: read
+
+  ci-gate:
+    name: ci-gate
+    if: always()
+    needs: [changes, server, console, deploy, repo, windows]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      # Fails when `changes` didn't succeed, or any area failed or was cancelled. A skipped area passes.
+      - name: Check every area passed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -e '
+            .changes.result == "success"
+            and ([.[] | .result] | all(. == "success" or . == "skipped"))
+          '

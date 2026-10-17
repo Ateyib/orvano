@@ -14,7 +14,7 @@ internal static class PasswordHasherSelfTest
     {
         try
         {
-            var hash = hasher.Hash(Sample);
+            string hash = hasher.Hash(Sample);
             if (!hasher.Verify(Sample, hash) || hasher.Verify(Sample + "!", hash))
             {
                 return "Argon2id produced a hash that does not verify.";

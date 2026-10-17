@@ -1,5 +1,5 @@
 using System.CommandLine;
-using Microsoft.Extensions.Configuration;
+
 using Orvano.Host.Startup;
 using Orvano.Modules.Auth;
 using Orvano.Modules.Auth.Contracts;
@@ -22,7 +22,7 @@ internal static class AdminCommand
 
     private static int SelfTest()
     {
-        var services = new ServiceCollection()
+        ServiceProvider services = new ServiceCollection()
             .AddAuthModule(new ConfigurationBuilder().Build())
             .BuildServiceProvider();
         using (services)

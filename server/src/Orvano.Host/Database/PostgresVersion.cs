@@ -1,5 +1,7 @@
 using System.Globalization;
+
 using Npgsql;
+
 using Orvano.Host.Startup;
 
 namespace Orvano.Host.Database;
@@ -14,7 +16,7 @@ internal static class PostgresVersion
         int version;
         try
         {
-            await using var command = dataSource.CreateCommand("SELECT current_setting('server_version_num')::int");
+            await using NpgsqlCommand command = dataSource.CreateCommand("SELECT current_setting('server_version_num')::int");
             version = await command.ExecuteScalarAsync(cancellationToken) is int number ? number : 0;
         }
         catch (NpgsqlException ex)

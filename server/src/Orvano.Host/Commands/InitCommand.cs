@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
+
 using Orvano.Infrastructure.RootKeys;
 
 namespace Orvano.Host.Commands;
@@ -60,18 +61,18 @@ internal static class InitCommand
             return 1;
         }
 
-        if (!Uri.TryCreate(publicUrlText ?? $"https://{domain}", UriKind.Absolute, out var publicUrl)
+        if (!Uri.TryCreate(publicUrlText ?? $"https://{domain}", UriKind.Absolute, out Uri? publicUrl)
             || publicUrl.Scheme is not ("https" or "http"))
         {
             Console.Error.WriteLine("--public-url must be an absolute http or https URL.");
             return 1;
         }
 
-        var keyPath = Path.Combine(output.FullName, "root.key");
-        var envPath = Path.Combine(output.FullName, ".env");
+        string keyPath = Path.Combine(output.FullName, "root.key");
+        string envPath = Path.Combine(output.FullName, ".env");
 
         // Spec 0007 INS-5, step 1: refuse before changing anything, not even the folder's mode.
-        foreach (var path in new[] { keyPath, envPath })
+        foreach (string? path in new[] { keyPath, envPath })
         {
             if (File.Exists(path))
             {
@@ -144,7 +145,7 @@ internal static class InitCommand
             return false;
         }
 
-        var mode = File.GetUnixFileMode(folder) & AllPermissions;
+        UnixFileMode mode = File.GetUnixFileMode(folder) & AllPermissions;
         if (mode != FolderMode)
         {
             Console.Error.WriteLine($"{folder} stays at mode {Octal(mode)} instead of 0700, so root.key could not be protected.");
@@ -158,8 +159,8 @@ internal static class InitCommand
 
     private static string EnvironmentFile(string domain, Uri publicUrl)
     {
-        var created = TimeProvider.System.GetUtcNow().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var text = new StringBuilder()
+        string created = TimeProvider.System.GetUtcNow().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        StringBuilder text = new StringBuilder()
             .AppendLine(CultureInfo.InvariantCulture, $"# Written by orvano init on {created}. Keep this file private; it holds passwords.")
             .AppendLine("# deploy/.env.example explains every variable.")
             .AppendLine(CultureInfo.InvariantCulture, $"ORVANO_DOMAIN={domain}")

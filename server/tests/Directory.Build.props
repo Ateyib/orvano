@@ -3,5 +3,12 @@
   <!-- Spec 0002 TST-1: xUnit v3 on Microsoft.Testing.Platform. -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <!-- xUnit's generated entry point calls GetResult (banned by spec 0008 LNT-6, ASY-1); this turns its warnings off. -->
+    <DefineConstants>$(DefineConstants);XUNIT_GENERATED_DISABLE_WARNINGS</DefineConstants>
   </PropertyGroup>
+  <!-- Spec 0008 CI-6: coverage is collected (Cobertura) and reported, never gated. -->
+  <!-- Test projects are the executables here (Orvano.Testing is a library); IsTestProject isn't known yet at restore. -->
+  <ItemGroup Condition="'$(OutputType)' == 'Exe'">
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+  </ItemGroup>
 </Project>

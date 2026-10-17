@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Globalization;
+
 using Orvano.Testing;
+
 using Testcontainers.PostgreSql;
 
 namespace Orvano.Host.IntegrationTests.Cli;
@@ -11,7 +13,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0007:INS-2")]
     public async Task Migrate_exits_0_when_the_platform_database_is_PostgreSQL_18()
     {
-        var result = await OrvanoCli.RunAsync(["migrate"], postgres.DatabaseEnvironment, TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["migrate"], postgres.DatabaseEnvironment, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(0, result.Error);
     }
@@ -25,7 +27,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
             ["ORVANO_DATABASE__PORT"] = Ports.Free().ToString(CultureInfo.InvariantCulture),
         };
 
-        var result = await OrvanoCli.RunAsync(["migrate"], environment, TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["migrate"], environment, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
         result.Error.ShouldContain("Cannot reach the platform database");
@@ -38,7 +40,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
         var environment = new Dictionary<string, string>(postgres.DatabaseEnvironment);
         environment.Remove("ORVANO_DATABASE__USERNAME");
 
-        var result = await OrvanoCli.RunAsync(["migrate"], environment, TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["migrate"], environment, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
         result.Error.ShouldContain("ORVANO_DATABASE__USERNAME");
@@ -47,12 +49,12 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0002:CFG-3")]
     public async Task Migrate_reads_the_password_from_a_file_when_PASSWORD_FILE_is_set()
     {
-        var secret = Path.GetTempFileName();
+        string secret = Path.GetTempFileName();
         await File.WriteAllTextAsync(secret, PostgresFixture.Password + "\n", TestContext.Current.CancellationToken);
         var environment = new Dictionary<string, string>(postgres.DatabaseEnvironment) { ["ORVANO_DATABASE__PASSWORD_FILE"] = secret };
         environment.Remove("ORVANO_DATABASE__PASSWORD");
 
-        var result = await OrvanoCli.RunAsync(["migrate"], environment, TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["migrate"], environment, TestContext.Current.CancellationToken);
 
         File.Delete(secret);
         result.ExitCode.ShouldBe(0, result.Error);
@@ -61,7 +63,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0007:RUN-5")]
     public async Task Migrate_refuses_when_the_platform_database_is_PostgreSQL_17()
     {
-        await using var old = new PostgreSqlBuilder("postgres:17.11").WithUsername("orvano").WithPassword("old-test").Build();
+        await using PostgreSqlContainer old = new PostgreSqlBuilder("postgres:17.11").WithUsername("orvano").WithPassword("old-test").Build();
         await old.StartAsync(TestContext.Current.CancellationToken);
         var environment = new Dictionary<string, string>
         {
@@ -73,7 +75,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
             ["ORVANO_DATABASE__SSLMODE"] = "Disable",
         };
 
-        var result = await OrvanoCli.RunAsync(["migrate"], environment, TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["migrate"], environment, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
         result.Error.ShouldContain("PostgreSQL 18");
@@ -82,7 +84,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0006:SCR-2")]
     public async Task Serve_exits_1_naming_the_variable_when_no_root_key_is_set()
     {
-        var result = await OrvanoCli.RunAsync(["serve"], postgres.DatabaseEnvironment, TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["serve"], postgres.DatabaseEnvironment, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
         result.Error.ShouldContain("ORVANO_ROOT_KEY_FILE");
@@ -94,7 +96,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [InlineData(" , ")]
     public async Task Serve_exits_1_naming_ORVANO_ROLES_when_the_roles_are_not_valid(string roles)
     {
-        var result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new() { ["ORVANO_ROLES"] = roles }), TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new() { ["ORVANO_ROLES"] = roles }), TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
         result.Error.ShouldContain("ORVANO_ROLES");
@@ -103,7 +105,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0006:NET-1")]
     public async Task Serve_exits_1_naming_the_variable_when_a_trusted_proxy_is_not_an_address()
     {
-        var result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new() { ["ORVANO_TRUSTED_PROXIES"] = "10.0.0.1,caddy" }),
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new() { ["ORVANO_TRUSTED_PROXIES"] = "10.0.0.1,caddy" }),
             TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
@@ -114,7 +116,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0007:TLS-2")]
     public async Task Serve_exits_1_naming_both_variables_when_only_the_certificate_is_set()
     {
-        var result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new() { ["ORVANO_TLS__CERTFILE"] = "/tls/cert.pem" }),
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new() { ["ORVANO_TLS__CERTFILE"] = "/tls/cert.pem" }),
             TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
@@ -125,7 +127,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0002:CFG-3")]
     public async Task Serve_exits_1_when_both_a_key_and_its_FILE_form_are_set()
     {
-        var result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new() { ["ORVANO_ROOT_KEY_FILE"] = "/run/secrets/root.key" }),
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new() { ["ORVANO_ROOT_KEY_FILE"] = "/run/secrets/root.key" }),
             TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
@@ -135,7 +137,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0007:RUN-5")]
     public async Task Serve_exits_1_naming_the_problem_when_the_database_is_unreachable()
     {
-        var result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new()
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["serve"], ServeEnvironment(new()
         {
             ["ORVANO_DATABASE__HOST"] = "127.0.0.1",
             ["ORVANO_DATABASE__PORT"] = Ports.Free().ToString(CultureInfo.InvariantCulture),
@@ -148,10 +150,10 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0002:CFG-4")]
     public async Task Serve_exits_1_naming_the_variable_when_the_database_host_is_missing()
     {
-        var environment = ServeEnvironment(new());
+        Dictionary<string, string> environment = ServeEnvironment(new());
         environment.Remove("ORVANO_DATABASE__HOST");
 
-        var result = await OrvanoCli.RunAsync(["serve"], environment, TestContext.Current.CancellationToken);
+        OrvanoCli.Result result = await OrvanoCli.RunAsync(["serve"], environment, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(1);
         result.Error.ShouldContain("ORVANO_DATABASE__HOST");
@@ -160,13 +162,13 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     [Fact, Trait("Spec", "0007:IMG-4")]
     public async Task Serve_boots_and_healthcheck_exits_0_when_the_database_is_ready()
     {
-        var port = Ports.Free().ToString(CultureInfo.InvariantCulture);
-        var environment = ServeEnvironment(new() { ["ASPNETCORE_HTTP_PORTS"] = port });
-        using var server = Process.Start(OrvanoCli.StartInfo(["serve"], environment)) ?? throw new InvalidOperationException("serve did not start");
+        string port = Ports.Free().ToString(CultureInfo.InvariantCulture);
+        Dictionary<string, string> environment = ServeEnvironment(new() { ["ASPNETCORE_HTTP_PORTS"] = port });
+        using Process server = Process.Start(OrvanoCli.StartInfo(["serve"], environment)) ?? throw new InvalidOperationException("serve did not start");
         try
         {
-            var exitCode = 1;
-            for (var attempt = 0; attempt < 60 && exitCode != 0 && !server.HasExited; attempt++)
+            int exitCode = 1;
+            for (int attempt = 0; attempt < 60 && exitCode != 0 && !server.HasExited; attempt++)
             {
                 await Task.Delay(500, TestContext.Current.CancellationToken);
                 exitCode = (await OrvanoCli.RunAsync(["healthcheck", "--port", port], null, TestContext.Current.CancellationToken)).ExitCode;
@@ -186,7 +188,7 @@ public sealed class ServeAndMigrateTests(PostgresFixture postgres)
     private Dictionary<string, string> ServeEnvironment(Dictionary<string, string> extra)
     {
         var environment = new Dictionary<string, string>(postgres.DatabaseEnvironment) { ["ORVANO_ROOT_KEY"] = TestRootKey.Create() };
-        foreach (var (key, value) in extra)
+        foreach ((string? key, string? value) in extra)
         {
             environment[key] = value;
         }

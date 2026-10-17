@@ -1,0 +1,10 @@
+# Spec 0008 CI-3, spec 0006 SUP-2. Until feature 57 picks the project license, the allow list is spec 0002 GEN-5's
+# list as SPDX IDs.
+fail-on-severity: moderate
+allow-licenses:
+  - MIT
+  - Apache-2.0
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - ISC
+  - PostgreSQL

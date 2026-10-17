@@ -1,4 +1,5 @@
 using Npgsql;
+
 using Orvano.Host.Database;
 using Orvano.Modules.Auth.Contracts;
 
@@ -20,7 +21,7 @@ internal sealed class StartupChecks(
 
         await PostgresVersion.EnsureSupportedAsync(dataSource, cancellationToken);
 
-        var pending = await MigrationOrder.GetPendingAsync(services, cancellationToken);
+        IReadOnlyList<string> pending = await MigrationOrder.GetPendingAsync(services, cancellationToken);
         if (pending.Count > 0)
         {
             throw new StartupFailedException(

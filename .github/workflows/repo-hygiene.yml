@@ -1,0 +1,109 @@
+# Spec 0008 KIT-1: repo hygiene for the core repo and every SDK repo. SDK repos call it as
+# orvanohq/orvano/.github/workflows/repo-hygiene.yml@<full SHA>. Needs only `contents: read`; takes no secrets.
+name: Repo hygiene
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: The folder to check, relative to the repo root.
+        type: string
+        default: .
+
+permissions: {}
+
+jobs:
+  pr-title:
+    name: pr-title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      # GIT-2: Conventional Commits, at most 72 characters (Dependabot titles skip the length check).
+      - name: Check the PR title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          types='feat|fix|perf|refactor|docs|test|build|ci|chore|revert'
+          if [[ "$TITLE" =~ ^Revert\ \".+\"$ ]]; then
+            echo "GitHub revert title: ok"
+            exit 0
+          fi
+          if ! [[ "$TITLE" =~ ^($types)(\([a-z0-9]+(-[a-z0-9]+)*\))?!?:\ [^[:space:]].*[^.[:space:]]$ ]]; then
+            echo "::error::PR title must look like '<type>(<scope>)!: <summary>' (spec 0008 GIT-2). Types: ${types//|/, }. No trailing period."
+            exit 1
+          fi
+          if [ "$AUTHOR" != "dependabot[bot]" ] && [ "${#TITLE}" -gt 72 ]; then
+            echo "::error::PR title is ${#TITLE} characters; the limit is 72 (spec 0008 GIT-2)."
+            exit 1
+          fi
+          echo "PR title: ok"
+
+  workflows:
+    name: workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: actionlint
+        uses: docker://rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+        with:
+          args: -color
+      # Fails on findings (no SARIF upload, so it needs no security-events permission).
+      - name: zizmor
+        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+        with:
+          version: 1.30.1
+          advanced-security: false
+          inputs: ${{ inputs.working-directory }}/.github
+
+  text:
+    name: text
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: typos
+        uses: crate-ci/typos@7f9d0819ca1c008ade73f4b41fa9d258d48f605b # v1.51.1
+        with:
+          files: ${{ inputs.working-directory }}
+      # Markdown, YAML, JSON, and TOML outside console/ (the console job checks its own files).
+      # A Vite+ repo uses its own pinned Vite+ and its fmt ignores; other repos use the pinned Oxfmt CLI.
+      - id: vite-plus
+        name: Detect Vite+
+        run: |
+          if [ -f package.json ] && grep -q '"vite-plus"' package.json; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.vite-plus.outputs.present == 'true'
+        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          node-version-file: ${{ inputs.working-directory }}/.node-version
+          cache: true
+      - if: steps.vite-plus.outputs.present == 'true'
+        name: Format check (Vite+)
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec vp fmt --check '**/*.{md,yml,yaml,json,jsonc,toml}' '!console/**'
+      - if: steps.vite-plus.outputs.present != 'true'
+        name: Format check (Oxfmt)
+        run: npx --yes oxfmt@0.72.0 --check '**/*.{md,yml,yaml,json,jsonc,toml}'

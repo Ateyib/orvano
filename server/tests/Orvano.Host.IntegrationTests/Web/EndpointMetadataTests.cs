@@ -10,7 +10,7 @@ public sealed class EndpointMetadataTests(ConsoleServerFixture server) : IClassF
     [Fact, Trait("Spec", "0002:API-4")]
     public void Every_endpoint_declares_authorization_or_anonymous_access_when_mapped()
     {
-        using var client = server.Factory.CreateClient(); // starts the host
+        using HttpClient client = server.Factory.CreateClient(); // starts the host
         var endpoints = server.Factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>().ToList();
 
         endpoints.ShouldNotBeEmpty();

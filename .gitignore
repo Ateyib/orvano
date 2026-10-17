@@ -14,3 +14,15 @@ deploy/root.key
 
 # Vitest browser mode failure screenshots
 .vitest/
+
+# Written by console/scripts/size-entries.mjs from the build manifest (spec 0008 CI-2)
+console/.size-limit.json
+
+# Coverage reports (spec 0008 CI-6)
+coverage/
+
+# Vite+ hook dispatcher, recreated by `vp config` (spec 0008 HOK-1)
+.vite-hooks/_/
+
+# .NET test results and coverage (spec 0008 CI-6)
+TestResults/

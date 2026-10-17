@@ -1,0 +1,20 @@
+{
+  // Spec 0008 TL-3, TYC-1: the root tool configs and tooling scripts. Each package has its own tsconfig.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts", "eslint.config.ts", "tooling/config/*.ts", "tooling/scripts/*.mjs"]
+}

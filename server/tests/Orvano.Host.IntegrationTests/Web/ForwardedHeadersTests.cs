@@ -1,5 +1,7 @@
 using System.Net;
+
 using Microsoft.AspNetCore.Http;
+
 using Orvano.Testing;
 
 namespace Orvano.Host.IntegrationTests.Web;
@@ -15,9 +17,9 @@ public sealed class ForwardedHeadersTests(PostgresFixture postgres) : IDisposabl
     [Fact, Trait("Spec", "0006:NET-1")]
     public async Task HSTS_is_sent_when_a_trusted_proxy_forwards_HTTPS()
     {
-        var factory = Server(trustedProxies: Caddy);
+        OrvanoApiFactory factory = Server(trustedProxies: Caddy);
 
-        var context = await SendAsync(factory, from: Caddy, forwardedProto: "https");
+        HttpContext context = await SendAsync(factory, from: Caddy, forwardedProto: "https");
 
         context.Response.Headers.StrictTransportSecurity.ToString().ShouldBe("max-age=31536000");
     }
@@ -25,9 +27,9 @@ public sealed class ForwardedHeadersTests(PostgresFixture postgres) : IDisposabl
     [Fact, Trait("Spec", "0006:NET-1")]
     public async Task Forwarded_HTTPS_is_ignored_when_it_comes_from_an_untrusted_address()
     {
-        var factory = Server(trustedProxies: Caddy);
+        OrvanoApiFactory factory = Server(trustedProxies: Caddy);
 
-        var context = await SendAsync(factory, from: "10.20.30.41", forwardedProto: "https");
+        HttpContext context = await SendAsync(factory, from: "10.20.30.41", forwardedProto: "https");
 
         context.Response.Headers.ContainsKey("Strict-Transport-Security").ShouldBeFalse();
         context.Connection.RemoteIpAddress?.ToString().ShouldBe("10.20.30.41");
@@ -36,9 +38,9 @@ public sealed class ForwardedHeadersTests(PostgresFixture postgres) : IDisposabl
     [Fact, Trait("Spec", "0006:NET-1")]
     public async Task Forwarded_client_address_is_ignored_from_loopback_when_no_proxies_are_trusted()
     {
-        var factory = Server(trustedProxies: null);
+        OrvanoApiFactory factory = Server(trustedProxies: null);
 
-        var context = await SendAsync(factory, from: "127.0.0.1", forwardedProto: "https", forwardedFor: "203.0.113.9");
+        HttpContext context = await SendAsync(factory, from: "127.0.0.1", forwardedProto: "https", forwardedFor: "203.0.113.9");
 
         context.Connection.RemoteIpAddress?.ToString().ShouldBe("127.0.0.1");
         context.Response.Headers.ContainsKey("Strict-Transport-Security").ShouldBeFalse();
@@ -47,16 +49,16 @@ public sealed class ForwardedHeadersTests(PostgresFixture postgres) : IDisposabl
     [Fact, Trait("Spec", "0006:NET-1")]
     public async Task Forwarded_client_address_is_used_when_it_comes_from_a_trusted_network()
     {
-        var factory = Server(trustedProxies: "10.20.30.0/24");
+        OrvanoApiFactory factory = Server(trustedProxies: "10.20.30.0/24");
 
-        var context = await SendAsync(factory, from: Caddy, forwardedProto: "https", forwardedFor: "203.0.113.9");
+        HttpContext context = await SendAsync(factory, from: Caddy, forwardedProto: "https", forwardedFor: "203.0.113.9");
 
         context.Connection.RemoteIpAddress?.ToString().ShouldBe("203.0.113.9");
     }
 
     private OrvanoApiFactory Server(string? trustedProxies)
     {
-        var settings = OrvanoApiFactory.DefaultSettings(postgres);
+        Dictionary<string, string> settings = OrvanoApiFactory.DefaultSettings(postgres);
         if (trustedProxies is not null)
         {
             settings["TRUSTED_PROXIES"] = trustedProxies;

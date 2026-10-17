@@ -4,17 +4,24 @@
 # Build stages run on the build machine and cross compile, so no stage needs emulation.
 
 FROM --platform=$BUILDPLATFORM node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5 AS console
-WORKDIR /src/console
-RUN npm install --global pnpm@12.12.1
-COPY console/package.json console/pnpm-lock.yaml console/pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
-COPY console/ ./
-RUN pnpm run build
+# Spec 0008 TL-7: the console builds from the root pnpm workspace. pnpm comes from corepack, which reads the one pin
+# in the root package.json (packageManager). The node tag matches .node-version.
+WORKDIR /src
+RUN corepack enable
+# No git hooks in an image build (HOK-1).
+ENV ORVANO_SKIP_HOOKS=1
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .node-version ./
+COPY tooling/scripts/prepare.mjs tooling/scripts/
+COPY console/package.json console/
+# The console and its dependencies only, so the root lint tools never enter the image build.
+RUN pnpm install --frozen-lockfile --filter @orvano/console...
+COPY console/ console/
+RUN pnpm --filter @orvano/console build
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0.402-noble@sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa AS server
 ARG TARGETARCH
 WORKDIR /src/server
-COPY server/global.json server/Directory.Build.props server/Directory.Packages.props ./
+COPY server/global.json server/Directory.Build.props server/Directory.Packages.props server/BannedSymbols.txt server/.editorconfig ./
 COPY server/src/Orvano.Host/Orvano.Host.csproj server/src/Orvano.Host/packages.lock.json src/Orvano.Host/
 COPY server/src/Orvano.SharedKernel/Orvano.SharedKernel.csproj server/src/Orvano.SharedKernel/packages.lock.json src/Orvano.SharedKernel/
 COPY server/src/Orvano.Infrastructure/Orvano.Infrastructure.csproj server/src/Orvano.Infrastructure/packages.lock.json src/Orvano.Infrastructure/

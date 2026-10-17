@@ -55,11 +55,13 @@ spec [0007](../specs/0007-stack-architecture/index.md) · code in `server/`, `co
 - [x] Scaffold from the decision: `/develop stack & architecture`
 - [x] Smoke check it runs: `/test`
 
-### 7. Coding standards & tooling
+### 7. Coding standards & tooling · in-progress
 Capture the conventions from features 1 to 5 and the real scaffold, then install lint, format, analyzers, pre-commit hooks, and CI for the core monorepo, plus a starter setup each SDK repo copies. For the JavaScript side (console and TypeScript SDKs), use Vite+ (`vp`, MIT, 1.0 since 2026-09-28) as the toolchain: Oxfmt for formatting, Oxlint first with a small ESLint config only for rules Oxlint lacks (React Compiler diagnostics, Lingui `no-unlocalized-strings`, TanStack plugins, typescript-eslint strict type checked), `vp run` for tasks, and `vp hooks` / `vp staged` for git hooks. Settle whether type checking uses `vp check` (TypeScript 7) or `tsc` (TypeScript 6, specs 0003 WEB-2 and 0005 SDK-1).
-**Done when:** root `AGENTS.md` reflects the real stack and the researched practices, and lint, format, and CI run clean; Vite+ is confirmed working on this Windows machine (installer PATH, Defender flagging its shims, and `vp run` finding `.bin` scripts with the pinned pnpm), or the plan falls back to standalone Vite, Vitest, and tsdown with the reason recorded.
+**Done when:** root `AGENTS.md` reflects the real stack and the researched practices, and `pnpm check` and `pnpm test` run clean locally with the hooks working (spec 0008 Rollout step 9). Once feature 58 pushes the repo, CI and the security checks run clean there and the Windows CI job decides whether Vite+ stays or the plan falls back to standalone Vite, Vitest, tsdown, and Lefthook, with the reason recorded (spec 0008 TL-5, step 11).
+spec [0008](../specs/0008-coding-standards-tooling/index.md) · code in `package.json`, `vite.config.ts`, `eslint.config.ts`, `tooling/`, `.github/`, `.vite-hooks/`
+- [x] Design it (spec): `/architect coding standards & tooling`
 - [x] Capture conventions + tooling choices: `/audit`
-- [ ] Install the tooling: `/develop tooling`
+- [x] Install the tooling: `/develop tooling`
 - [ ] Check it runs clean: `/test`
 
 ### 58. Repo & community setup

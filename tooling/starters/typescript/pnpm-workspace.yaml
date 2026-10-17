@@ -1,0 +1,6 @@
+# Spec 0005 SDK-2, spec 0003 SEC-5: install scripts stay blocked (pnpm's default); allow one only by name here, with a
+# reason. A just published version waits 3 days before it can be installed.
+packages:
+  - packages/*
+
+minimumReleaseAge: 4320

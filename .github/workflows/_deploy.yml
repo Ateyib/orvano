@@ -1,0 +1,45 @@
+# Spec 0008 CI-2: the image and compose files. Called by ci.yml when deploy/**, server/**, console/**, or a global
+# path changed.
+name: Deploy
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Lint the Dockerfile
+        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: deploy/Dockerfile
+      # compose.yaml needs the values `orvano init` writes to deploy/.env; placeholders are enough to validate it.
+      - name: Validate the compose files
+        env:
+          ORVANO_DB_PASSWORD: ci-placeholder
+          ORVANO_DOMAIN: orvano.example
+          ORVANO_PROVISIONER_PASSWORD: ci-placeholder
+          ORVANO_PUBLIC_URL: https://orvano.example
+          POSTGRES_PASSWORD: ci-placeholder
+        run: |
+          docker compose -f deploy/compose.yaml config --quiet
+          docker compose -f deploy/compose.dev.yaml config --quiet
+      - name: The Dockerfile's node tag matches .node-version (TL-7)
+        run: |
+          want="$(tr -d '[:space:]' < .node-version)"
+          have="$(sed -nE 's/^FROM .*node:([0-9.]+)-.*/\1/p' deploy/Dockerfile)"
+          if [ "$want" != "$have" ]; then
+            echo "::error file=deploy/Dockerfile::node tag is $have, but .node-version is $want"
+            exit 1
+          fi
+      - name: Build the image (linux/amd64, no push)
+        run: docker buildx build --platform linux/amd64 -f deploy/Dockerfile -t orvano:ci .

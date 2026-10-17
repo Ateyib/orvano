@@ -1,0 +1,100 @@
+{
+  "plugins": [
+    "eslint",
+    "typescript",
+    "unicorn",
+    "oxc",
+    "react",
+    "jsx-a11y",
+    "import",
+    "promise",
+    "vitest"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn"
+  },
+  "rules": {
+    "no-console": "error",
+    "import/no-default-export": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/ban-ts-comment": [
+      "error",
+      {
+        "ts-expect-error": "allow-with-description",
+        "ts-ignore": true,
+        "ts-nocheck": true,
+        "ts-check": false
+      }
+    ],
+    "typescript/no-non-null-assertion": "error",
+    "react/rules-of-hooks": "off",
+    "react/exhaustive-deps": "off",
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/anchor-ambiguous-text": "error",
+    "jsx-a11y/anchor-has-content": "error",
+    "jsx-a11y/anchor-is-valid": "error",
+    "jsx-a11y/aria-activedescendant-has-tabindex": "error",
+    "jsx-a11y/aria-props": "error",
+    "jsx-a11y/aria-proptypes": "error",
+    "jsx-a11y/aria-role": "error",
+    "jsx-a11y/aria-unsupported-elements": "error",
+    "jsx-a11y/autocomplete-valid": "error",
+    "jsx-a11y/click-events-have-key-events": "error",
+    "jsx-a11y/control-has-associated-label": "error",
+    "jsx-a11y/heading-has-content": "error",
+    "jsx-a11y/html-has-lang": "error",
+    "jsx-a11y/iframe-has-title": "error",
+    "jsx-a11y/img-redundant-alt": "error",
+    "jsx-a11y/interactive-supports-focus": "error",
+    "jsx-a11y/label-has-associated-control": "error",
+    "jsx-a11y/lang": "error",
+    "jsx-a11y/media-has-caption": "error",
+    "jsx-a11y/mouse-events-have-key-events": "error",
+    "jsx-a11y/no-access-key": "error",
+    "jsx-a11y/no-aria-hidden-on-focusable": "error",
+    "jsx-a11y/no-autofocus": "error",
+    "jsx-a11y/no-distracting-elements": "error",
+    "jsx-a11y/no-interactive-element-to-noninteractive-role": "error",
+    "jsx-a11y/no-noninteractive-element-interactions": "error",
+    "jsx-a11y/no-noninteractive-element-to-interactive-role": "error",
+    "jsx-a11y/no-noninteractive-tabindex": "error",
+    "jsx-a11y/no-redundant-roles": "error",
+    "jsx-a11y/no-static-element-interactions": "error",
+    "jsx-a11y/prefer-tag-over-role": "error",
+    "jsx-a11y/role-has-required-aria-props": "error",
+    "jsx-a11y/role-supports-aria-props": "error",
+    "jsx-a11y/scope": "error",
+    "jsx-a11y/tabindex-no-positive": "error",
+    "import/no-cycle": "error",
+    "no-empty": "error",
+    "react/react-in-jsx-scope": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.config.ts", "**/*.config.mts", "**/*.config.mjs"],
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "console/src/test/**"],
+      "rules": {
+        "typescript/no-non-null-assertion": "off"
+      }
+    },
+    {
+      "files": ["tooling/scripts/**", "console/scripts/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["console/src/shared/report.ts"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

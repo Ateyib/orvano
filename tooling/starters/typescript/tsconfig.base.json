@@ -1,0 +1,20 @@
+{
+  // Spec 0005 TYP-1: each package's tsconfig.json extends this. The Next.js package adds `next` types itself.
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "isolatedDeclarations": true,
+    "declaration": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "types": [],
+    "skipLibCheck": true
+  }
+}

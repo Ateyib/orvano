@@ -1,3 +1,4 @@
+
 namespace Orvano.Host.Web;
 
 internal static class SecurityHeaders
@@ -12,7 +13,7 @@ internal static class SecurityHeaders
     public static IApplicationBuilder UseSecurityHeaders(this IApplicationBuilder app) =>
         app.Use((context, next) =>
         {
-            var headers = context.Response.Headers;
+            IHeaderDictionary headers = context.Response.Headers;
             headers.XContentTypeOptions = "nosniff";
 
             // Spec 0006 NET-1: HSTS whenever the server sees HTTPS (directly, or from a trusted proxy).

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+
 using Microsoft.Extensions.Options;
 
 namespace Orvano.SharedKernel.Configuration;
@@ -21,16 +22,16 @@ public static partial class ConfigurationNames
     public static IReadOnlyList<string> Describe(OptionsValidationException exception, string section)
     {
         var lines = new List<string>();
-        foreach (var failure in exception.Failures)
+        foreach (string failure in exception.Failures)
         {
-            var members = MembersPattern().Match(failure);
+            Match members = MembersPattern().Match(failure);
             if (!members.Success)
             {
                 lines.Add(failure);
                 continue;
             }
 
-            var names = members.Groups["members"].Value
+            IEnumerable<string> names = members.Groups["members"].Value
                 .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
                 .Select(member => member.Replace('.', ':'))
                 .Select(member => ToEnvironmentVariable(string.IsNullOrEmpty(section) ? member : $"{section}:{member}"));

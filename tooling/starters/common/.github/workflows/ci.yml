@@ -1,0 +1,39 @@
+# Spec 0008 KIT-1: an SDK repo's CI, built from the core repo's reusable workflows.
+# Replace <lang> with dotnet, typescript, or dart, and <FULL_SHA> with a full commit SHA of orvanohq/orvano main.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  hygiene:
+    uses: orvanohq/orvano/.github/workflows/repo-hygiene.yml@<FULL_SHA> # main as of <date>
+    permissions:
+      contents: read
+
+  sdk:
+    uses: orvanohq/orvano/.github/workflows/sdk-<lang>.yml@<FULL_SHA> # main as of <date>
+    permissions:
+      contents: read
+
+  ci-gate:
+    name: ci-gate
+    if: always()
+    needs: [hygiene, sdk]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Check every job passed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: echo "$NEEDS" | jq -e '[.[] | .result] | all(. == "success" or . == "skipped")'

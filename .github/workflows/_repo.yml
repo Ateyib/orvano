@@ -1,0 +1,13 @@
+# Spec 0008 CI-2: repo hygiene, every run. Uses the same reusable workflow the SDK repos call (KIT-1).
+name: Repo
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  hygiene:
+    uses: ./.github/workflows/repo-hygiene.yml
+    permissions:
+      contents: read

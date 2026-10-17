@@ -13,9 +13,9 @@ internal static class MigrationOrder
     public static async Task<IReadOnlyList<string>> GetPendingAsync(IServiceProvider services, CancellationToken cancellationToken)
     {
         var pending = new List<string>();
-        foreach (var type in DbContexts)
+        foreach (Type type in DbContexts)
         {
-            await using var scope = services.CreateAsyncScope();
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
             var db = (DbContext)scope.ServiceProvider.GetRequiredService(type);
             pending.AddRange(await db.Database.GetPendingMigrationsAsync(cancellationToken));
         }

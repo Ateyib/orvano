@@ -19,7 +19,7 @@ internal sealed class GlobalExceptionHandler(IProblemDetailsService problems, IL
             return true;
         }
 
-        var timeout = exception is OperationCanceledException;
+        bool timeout = exception is OperationCanceledException;
         if (timeout)
         {
             logger.ServerTimeout(exception);
@@ -29,7 +29,7 @@ internal sealed class GlobalExceptionHandler(IProblemDetailsService problems, IL
             logger.UnhandledException(exception);
         }
 
-        var status = timeout ? StatusCodes.Status503ServiceUnavailable : StatusCodes.Status500InternalServerError;
+        int status = timeout ? StatusCodes.Status503ServiceUnavailable : StatusCodes.Status500InternalServerError;
         httpContext.Response.StatusCode = status;
         return await problems.TryWriteAsync(new ProblemDetailsContext
         {

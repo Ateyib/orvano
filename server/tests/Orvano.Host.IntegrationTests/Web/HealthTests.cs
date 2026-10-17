@@ -1,5 +1,4 @@
 using System.Net;
-using Orvano.Testing;
 
 namespace Orvano.Host.IntegrationTests.Web;
 
@@ -11,9 +10,9 @@ public sealed class HealthTests(ConsoleServerFixture server) : IClassFixture<Con
     [InlineData("/health/ready")]
     public async Task Health_returns_200_Healthy_when_the_platform_database_answers(string path)
     {
-        using var client = server.Factory.CreateClient();
+        using HttpClient client = server.Factory.CreateClient();
 
-        using var response = await client.GetAsync(path, TestContext.Current.CancellationToken);
+        using HttpResponseMessage response = await client.GetAsync(path, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldBe("Healthy");
@@ -22,9 +21,9 @@ public sealed class HealthTests(ConsoleServerFixture server) : IClassFixture<Con
     [Fact, Trait("Spec", "0002:LOG-6")]
     public async Task Health_is_never_cached_when_probed()
     {
-        using var client = server.Factory.CreateClient();
+        using HttpClient client = server.Factory.CreateClient();
 
-        using var response = await client.GetAsync("/health/ready", TestContext.Current.CancellationToken);
+        using HttpResponseMessage response = await client.GetAsync("/health/ready", TestContext.Current.CancellationToken);
 
         response.Headers.CacheControl?.NoStore.ShouldBeTrue();
     }

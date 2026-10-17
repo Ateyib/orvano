@@ -1,8 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+
 using Orvano.Infrastructure.Tls;
+
 using Shouldly;
+
 using Xunit;
 
 namespace Orvano.Infrastructure.Tests;
@@ -23,7 +26,7 @@ public sealed class TlsOptionsTests
     [InlineData("Tls:KeyFile")]
     public void Validation_fails_naming_both_variables_when_only_one_file_is_set(string key)
     {
-        var error = Should.Throw<OptionsValidationException>(() => Resolve(new() { [key] = "/tls/file.pem" }));
+        OptionsValidationException error = Should.Throw<OptionsValidationException>(() => Resolve(new() { [key] = "/tls/file.pem" }));
 
         error.Message.ShouldContain("ORVANO_TLS__CERTFILE");
         error.Message.ShouldContain("ORVANO_TLS__KEYFILE");
@@ -31,8 +34,8 @@ public sealed class TlsOptionsTests
 
     private static TlsOptions Resolve(Dictionary<string, string?> settings)
     {
-        var configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
-        using var services = new ServiceCollection()
+        IConfigurationRoot configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+        using ServiceProvider services = new ServiceCollection()
             .AddSingleton<IConfiguration>(configuration)
             .AddInfrastructure()
             .BuildServiceProvider();

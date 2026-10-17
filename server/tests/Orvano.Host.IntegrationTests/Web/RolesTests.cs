@@ -1,4 +1,5 @@
 using System.Net;
+
 using Orvano.Testing;
 
 namespace Orvano.Host.IntegrationTests.Web;
@@ -18,10 +19,10 @@ public sealed class RolesTests(PostgresFixture postgres) : IDisposable
     [Fact, Trait("Spec", "0007:RUN-2")]
     public async Task Worker_only_process_answers_health_but_serves_no_console_when_ORVANO_ROLES_is_worker()
     {
-        using var client = Server("worker").CreateClient();
+        using HttpClient client = Server("worker").CreateClient();
 
-        using var ready = await client.GetAsync("/health/ready", TestContext.Current.CancellationToken);
-        using var console = await client.GetAsync("/console/", TestContext.Current.CancellationToken);
+        using HttpResponseMessage ready = await client.GetAsync("/health/ready", TestContext.Current.CancellationToken);
+        using HttpResponseMessage console = await client.GetAsync("/console/", TestContext.Current.CancellationToken);
 
         ready.StatusCode.ShouldBe(HttpStatusCode.OK);
         console.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -30,16 +31,16 @@ public sealed class RolesTests(PostgresFixture postgres) : IDisposable
     [Fact, Trait("Spec", "0007:RUN-2")]
     public async Task Api_only_process_serves_the_console_when_ORVANO_ROLES_is_api()
     {
-        using var client = Server("api").CreateClient();
+        using HttpClient client = Server("api").CreateClient();
 
-        using var console = await client.GetAsync("/console/", TestContext.Current.CancellationToken);
+        using HttpResponseMessage console = await client.GetAsync("/console/", TestContext.Current.CancellationToken);
 
         console.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     private OrvanoApiFactory Server(string roles)
     {
-        var settings = OrvanoApiFactory.DefaultSettings(postgres);
+        Dictionary<string, string> settings = OrvanoApiFactory.DefaultSettings(postgres);
         settings["ROLES"] = roles;
         _factory = new OrvanoApiFactory(settings, _console.ContentRoot);
         return _factory;

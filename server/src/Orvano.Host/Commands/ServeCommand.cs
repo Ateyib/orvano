@@ -1,8 +1,9 @@
 using System.CommandLine;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.HttpOverrides;
+
 using Microsoft.Extensions.Options;
+
 using Orvano.Host.Configuration;
 using Orvano.Host.Database;
 using Orvano.Host.Startup;
@@ -65,7 +66,7 @@ internal static class ServeCommand
 
     private static WebApplication Build(string[] configArgs)
     {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = configArgs });
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = configArgs });
         builder.Configuration.AddOrvanoConfiguration(configArgs);
 
         var roles = ServerRoles.Parse(builder.Configuration[ServerRoles.ConfigurationKey]);
@@ -83,14 +84,14 @@ internal static class ServeCommand
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddHealthChecks().AddCheck<PlatformDatabaseHealthCheck>("platform-database", tags: ["ready"]);
 
-        var trustedProxies = builder.Configuration[TrustedProxies.ConfigurationKey];
-        var trustsProxies = TrustedProxies.Configure(new ForwardedHeadersOptions(), trustedProxies); // fails on a bad entry
+        string? trustedProxies = builder.Configuration[TrustedProxies.ConfigurationKey];
+        bool trustsProxies = TrustedProxies.Configure(new ForwardedHeadersOptions(), trustedProxies); // fails on a bad entry
         builder.Services.Configure<ForwardedHeadersOptions>(options => TrustedProxies.Configure(options, trustedProxies));
 
         // Spec 0002 LAY-5: one call per module.
         builder.Services.AddAuthModule(builder.Configuration);
 
-        var app = builder.Build();
+        WebApplication app = builder.Build();
         app.Logger.ServerStarting(HostTelemetry.Version, roles);
 
         if (trustsProxies)
@@ -122,7 +123,7 @@ internal static class ServeCommand
     /// <summary>Spec 0007 TLS-2: with both PEM files set, Kestrel also serves HTTPS on 8443.</summary>
     private static void ConfigureTls(WebApplicationBuilder builder)
     {
-        var tls = builder.Configuration.GetSection(TlsOptions.Section).Get<TlsOptions>();
+        TlsOptions? tls = builder.Configuration.GetSection(TlsOptions.Section).Get<TlsOptions>();
         if (tls is not { IsEnabled: true, CertFile: { } certFile, KeyFile: { } keyFile })
         {
             return;

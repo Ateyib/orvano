@@ -1,0 +1,47 @@
+# Spec 0008 KIT-1: the static checks for the .NET SDK repo (spec 0002 Enforcement). SDK repos call it as
+# orvanohq/orvano/.github/workflows/sdk-dotnet.yml@<full SHA>. Versions come from the repo's global.json.
+# The conformance suite against a real server joins with feature 10 (see spec 0008 Follow-up).
+name: SDK (.NET)
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: The folder holding the solution, relative to the repo root.
+        type: string
+        default: .
+
+permissions: {}
+
+jobs:
+  dotnet:
+    name: dotnet
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: ${{ inputs.working-directory }}/global.json
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles(format('{0}/**/packages.lock.json', inputs.working-directory)) }}
+          restore-keys: nuget-${{ runner.os }}-
+      - run: dotnet restore --locked-mode
+      - name: Format check (FMT-3, FMT-6)
+        run: dotnet format --verify-no-changes --no-restore
+      - name: Build with warnings as errors (analyzers, public API files, NuGetAudit)
+        run: dotnet build -c Release -p:CI=true --no-incremental --no-restore
+      - name: Unit tests with coverage
+        run: dotnet test -c Release --no-build --coverage --coverage-output-format cobertura
+      - name: Pack (package shape, LIB-2)
+        run: dotnet pack -c Release --no-build -p:CI=true -o "$RUNNER_TEMP/packages"

@@ -1,7 +1,8 @@
 using System.Reflection;
+
 using Npgsql;
+
 using OpenTelemetry;
-using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -36,7 +37,7 @@ internal static class HostTelemetry
             logging.IncludeScopes = true;
         });
 
-        var telemetry = builder.Services.AddOpenTelemetry()
+        OpenTelemetryBuilder telemetry = builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService("orvano", serviceVersion: Version))
             .WithTracing(tracing => tracing
                 .AddSource("Orvano.*")

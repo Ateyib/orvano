@@ -1,0 +1,58 @@
+# Spec 0008 CI-8: the Vite+ go or no go on Windows (TL-5). JS checks, console tests, and a real commit through the
+# hook. No .NET build or tests: Windows runners can't run the Linux PostgreSQL container.
+name: Windows
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  windows:
+    name: windows
+    runs-on: windows-2025
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          node-version-file: .node-version
+          cache: true
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: server/global.json
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:js
+      - id: playwright
+        name: Find the Playwright version
+        run: echo "version=$(pnpm --filter @orvano/console exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Cache the Playwright browser (CI-7)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~\AppData\Local\ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - run: pnpm --filter @orvano/console exec playwright install chromium
+      - run: pnpm --filter @orvano/console test
+      - name: Hook proof (HOK-1, HOK-2, GIT-4)
+        run: |
+          git config user.name ci
+          git config user.email ci@localhost
+          # prepare skips in CI, so install the dispatcher the way a contributor's `pnpm install` does.
+          env -u CI pnpm exec vp config --no-agent
+          env -u CI pnpm exec vp hooks status | tee hooks-status.txt
+          grep -Eq '^Dispatcher:[[:space:]]+installed' hooks-status.txt
+          printf 'export const   badlyFormatted = {a:1}\n' > tooling/hook-proof.ts
+          printf 'namespace Orvano.Host;\npublic   class   HookProof{\n  public int X {get;set;}\n      }\n' > server/src/Orvano.Host/HookProof.cs
+          git add tooling/hook-proof.ts server/src/Orvano.Host/HookProof.cs
+          env -u CI git commit -m "ci: hook proof"
+          git show HEAD:tooling/hook-proof.ts | tee committed.ts
+          git show HEAD:server/src/Orvano.Host/HookProof.cs | tee committed.cs
+          grep -q 'export const badlyFormatted = { a: 1 };' committed.ts
+          grep -q 'public int X { get; set; }' committed.cs

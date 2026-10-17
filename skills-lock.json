@@ -13,6 +13,12 @@
       "skillPath": "plugins/dotnet-diag/skills/analyzing-dotnet-performance/SKILL.md",
       "computedHash": "88e4ef0fbace90c8606466966634e597fad09951878fbf9332df7b98bd9924ee"
     },
+    "authoring-github-workflows": {
+      "source": "dotnet/skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/authoring-github-workflows/SKILL.md",
+      "computedHash": "8a1ab212d59191e828ad00d02060c93cb642ff35dcb1761212a7cd2dcef212cb"
+    },
     "caching": {
       "source": "codewithmukesh/dotnet-claude-kit",
       "sourceType": "github",
@@ -85,6 +91,12 @@
       "skillPath": "skills/deno/SKILL.md",
       "computedHash": "f0f811a7cb7a9890d4735785a54c17a5f1a488a0a184b62834fd2ea493048bd2"
     },
+    "dependabot": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/dependabot/SKILL.md",
+      "computedHash": "a7f64786f061e1ec9a513757a54f96e3c05b1f88d9d7e380222defbcd87a56e4"
+    },
     "docker-compose-patterns": {
       "source": "docker/skills",
       "sourceType": "github",
@@ -151,6 +163,12 @@
       "skillPath": "skills/flutter-use-http-package/SKILL.md",
       "computedHash": "bd169b5cee731751f3b32f43c94cfe9495fc8e6c3eb621b785c69e38b77d0e19"
     },
+    "github-actions-hardening": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/github-actions-hardening/SKILL.md",
+      "computedHash": "10e35ff70fcf42e09295ffad0ac3203e4d6b6f74557cc3fa1654112b89e0eea2"
+    },
     "lingui-best-practices": {
       "source": "lingui/skills",
       "sourceType": "github",
@@ -162,6 +180,18 @@
       "sourceType": "github",
       "skillPath": "skills/lingui-framework-setup/SKILL.md",
       "computedHash": "987f6babb32b27a409e07fb01a598751cb5d31e8a990f99bc5c124d8cee64fdc"
+    },
+    "migrate-oxfmt": {
+      "source": "oxc-project/oxc",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/migrate-oxfmt/SKILL.md",
+      "computedHash": "956a4e27516e08d5ecd9405c0d18ef744ed300c04af02016d8c2ff2454a5cb52"
+    },
+    "migrate-oxlint": {
+      "source": "oxc-project/oxc",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/migrate-oxlint/SKILL.md",
+      "computedHash": "7bc6dccdcc557cdb7d887fc16c6632e685b13860d202b9c9ce5da7504f0dbe18"
     },
     "msbuild": {
       "source": "dotnet/skills",

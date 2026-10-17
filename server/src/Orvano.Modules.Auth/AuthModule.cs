@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 using Orvano.Modules.Auth.Contracts;
 using Orvano.Modules.Auth.Passwords;
 

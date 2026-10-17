@@ -1,0 +1,47 @@
+# Spec 0008 KIT-1: the static checks for the TypeScript SDK repo (spec 0005 Enforcement). SDK repos call it as
+# orvanohq/orvano/.github/workflows/sdk-typescript.yml@<full SHA>. Node comes from the repo's .node-version,
+# Vite+ and pnpm from its package.json. Conformance suites and tarball fixtures join with features 10 and 52.
+name: SDK (TypeScript)
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: The workspace root, relative to the repo root.
+        type: string
+        default: .
+
+permissions: {}
+
+jobs:
+  typescript:
+    name: typescript
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          node-version-file: ${{ inputs.working-directory }}/.node-version
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      - name: Format, lint, and type check
+        run: pnpm check
+      - name: Build (tsdown, with publint and are-the-types-wrong, NPM-1 to NPM-4)
+        run: pnpm build
+      - name: Generator drift (CGN-1)
+        run: git diff --exit-code
+      - name: Tests
+        run: pnpm test
+      - name: Size (SIZ-1)
+        run: pnpm size
+      - name: Audit dependencies
+        run: pnpm audit --audit-level moderate

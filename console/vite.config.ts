@@ -27,5 +27,19 @@ export default defineConfig({
     },
   },
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-  build: { manifest: true }, // spec 0003 BDL-1
+  build: {
+    manifest: true, // spec 0003 BDL-1
+    rolldownOptions: {
+      output: {
+        // Spec 0003 BDL-1: no emitted file over 80 KB gzip, so the framework libraries get their own chunks.
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            { name: 'tanstack', test: /node_modules[\\/]@tanstack[\\/]/ },
+            { name: 'lingui', test: /node_modules[\\/]@lingui[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
 })

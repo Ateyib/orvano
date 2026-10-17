@@ -1,9 +1,10 @@
 using System.Net;
 using System.Text.Json;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+
 using Orvano.Testing;
 
 namespace Orvano.Host.IntegrationTests.Web;
@@ -20,13 +21,13 @@ public sealed class ErrorHandlingTests(PostgresFixture postgres) : IDisposable
     [Fact, Trait("Spec", "0002:ERR-4")]
     public async Task Unhandled_exception_returns_500_problem_without_the_exception_text()
     {
-        using var client = _factory.CreateClient();
+        using HttpClient client = _factory.CreateClient();
 
-        using var response = await client.GetAsync("/test/throw", TestContext.Current.CancellationToken);
+        using HttpResponseMessage response = await client.GetAsync("/test/throw", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
-        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         body.ShouldNotContain("hunter2");
         body.ShouldNotContain("InvalidOperationException");
         using var problem = JsonDocument.Parse(body);
@@ -37,9 +38,9 @@ public sealed class ErrorHandlingTests(PostgresFixture postgres) : IDisposable
     [Fact, Trait("Spec", "0002:ERR-4")]
     public async Task Server_side_cancellation_returns_503_timeout_when_the_caller_is_still_there()
     {
-        using var client = _factory.CreateClient();
+        using HttpClient client = _factory.CreateClient();
 
-        using var response = await client.GetAsync("/test/timeout", TestContext.Current.CancellationToken);
+        using HttpResponseMessage response = await client.GetAsync("/test/timeout", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
         using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+
 using Npgsql;
 
 namespace Orvano.Host.Database;
@@ -11,10 +12,10 @@ internal static class PlatformDatabase
         builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Section).ValidateOnStart();
         builder.Services.AddSingleton<IValidateOptions<DatabaseOptions>, DatabaseOptionsValidator>();
 
-        var development = builder.Environment.IsDevelopment();
+        bool development = builder.Environment.IsDevelopment();
         builder.Services.AddSingleton(services =>
         {
-            var options = services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+            DatabaseOptions options = services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
             var connection = new NpgsqlConnectionStringBuilder
             {
                 Host = options.Host,

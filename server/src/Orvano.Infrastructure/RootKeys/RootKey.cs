@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
+
 using Microsoft.Extensions.Configuration;
+
 using Orvano.SharedKernel.Configuration;
 
 namespace Orvano.Infrastructure.RootKeys;
@@ -25,15 +27,15 @@ public static class RootKey
     /// </summary>
     public static void EnsureConfigured(IConfiguration configuration)
     {
-        var text = configuration[ConfigurationKey];
+        string? text = configuration[ConfigurationKey];
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new ConfigurationException(
                 "No root key. Set ORVANO_ROOT_KEY_FILE to the root.key file that `orvano init` wrote (or ORVANO_ROOT_KEY to its contents).");
         }
 
-        var bytes = new byte[SizeInBytes + 1];
-        if (!Convert.TryFromBase64String(text.Trim(), bytes, out var written) || written != SizeInBytes)
+        byte[] bytes = new byte[SizeInBytes + 1];
+        if (!Convert.TryFromBase64String(text.Trim(), bytes, out int written) || written != SizeInBytes)
         {
             throw new ConfigurationException(
                 "The root key in ORVANO_ROOT_KEY or ORVANO_ROOT_KEY_FILE is not 32 bytes of base64. Use the file `orvano init` wrote.");

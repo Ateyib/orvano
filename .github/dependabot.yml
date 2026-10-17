@@ -1,0 +1,84 @@
+# Spec 0008 DPB-1, DPB-2, spec 0006 SUP-1. Weekly on Monday; security updates are a repo setting (feature 58).
+# Majors come one PR each (a major of a TL-4 tool needs a spec update). Titles come out as `build(deps): bump ...`, which meets GIT-2. tooling/starters/** is never updated here (KIT-2).
+version: 2
+
+updates:
+  - package-ecosystem: nuget
+    directory: /server
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      nuget-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      # DPB-2: the lint and format toolchain moves together. Before merging, rerun VER-5, set eslint-plugin-oxlint to
+      # the Oxlint version `vp --version` reports, and run `pnpm check`.
+      toolchain:
+        patterns:
+          - vite-plus
+          - eslint
+          - eslint-plugin-*
+          - typescript-eslint
+          - "@tanstack/eslint-plugin-*"
+        update-types: [minor, patch]
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /deploy
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      docker-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker-compose
+    directory: /deploy
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      compose-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      actions-minor-and-patch:
+        update-types: [minor, patch]

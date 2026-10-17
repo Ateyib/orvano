@@ -1,0 +1,62 @@
+{
+  "plugins": [
+    "eslint",
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "promise",
+    "vitest"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn"
+  },
+  "rules": {
+    "no-console": "error",
+    "no-empty": "error",
+    "import/no-default-export": "error",
+    "import/no-cycle": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/ban-ts-comment": [
+      "error",
+      {
+        "ts-expect-error": "allow-with-description",
+        "ts-ignore": true,
+        "ts-nocheck": true,
+        "ts-check": false
+      }
+    ],
+    "typescript/no-non-null-assertion": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.config.ts",
+        "**/*.config.mts"
+      ],
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    },
+    {
+      "files": [
+        "**/*.test.ts",
+        "test/**",
+        "conformance/**"
+      ],
+      "rules": {
+        "typescript/no-non-null-assertion": "off"
+      }
+    },
+    {
+      "files": [
+        "tooling/scripts/**"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

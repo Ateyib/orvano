@@ -16,14 +16,14 @@ internal sealed record ServerRoles(bool Api, bool Worker)
 
     public static ServerRoles Parse(string? value)
     {
-        var roles = (value ?? "api,worker").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        string[] roles = (value ?? "api,worker").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (roles.Length == 0)
         {
             throw new ConfigurationException("ORVANO_ROLES is empty. Use api, worker, or api,worker.");
         }
 
         bool api = false, worker = false;
-        foreach (var role in roles)
+        foreach (string role in roles)
         {
             if (role.Equals("api", StringComparison.OrdinalIgnoreCase))
             {

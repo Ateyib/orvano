@@ -1,0 +1,72 @@
+# Spec 0008 KIT-1: the static checks for the Dart and Flutter SDK repos (spec 0004 Enforcement). SDK repos call it as
+# orvanohq/orvano/.github/workflows/sdk-dart.yml@<full SHA>. The SDK version comes from the pubspec.yaml
+# constraint's floor and the latest stable (DRT-1). The device and platform matrix joins with feature 52.
+name: SDK (Dart)
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: The package folder, relative to the repo root.
+        type: string
+        default: .
+      flutter:
+        description: True for the Flutter repo (flutter analyze and flutter test).
+        type: boolean
+        default: false
+
+permissions: {}
+
+jobs:
+  dart:
+    name: dart (${{ matrix.sdk }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [floor, stable]
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: floor
+        name: Read the SDK floor from pubspec.yaml (DRT-1)
+        run: |
+          floor="$(sed -nE 's/^[[:space:]]+sdk:[[:space:]]*\^?([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' pubspec.yaml | head -1)"
+          echo "version=$floor" >> "$GITHUB_OUTPUT"
+      - if: ${{ !inputs.flutter }}
+        uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        with:
+          sdk: ${{ matrix.sdk == 'floor' && steps.floor.outputs.version || 'stable' }}
+      - if: ${{ inputs.flutter }}
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+      - name: Dependencies (lowest versions on the floor, DRT-3)
+        env:
+          SDK: ${{ matrix.sdk }}
+          FLUTTER: ${{ inputs.flutter }}
+        run: |
+          tool=dart; [ "$FLUTTER" = "true" ] && tool=flutter
+          if [ "$SDK" = "floor" ]; then "$tool" pub downgrade; else "$tool" pub get; fi
+      - name: Format (DRT-5)
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Analyze (DRT-4)
+        env:
+          FLUTTER: ${{ inputs.flutter }}
+        run: if [ "$FLUTTER" = "true" ]; then flutter analyze --fatal-infos; else dart analyze --fatal-infos; fi
+      - name: Repo checks (tool/check_*.dart, written with the first Dart repo)
+        run: |
+          for script in tool/check_imports.dart tool/check_deps.dart tool/check_version.dart; do
+            if [ -f "$script" ]; then dart run "$script"; fi
+          done
+      - name: Tests
+        env:
+          FLUTTER: ${{ inputs.flutter }}
+        run: if [ "$FLUTTER" = "true" ]; then flutter test; else dart test; fi

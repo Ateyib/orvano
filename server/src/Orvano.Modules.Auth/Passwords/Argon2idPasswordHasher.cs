@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+
 using NSec.Cryptography;
+
 using Orvano.Modules.Auth.Contracts;
 
 namespace Orvano.Modules.Auth.Passwords;
@@ -31,8 +33,8 @@ internal sealed class Argon2idPasswordHasher(Argon2Cost cost) : IPasswordHasher
             throw new InvalidOperationException("Argon2id cost is below the spec 0006 PWD-1 floor (19 MiB, 2 iterations).");
         }
 
-        var salt = RandomNumberGenerator.GetBytes(SaltSize);
-        var hash = Derive(password, salt, cost, HashSize);
+        byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
+        byte[] hash = Derive(password, salt, cost, HashSize);
         return string.Create(CultureInfo.InvariantCulture,
             $"$argon2id$v={Version}$m={cost.MemoryKiB},t={cost.Iterations},p=1${ToBase64(salt)}${ToBase64(hash)}");
     }
@@ -41,12 +43,12 @@ internal sealed class Argon2idPasswordHasher(Argon2Cost cost) : IPasswordHasher
     {
         ArgumentNullException.ThrowIfNull(password);
         ArgumentNullException.ThrowIfNull(hash);
-        if (Encoding.UTF8.GetByteCount(password) > MaxPasswordBytes || !TryParse(hash, out var stored))
+        if (Encoding.UTF8.GetByteCount(password) > MaxPasswordBytes || !TryParse(hash, out StoredHash stored))
         {
             return false;
         }
 
-        var actual = Derive(password, stored.Salt, stored.Cost, stored.Hash.Length);
+        byte[] actual = Derive(password, stored.Salt, stored.Cost, stored.Hash.Length);
         return CryptographicOperations.FixedTimeEquals(actual, stored.Hash);
     }
 
@@ -73,7 +75,7 @@ internal sealed class Argon2idPasswordHasher(Argon2Cost cost) : IPasswordHasher
     private static bool TryParse(string phc, out StoredHash stored)
     {
         stored = default;
-        var parts = phc.Split('$');
+        string[] parts = phc.Split('$');
         if (parts is not ["", "argon2id", var version, var costText, var saltText, var hashText]
             || version != $"v={Version}")
         {
@@ -81,12 +83,12 @@ internal sealed class Argon2idPasswordHasher(Argon2Cost cost) : IPasswordHasher
         }
 
         int? memory = null, iterations = null;
-        foreach (var pair in costText.Split(','))
+        foreach (string pair in costText.Split(','))
         {
-            var (name, value) = pair.IndexOf('=', StringComparison.Ordinal) is var at and > 0
+            (string? name, string? value) = pair.IndexOf('=', StringComparison.Ordinal) is var at and > 0
                 ? (pair[..at], pair[(at + 1)..])
                 : (pair, string.Empty);
-            if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number))
+            if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int number))
             {
                 return false;
             }
@@ -101,8 +103,8 @@ internal sealed class Argon2idPasswordHasher(Argon2Cost cost) : IPasswordHasher
         }
 
         if (memory is not { } m || iterations is not { } t || m < 8 || t < 1
-            || !TryFromBase64(saltText, out var salt) || salt.Length != SaltSize
-            || !TryFromBase64(hashText, out var hash) || hash.Length is < 16 or > 64)
+            || !TryFromBase64(saltText, out byte[]? salt) || salt.Length != SaltSize
+            || !TryFromBase64(hashText, out byte[]? hash) || hash.Length is < 16 or > 64)
         {
             return false;
         }
@@ -115,9 +117,9 @@ internal sealed class Argon2idPasswordHasher(Argon2Cost cost) : IPasswordHasher
 
     private static bool TryFromBase64(string unpadded, out byte[] bytes)
     {
-        var padded = unpadded.PadRight(unpadded.Length + ((4 - (unpadded.Length % 4)) % 4), '=');
-        var buffer = new byte[padded.Length];
-        if (Convert.TryFromBase64String(padded, buffer, out var written))
+        string padded = unpadded.PadRight(unpadded.Length + ((4 - (unpadded.Length % 4)) % 4), '=');
+        byte[] buffer = new byte[padded.Length];
+        if (Convert.TryFromBase64String(padded, buffer, out int written))
         {
             bytes = buffer[..written];
             return true;

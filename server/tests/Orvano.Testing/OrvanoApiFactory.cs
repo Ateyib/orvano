@@ -18,7 +18,7 @@ public class OrvanoApiFactory(IReadOnlyDictionary<string, string> settings, stri
             builder.UseContentRoot(contentRoot);
         }
 
-        foreach (var (key, value) in settings)
+        foreach ((string? key, string? value) in settings)
         {
             builder.UseSetting(key, value);
         }

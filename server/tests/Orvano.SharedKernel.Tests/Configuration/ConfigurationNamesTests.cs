@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Options;
+
 using Orvano.SharedKernel.Configuration;
+
 using Shouldly;
+
 using Xunit;
 
 namespace Orvano.SharedKernel.Tests.Configuration;
@@ -19,9 +22,9 @@ public sealed class ConfigurationNamesTests
     [Fact]
     public void Failure_names_the_variable_when_the_source_generated_validator_reports_a_member()
     {
-        var exception = Failure("Username: The DatabaseOptions.Username field is required.");
+        OptionsValidationException exception = Failure("Username: The DatabaseOptions.Username field is required.");
 
-        var lines = ConfigurationNames.Describe(exception, "Database");
+        IReadOnlyList<string> lines = ConfigurationNames.Describe(exception, "Database");
 
         lines.ShouldBe(["ORVANO_DATABASE__USERNAME: The DatabaseOptions.Username field is required"]);
     }
@@ -29,9 +32,9 @@ public sealed class ConfigurationNamesTests
     [Fact]
     public void Failure_names_every_variable_when_a_rule_spans_several_members()
     {
-        var exception = Failure("CertFile, KeyFile: Set both, or neither.");
+        OptionsValidationException exception = Failure("CertFile, KeyFile: Set both, or neither.");
 
-        var lines = ConfigurationNames.Describe(exception, "Tls");
+        IReadOnlyList<string> lines = ConfigurationNames.Describe(exception, "Tls");
 
         lines.Single().ShouldStartWith("ORVANO_TLS__CERTFILE, ORVANO_TLS__KEYFILE: Set both, or neither");
     }
@@ -39,9 +42,9 @@ public sealed class ConfigurationNamesTests
     [Fact]
     public void Failure_names_the_variable_when_data_annotations_validation_reports_members()
     {
-        var exception = Failure("DataAnnotation validation failed for 'TlsOptions' members: 'CertFile,KeyFile' with the error: 'Set both.'.");
+        OptionsValidationException exception = Failure("DataAnnotation validation failed for 'TlsOptions' members: 'CertFile,KeyFile' with the error: 'Set both.'.");
 
-        var lines = ConfigurationNames.Describe(exception, "Tls");
+        IReadOnlyList<string> lines = ConfigurationNames.Describe(exception, "Tls");
 
         lines.Single().ShouldStartWith("ORVANO_TLS__CERTFILE, ORVANO_TLS__KEYFILE: Set both");
     }
@@ -49,7 +52,7 @@ public sealed class ConfigurationNamesTests
     [Fact]
     public void Failure_is_kept_as_written_when_it_names_no_member()
     {
-        var exception = Failure("Something is wrong with the whole section");
+        OptionsValidationException exception = Failure("Something is wrong with the whole section");
 
         ConfigurationNames.Describe(exception, "Database").ShouldBe(["Something is wrong with the whole section"]);
     }

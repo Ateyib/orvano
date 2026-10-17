@@ -10,7 +10,7 @@ public static class OrvanoConfigurationExtensions
     /// </summary>
     public static IConfigurationBuilder AddOrvanoConfiguration(this IConfigurationBuilder builder, string[] args)
     {
-        var configFile = Environment.GetEnvironmentVariable(ConfigurationNames.Prefix + "CONFIG_FILE");
+        string? configFile = Environment.GetEnvironmentVariable(ConfigurationNames.Prefix + "CONFIG_FILE");
         if (!string.IsNullOrWhiteSpace(configFile))
         {
             if (!File.Exists(configFile))

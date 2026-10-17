@@ -9,6 +9,6 @@ describe('config', () => {
   })
 
   it('exposes only build facts', () => {
-    expect(Object.keys(config).sort()).toEqual(['basePath', 'dev'])
+    expect(Object.keys(config).toSorted()).toEqual(['basePath', 'dev'])
   })
 })

@@ -13,7 +13,7 @@ public sealed class ConsoleBuild : IDisposable
     public ConsoleBuild()
     {
         ContentRoot = Directory.CreateTempSubdirectory("orvano-console-").FullName;
-        var console = Path.Combine(ContentRoot, "wwwroot", "console");
+        string console = Path.Combine(ContentRoot, "wwwroot", "console");
         Directory.CreateDirectory(Path.Combine(console, "assets"));
         File.WriteAllText(Path.Combine(console, "index.html"), $"<!doctype html><html>{IndexMarker}</html>");
         File.WriteAllText(Path.Combine(console, HashedAsset), "export const app = 1;");
