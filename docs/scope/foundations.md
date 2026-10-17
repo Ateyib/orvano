@@ -54,12 +54,15 @@ spec [0006](../specs/0006-security-baseline/index.md)
 
 - [x] Design it (spec): `/architect security baseline`
 
-### 57. Open source license · needs a decision
+### 57. Open source license · in-progress
 
 Choose Orvano's license and contributor terms before the first public push. It decides whether others can resell Orvano as a hosted service, what every package's metadata says (spec 0002 is waiting on it), and which dependency licenses are allowed.
 **Done when:** a spec records the license for the server, the console, and the SDKs (they may differ), the contributor terms (sign off or contributor agreement), and the dependency licenses that are allowed, and a `LICENSE` file is ready for each repo.
+spec [0009](../specs/0009-open-source-license/index.md) · code in `LICENSE`, `NOTICE`, `.github/dependency-review-config.yml`, `deploy/Dockerfile`, `tooling/starters/`
 
-- [ ] Design it (spec): `/architect open source license`
+- [x] Design it (spec): `/architect open source license`
+- [ ] Apply it: `/develop open source license` (spec 0009 Rollout steps 1 to 5; step 6 is feature 58)
+- [ ] Verify it: `/check verify open source license`
 
 ### 6. Stack & architecture · done
 

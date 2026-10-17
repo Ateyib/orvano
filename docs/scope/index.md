@@ -21,7 +21,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 4   | [TypeScript SDK practices](foundations.md)        | Foundation    | done        |
 | 54  | [Console UX patterns](foundations.md)             | Foundation    | done        |
 | 5   | [Security baseline](foundations.md)               | Foundation    | done        |
-| 57  | [Open source license](foundations.md)             | Foundation    | planned     |
+| 57  | [Open source license](foundations.md)             | Foundation    | in-progress |
 | 6   | [Stack & architecture](foundations.md)            | Foundation    | done        |
 | 7   | [Coding standards & tooling](foundations.md)      | Foundation    | in-progress |
 | 58  | [Repo & community setup](foundations.md)          | Foundation    | planned     |
