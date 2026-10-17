@@ -100,8 +100,8 @@ spec [0010](../specs/0010-repo-community-setup/index.md) · code in the root com
   - [ ] Org `.github` and the three template repos, then the CodeQL gate once uploads are proven (AC-16, AC-17, AC-20)
 - [ ] Verify it: `/check verify repo & community setup`
 - [x] Test it: `/test repo & community setup`
-- [ ] Review it (fresh model): `/check review repo & community setup`
-- [ ] Document it: `/document repo & community setup`
+- [x] Review it (fresh model): `/check review repo & community setup`
+- [x] Document it: `/document repo & community setup`
 
 ### 8. Platform data model · needs a decision
 
