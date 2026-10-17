@@ -26,14 +26,15 @@ The repo root is one pnpm workspace with one lockfile. Run `pnpm install` at the
 
 Read the matching practice spec first. Each rule has an ID (for example `API-1`, `UX-27`), so cite the ID in code review. Where an installed skill disagrees with a spec, the spec wins (rule GEN-0 in spec 0002).
 
-| You are writing                                        | Read first                                                                                                                                                    |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| .NET server code or the .NET SDK                       | [0002 .NET backend practices](docs/specs/0002-dotnet-backend-practices/index.md)                                                                              |
-| Console UI (React)                                     | [0003 React console practices](docs/specs/0003-react-console-practices/index.md) and [0001 Console UX patterns](docs/specs/0001-console-ux-patterns/index.md) |
-| Dart or Flutter SDK                                    | [0004 Dart and Flutter practices](docs/specs/0004-dart-flutter-practices/index.md)                                                                            |
-| TypeScript, JavaScript, or Next.js SDK                 | [0005 TypeScript SDK practices](docs/specs/0005-typescript-sdk-practices/index.md)                                                                            |
-| Server runtime, install, the image, or compose files   | [0007 Stack and architecture](docs/specs/0007-stack-architecture/index.md)                                                                                    |
-| Lint, format, hooks, CI workflows, or the SDK starters | [0008 Coding standards and tooling](docs/specs/0008-coding-standards-tooling/index.md)                                                                        |
+| You are writing                                                 | Read first                                                                                                                                                    |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| .NET server code or the .NET SDK                                | [0002 .NET backend practices](docs/specs/0002-dotnet-backend-practices/index.md)                                                                              |
+| Console UI (React)                                              | [0003 React console practices](docs/specs/0003-react-console-practices/index.md) and [0001 Console UX patterns](docs/specs/0001-console-ux-patterns/index.md) |
+| Dart or Flutter SDK                                             | [0004 Dart and Flutter practices](docs/specs/0004-dart-flutter-practices/index.md)                                                                            |
+| TypeScript, JavaScript, or Next.js SDK                          | [0005 TypeScript SDK practices](docs/specs/0005-typescript-sdk-practices/index.md)                                                                            |
+| Server runtime, install, the image, or compose files            | [0007 Stack and architecture](docs/specs/0007-stack-architecture/index.md)                                                                                    |
+| Lint, format, hooks, CI workflows, or the SDK starters          | [0008 Coding standards and tooling](docs/specs/0008-coding-standards-tooling/index.md)                                                                        |
+| A new dependency, package metadata, or a LICENSE or NOTICE file | [0009 Open source license](docs/specs/0009-open-source-license/index.md)                                                                                      |
 
 Each spec has a `rationale.md` beside it; read it only when you need the why. Each spec also lists its implementation skills under `.claude/skills/`; load only the ones the task needs.
 
@@ -53,7 +54,8 @@ Stored in `docs/specs/`, one folder per spec: `docs/specs/NNNN-title/index.md`. 
 - The data API is engine neutral (other database engines come later). Do not leak Postgres specifics into the public API or SDKs.
 - Usage is metered from the start. New billable operations must be countable.
 - Console strings are translation ready from day one (see spec 0003).
-- Coding standards and tooling are spec 0008: Oxfmt and Oxlint through Vite+, a small ESLint config for the rest, `dotnet format` for C#, a staged pre-commit hook, and CI behind one `ci-gate` check. PR titles follow Conventional Commits and PRs are squash merged (GIT-2). A rule disable says why on the same line (LNT-5).
+- Coding standards and tooling are spec 0008: Oxfmt and Oxlint through Vite+, a small ESLint config for the rest, `dotnet format` for C#, a staged pre-commit hook, and CI behind one `ci-gate` check. PR titles follow Conventional Commits and PRs are squash merged (GIT-2). A rule disable says why on the same line (LNT-5). A pinned tool version must be at least 3 days old, like pnpm's release wait (TL-8).
+- Every repo is Apache 2.0 (spec 0009). Sign off every commit with `git commit -s` (DCO, CTB-1, CTB-5). A new dependency needs a license on spec 0009 DEP-1's lists; any other is a named dev exception in DEP-5 and `.github/dependency-review-config.yml`.
 
 ## Agent skills
 

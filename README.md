@@ -16,7 +16,7 @@ Open source, self hostable backend as a service: auth, databases, storage, realt
 
 ## Local development
 
-You need the .NET 10 SDK, Node 24 LTS, pnpm 12 (pinned in `console/package.json`), and a container engine. Docker is the default; Podman works too (see below).
+You need the .NET 10 SDK, Node 24 LTS (`.node-version`), pnpm 12 (pinned in the root `package.json`), and a container engine. Docker is the default; Podman works too (see below).
 
 1. Start PostgreSQL 18 (it listens on `127.0.0.1:5432`, with no password, for this machine only):
 
