@@ -204,13 +204,13 @@ People apply it from the next PR; CI enforces it once the repo is public (depend
 
 ## Follow-up
 
-- [ ] Spec 0002 GEN-5: replace the interim license sentence with "Licenses: spec 0009 DEP-1 to DEP-5", keeping the maintenance test and named bans; close its feature 57 follow up (line 479).
-- [ ] Spec 0003 WEB-7: drop the MPL dev only carve out and point to spec 0009 DEP-1 and DEP-3.
-- [ ] Spec 0004: close the feature 57 follow up (PUB-3 LICENSE file); point its GEN-5 license mentions to spec 0009.
-- [ ] Spec 0005: point its "license and final dependency license policy" row to spec 0009, and NPM-4's `files` to `["dist", "NOTICE"]` (LIC-6).
-- [ ] Spec 0006: point SUP-2 and the scope table's license row to spec 0009.
-- [ ] Spec 0007: REP-1's `LICENSE (feature 57)` becomes `LICENSE`, `NOTICE` (spec 0009 LIC-1, LIC-2).
-- [ ] Spec 0008: GIT-3 records "DCO sign off, spec 0009 CTB-1 to CTB-4", and CI-3's interim list note points to spec 0009 DEP-8 (left for the session that owns 0008 today).
+- [x] Spec 0002 GEN-5: replace the interim license sentence with "Licenses: spec 0009 DEP-1 to DEP-5", keeping the maintenance test and named bans; close its feature 57 follow up (line 479).
+- [x] Spec 0003 WEB-7: drop the MPL dev only carve out and point to spec 0009 DEP-1 and DEP-3.
+- [x] Spec 0004: close the feature 57 follow up (PUB-3 LICENSE file); point its GEN-5 license mentions to spec 0009.
+- [x] Spec 0005: point its "license and final dependency license policy" row to spec 0009, and NPM-4's `files` to `["dist", "NOTICE"]` (LIC-6).
+- [x] Spec 0006: point SUP-2 and the scope table's license row to spec 0009.
+- [x] Spec 0007: REP-1's `LICENSE (feature 57)` becomes `LICENSE`, `NOTICE` (spec 0009 LIC-1, LIC-2).
+- [x] Spec 0008: GIT-3 records "DCO sign off, spec 0009 CTB-1 to CTB-4", and CI-3's interim list note points to spec 0009 DEP-8 (left for the session that owns 0008 today).
 - [ ] Release pipeline (image): build NTC-1's two generator scripts and wire NTC-2.
 
 ## Rationale

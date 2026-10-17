@@ -180,7 +180,7 @@ Versions below are the ones the build pinned on 2026-10-16, the newest that clea
   - The summary is imperative, has no trailing period, and may start with any letter (so `fix(auth): OAuth state` passes). The whole title is at most 72 characters, except titles opened by `dependabot[bot]`, which skip the length check.
   - GitHub's own revert titles (`Revert "<original title>"`) pass as they are.
   - CI's `pr-title` job checks it with a shell regex, on `pull_request` events only. The title reaches the script through `env:`, never inline `${{ }}` (CI-4).
-- **GIT-3 (MUST)**: Commits inside a branch are free form, and there is no commit msg hook. Sign off (DCO) or a contributor agreement is decided by feature 57 and enforced by feature 58.
+- **GIT-3 (MUST)**: Commits inside a branch are free form, and there is no commit msg hook. Every commit carries a DCO sign off (spec 0009 CTB-1 to CTB-5), which the `dco` job checks on pull requests once feature 58 adds it.
 - **GIT-4 (MUST)**: Root `.gitattributes` sets `* text=auto eol=lf`, `*.{cmd,bat} eol=crlf`, `.vite-hooks/* eol=lf`, and marks binaries (`*.png`, `*.ico`, `*.woff2`) as `binary`, so Windows checkouts don't break formatting or scripts. Hook scripts are committed with the executable bit (`git update-index --chmod=+x`).
 
 ### CI: workflows
@@ -214,7 +214,7 @@ Versions below are the ones the build pinned on 2026-10-16, the newest that clea
 
 - **CI-3 (MUST)**: Security checks run in their own workflows, not through `ci-gate` (a job can't `need` another workflow), and branch protection requires them directly:
   - `codeql.yml`: a matrix over `csharp` and `javascript-typescript`, `build-mode: none`, the `security-extended` query suite, on PRs, pushes to `main`, and weekly (SUP-3). It is a workflow file, not repo default setup, so it is pinned and reviewed like the rest. Each analysis job grants `security-events: write`.
-  - `dependency-review.yml` runs on every PR, failing on moderate or worse vulnerabilities and on licenses outside `.github/dependency-review-config.yml`. Until feature 57 decides, its `allow-licenses` is GEN-5's list as SPDX IDs: `MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`, `ISC`, `PostgreSQL` (SUP-2).
+  - `dependency-review.yml` runs on every PR, failing on moderate or worse vulnerabilities and on licenses outside `.github/dependency-review-config.yml`. Its `allow-licenses` and `allow-dependencies-licenses` are spec 0009 DEP-8's core lists (SUP-2).
   - Both need the repo to be public (or GitHub Advanced Security). Each job has `if: ${{ !github.event.repository.private }}`, so while the repo is private the jobs skip, and they turn on by themselves when it goes public. Feature 58 makes them required then (after feature 57 picks the license). CodeQL's job also grants `actions: read`, which a private repo needs.
   - Fork PRs: CodeQL's PR analysis runs with the read only token GitHub gives forks. If the upload is refused there, the analysis still runs and the upload step is skipped for forks only (verified at Rollout step 11).
 - **CI-4 (MUST)**: Hardening (SUP-6), checked by zizmor and actionlint:
@@ -414,10 +414,10 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 ## Follow-up
 
 - [x] `/sync` after the build (done in `8a2dcf9`): update root `AGENTS.md` (replace the "Coding standards and tooling ... not decided yet" rule with a pointer to this spec and `pnpm check`; Local setup: pnpm and Node are pinned at the root), `console/AGENTS.md`, `server/AGENTS.md`, and `deploy/AGENTS.md` (commands, the image build), and record the five newly installed skills under `## Agent skills`
-- [ ] `/sync` again for the build results above: check that the `AGENTS.md` files say dotnet commands run from `server/` (TL-6), CI gets pnpm from setup-vp (TL-1), `pnpm test` includes `test:tooling`, and the pin wait (TL-8); add only what is missing
-- [ ] Spec 0003: update the Enforcement table row for A11Y-6 (Oxlint jsx-a11y, LNT-4, full strict coverage per VER-3) and close the two Rollout items for feature 7 (ESLint 10 chosen; restriction rules, import boundary, and size runner chosen here)
-- [ ] Spec 0001: its Follow-up for feature 7 is met by LNT-3 (import boundary), LNT-2 (literal strings through Lingui), and A11Y-5 in CI
-- [ ] Spec 0006: SUP-1 to SUP-3 and SUP-5, SUP-6 are wired by DPB, CI-3, CI-4; SUP-4 (secret scanning with push protection) is a repo setting for feature 58
+- [x] (Done in `07ac0a2`.) `/sync` again for the build results above: check that the `AGENTS.md` files say dotnet commands run from `server/` (TL-6), CI gets pnpm from setup-vp (TL-1), `pnpm test` includes `test:tooling`, and the pin wait (TL-8); add only what is missing
+- [x] Spec 0003: update the Enforcement table row for A11Y-6 (Oxlint jsx-a11y, LNT-4, full strict coverage per VER-3) and close the two Rollout items for feature 7 (ESLint 10 chosen; restriction rules, import boundary, and size runner chosen here)
+- [x] Spec 0001: its Follow-up for feature 7 is met by LNT-3 (import boundary), LNT-2 (literal strings through Lingui), and A11Y-5 in CI
+- [x] Spec 0006: SUP-1 to SUP-3 and SUP-5, SUP-6 are wired by DPB, CI-3, CI-4; SUP-4 (secret scanning with push protection) is a repo setting for feature 58 (no text in 0006 needed changing)
 - [ ] Feature 58: create and push `orvanohq/orvano`; protect `main` requiring `ci-gate`, CodeQL, and dependency review; squash merge only; secret scanning on; then run step 11 of the Rollout order
 - [ ] Feature 58: `CONTRIBUTING.md` carries the Windows notes (TL-5), the GIT rules, and the DPB-3 lock file step
 - [ ] Feature 59 (server releases): the image publish workflow (spec 0007 IMG-3 to GHCR, `packages: write`), signing, provenance, and SBOM (SUP-8). Not part of this spec

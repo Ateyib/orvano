@@ -13,5 +13,6 @@ minimumReleaseAge: 4320
 auditConfig:
   ignoreGhsas:
     # braces: stack exhaustion on deeply nested patterns. Reached only through @lingui/cli (a build tool; nothing
-    # ships in the console bundle), and no patched release exists (2026-10-17). Remove when one ships.
+    # ships in the console bundle), and no patched release exists (2026-10-17). Remove when one ships. Expires
+    # 2026-11-16 (spec 0006 SUP-5: at most 30 days); check again then and renew or remove.
     - GHSA-vfj7-8cjw-p6xm

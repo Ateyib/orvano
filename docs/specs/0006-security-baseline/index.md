@@ -31,7 +31,7 @@ Decided elsewhere, not here:
 | Audit log storage, search, and retention                                    | Feature 48, Audit logs                                                                          |
 | File upload scanning and download safety                                    | Feature 29, Buckets and files                                                                   |
 | Sandbox for user code (isolation, limits, egress)                           | Feature 37, Function runtimes                                                                   |
-| License choice and allowed dependency licenses                              | Feature 57, Open source license (interim list: spec 0002 GEN-5)                                 |
+| License choice and allowed dependency licenses                              | Spec 0009, Open source license (DEP-1 to DEP-8)                                                 |
 | Repo settings: branch protection, security policy file, code owners         | Feature 58, Repo and community setup                                                            |
 | Backups and their encryption                                                | Feature 50, Backups and restore                                                                 |
 | Service boundaries, hosting, TLS termination in the install                 | Feature 6, Stack and architecture (decided in [spec 0007](../0007-stack-architecture/index.md)) |
@@ -136,7 +136,7 @@ Out of scope for this baseline: a hostile operator with root on the host (they h
 ### Supply chain and releases (release)
 
 - **SUP-1 (MUST)**: GitHub Dependabot is on for NuGet, npm, pub, Docker, and GitHub Actions in every repo, weekly. Security updates are on.
-- **SUP-2 (MUST)**: The dependency review action runs on every pull request and blocks a PR that adds a dependency with a known moderate or higher vulnerability or a license that the allowed list (feature 57, interim spec 0002 GEN-5) forbids.
+- **SUP-2 (MUST)**: The dependency review action runs on every pull request and blocks a PR that adds a dependency with a known moderate or higher vulnerability or a license that the allowed lists forbid (spec 0009 DEP-1, DEP-8).
 - **SUP-3 (MUST)**: CodeQL code scanning runs on every pull request and weekly for C# and for JavaScript and TypeScript. CodeQL does not cover Dart; the Dart SDK relies on `dart analyze` with the lints of spec 0004 and on SUP-5 for dependencies.
 - **SUP-4 (MUST)**: Secret scanning with push protection is on in every repo.
 - **SUP-5 (MUST)**: `NuGetAudit` is on for direct and transitive packages (`NuGetAuditMode` all) and fails the build at **moderate and above** (`NuGetAuditLevel` moderate, with `NU1901` to `NU1904` as errors in CI). `pnpm audit` at the moderate level runs in CI for the console and TypeScript SDKs. A lockfile scan with OSV Scanner covers pub (Dart has no built in audit). Development only dependencies fail at high and above, so exceptions stay rare. A known issue with no fix may be excepted in a checked in file with an expiry date (at most 30 days) and a reason. This settles spec 0002 GEN-4.

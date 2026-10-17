@@ -59,7 +59,7 @@ Each rule has an ID so reviews and later specs can cite it. **MUST** fails the r
     deploy/      Dockerfile, compose.yaml, compose.dev.yaml, Caddyfile, .env.example
     docs/        planning: scope and specs
     .github/     workflows (feature 7) and repo files (feature 58)
-    AGENTS.md  CLAUDE.md  README.md  LICENSE (feature 57)
+    AGENTS.md  CLAUDE.md  README.md  LICENSE NOTICE
   ```
 
 - **REP-2 (MUST)**: The server solution adds one project to LAY-1: `src/Orvano.Infrastructure/`, holding the job runner, the outbox dispatcher, the signal listener, cache invalidation, file store providers, the root key provider (spec 0006 SCR-2), and the project database connection factory. Its only project reference is `Orvano.SharedKernel`; it may use EF Core, Npgsql, `NSec`, `AWSSDK.S3`, and `Cronos` packages. It owns and binds its own options classes (`ProjectDbOptions`, `JobOptions`, `StorageOptions`, `TlsOptions`) per spec 0002 CFG-1; the platform database options stay with `Orvano.Host` (CFG-5), and Infrastructure uses the `NpgsqlDataSource` Host registers. Modules see these through interfaces in `Orvano.SharedKernel` (`IJobQueue`, `IJobHandler<T>`, `IOutbox`, `IOutboxRegistry`, `ISignalBus`, `ICacheInvalidator`, `IFileStore`, `IRootKeyProvider`, `IProjectDbConnectionFactory`), never through `Orvano.Infrastructure` types. `Orvano.Host` registers them. An architecture test enforces that no module references `Orvano.Infrastructure`.
