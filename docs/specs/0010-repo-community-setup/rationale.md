@@ -8,7 +8,7 @@ Orvano's core repo `orvanohq/orvano` exists on GitHub, private, with CI from spe
 
 The live state on 2026-10-16, read with `gh`: the org is on GitHub **Free** and has one member, `Atteprojects`. The repo allows merge commits and rebase merges, keeps branches after merge, uses "commit messages" for the squash body, and doesn't require web sign off. Discussions is off. Asking for rulesets returns 403 ("Upgrade to GitHub Pro or make this repository public"). CodeQL and dependency review are written to skip while the repo is private (spec 0008 CI-3), because on Free they need a public repo. So on this plan, protection and the security checks can't exist until the repo is public. The flip is a prerequisite of the feature, not an afterthought.
 
-Two things in the history would become public with it. The first commit, `d551057`, has the author `the work email`, which looks like an employer address. And 412 tracked files under `.claude/skills/` and `.agents/skills/` are 51 third party agent skills from 22 source repos (per `skills-lock.json`), whose licenses haven't been checked; content with no license may not be republished. The repo also has three closed Dependabot PRs, whose `refs/pull/*/head` refs keep the old commits reachable even after a force push, and GitHub doesn't let users delete those refs.
+Two things in the history would become public with it. The first commit, `d551057`, has a former employer's work email as its author. And 412 tracked files under `.claude/skills/` and `.agents/skills/` are 51 third party agent skills from 22 source repos (per `skills-lock.json`), whose licenses haven't been checked; content with no license may not be republished. The repo also has three closed Dependabot PRs, whose `refs/pull/*/head` refs keep the old commits reachable even after a force push, and GitHub doesn't let users delete those refs.
 
 The forces: a solo maintainer (no second reviewer exists, and GitHub never lets an author approve their own PR); a security first project that will hold other people's secrets, so its own repo hygiene is part of its credibility; seven or more repos that must stay configured alike; and a strong preference, from spec 0008 CI-4 and spec 0006 SUP-6, for nothing in CI holding broad write tokens. Not deciding leaves `main` unprotected, the security checks permanently skipped, and each SDK repo set up by memory.
 
@@ -103,6 +103,24 @@ Options weighed:
 - **A list of bot names or emails.** Rejected: the email is the part that gets faked, so a list blocks nothing and needs upkeep.
 
 Legal intent: DCO is a statement by the person submitting the code. A bot's commit has no person to sign it off, and the maintainer who turned the bot on answers for it. So the skip should follow who submitted the PR, not whose name is on a commit.
+
+## HIS rewrite gaps (decided 2026-10-17, after the dry run)
+
+A dry run of HIS-2 on a scratch clone (filter-repo 2.47.0) found three gaps. Each one would have stopped the real run from passing HIS-4.
+
+1. **The sweep term was in the spec.** AC-13, the HIS-4 command, and `verify.md` named the employer word that HIS-4 greps for. The email rule doesn't touch a bare word, so the sweep still matched this spec in 17 or 18 commits. AC-13 could never pass.
+2. **The rule's own text turned into nonsense.** `--replace-text` rewrote HIS-2's mapping, in `index.md` and in this file, into "map the gmail address to the gmail address".
+3. **Old PR numbers would point at new PRs.** A recreated repo numbers PRs from 1 again, so `CHANGELOG.md` (links to old PRs 4 to 7), the 2026-10-16 reviews (which name old PRs 4 to 7 the same way), and the eight `Merge pull request #N` messages would name unrelated new PRs. SHAs change too (28 references in 8 files, `.git-blame-ignore-revs` among them), which HIS-2 already fixed.
+
+What you chose:
+
+- **The literals live in local files only (HIS-0).** The spec says "the work email" and "the employer word", and the values sit in four files in `~/orvano-backups/his/`, next to the bundle, which already holds the email and is already kept offline. This fixes gap 1 at the root: once `main` holds neither literal, the only places left are old commits, which the rewrite cleans. Rejected: writing the term encoded (base64, say) in the spec. Anyone can decode it, so it hides nothing and still names the employer in a public repo.
+- **Separate rules for messages and files.** In commit messages the email becomes `atteprojects@gmail.com`, because there it is an identity (sign off and co author trailers) and must stay a real address that matches the author. In file contents it becomes "the work email", and a case insensitive regex turns any leftover bare word into "the employer word". Old versions of this spec then read as a plain redaction, which fixes gap 2. Rejected: one gmail rule for both, which keeps the nonsense in every old version of this spec.
+- **Old PRs are named by their new merge SHA, with no `#` (HIS-2 reference fix).** A merge SHA survives the delete and resolves on the new repo, and "old PR N" keeps the number a reader may remember without GitHub linking it to a new PR. A `--replace-message` regex does the same for the merge messages. Rejected: opening and deleting 11 throwaway issues so new numbers start at 12 (the old references would resolve to nothing, and it adds noise to the new repo), and plain "old PR N" with no SHA (no wrong links, but no way to find the change either).
+
+A cross check on another model then ran these rules on a scratch clone (all worked) and found the rest of what HIS-0 to HIS-4 now say: make the bundle first, so the local files can be written from it; expand short SHAs before the commit map lookup, and leave action pins alone; list SHAs that don't map; treat the step 9a PR as one more old PR; sweep names, file paths, and ref names too, not only messages and contents; guard `sweep-terms.txt` against a blank line, which would make the sweep match everything; and fetch `refs/pull/*` before the second sweep. You applied all of them.
+
+The vendored skills keep their own `#N` (other projects' issues, CSS colors), so the old PR check leaves `.claude/skills/` and `.agents/skills/` out. The dry run tried only literal rules, so the two regex lines get their own scratch clone check before the real run.
 
 ## Skills license inventory
 
