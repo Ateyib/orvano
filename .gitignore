@@ -26,3 +26,11 @@ coverage/
 
 # .NET test results and coverage (spec 0008 CI-6)
 TestResults/
+
+# Vendored skills with no license file to carry: installed locally from skills-lock.json, never committed
+# (spec 0010 SKL-2). Still tracked until the HIS-2 rewrite removes them from all history.
+.claude/skills/vercel-react-best-practices/
+.claude/skills/vercel-react-native-skills/
+.claude/skills/testcontainers/
+.claude/skills/dotnet-system-commandline
+.agents/skills/dotnet-system-commandline/
