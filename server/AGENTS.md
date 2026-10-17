@@ -4,9 +4,11 @@ The .NET 10 modular monolith: one executable, `orvano`, built from `Orvano.Host`
 
 ## Commands
 
-Run from `server/`. Integration tests and local runs need Docker (or Podman) running.
+Run from `server/`: `global.json` here pins the SDK and picks the Microsoft.Testing.Platform runner, so `dotnet test --solution` fails from the repo root. The root scripts `pnpm check:dotnet` and `pnpm test` change into `server/` for you. Integration tests and local runs need Docker (or Podman) running.
 
-- Build: `dotnet build Orvano.slnx`. CI strictness (warnings as errors): `CI=true dotnet build Orvano.slnx --no-incremental`
+- Build: `dotnet build Orvano.slnx`. CI strictness (warnings as errors): `dotnet build Orvano.slnx -p:CI=true --no-incremental`
+- Format: `dotnet format Orvano.slnx` (whitespace, style, analyzer fixes); CI runs it with `--verify-no-changes`. The pre-commit hook formats staged `.cs` files (whitespace only)
+- Coverage: `dotnet test --solution Orvano.slnx --coverage --coverage-output-format cobertura --results-directory "$PWD/TestResults"`
 - Test everything: `dotnet test --solution Orvano.slnx` (starts one `postgres:18.6` container). One project: `dotnet test --project tests/<Project>`
 - Dev database: `docker compose -f ../deploy/compose.dev.yaml up -d --wait` (trust auth on `127.0.0.1:5432`, user `orvano`)
 - Dev root key, once: `dotnet user-secrets set ROOT_KEY "$(openssl rand -base64 32)" --project src/Orvano.Host`
@@ -29,6 +31,9 @@ Run from `server/`. Integration tests and local runs need Docker (or Podman) run
 - Log through `[LoggerMessage]` methods in `<Module>Log`, with event IDs from that module's block in `LogEventIds`.
 - Package versions live only in `Directory.Packages.props`. Every project has a `packages.lock.json` covering `linux-x64` and `linux-arm64`. After changing packages, run `dotnet restore Orvano.slnx --force-evaluate` and commit the lock files: the image restores in locked mode. A new `src/` project also needs its `.csproj` and lock file added to the restore layer in `deploy/Dockerfile`.
 - The image builds with a newer SDK (10.0.402) than an older local SDK, and it can raise analyzer warnings yours misses. Keep the local SDK current.
+- Style rules raised to warning (file scoped namespaces, braces, `var` only when the type is apparent, `_camelCase` private fields, unused usings) live in `.editorconfig`; they fail the CI build (spec 0008 FMT-6).
+- Banned APIs are in `BannedSymbols.txt` (every project) and `src/<Project>/BannedSymbols.<Name>.txt` (one project, for example Auth's). Each line names its rule and the replacement. The one allowed use gets `#pragma warning disable RS0030 // <rule>: <reason>`, as in `MigrateCommand` (spec 0008 LNT-5, LNT-6).
+- Test projects (`OutputType` Exe) get the coverage package and `XUNIT_GENERATED_DISABLE_WARNINGS` from `tests/Directory.Build.props`. Key a condition there on `OutputType`, not `IsTestProject`, which isn't known yet at restore.
 
 ## Gotchas
 

@@ -18,19 +18,22 @@ Decided in [spec 0007](docs/specs/0007-stack-architecture/index.md) (`## Propose
 
 ## Local setup
 
-You need the .NET 10 SDK, Node 24 LTS, pnpm 12 (pinned in `console/package.json`), and Docker (Podman works too). The run order (dev database, root key, migrate, server, console) is in [README.md](README.md#local-development); each area's own commands are in its `AGENTS.md` under Context files.
+You need the .NET 10 SDK, Node 24 LTS (`.node-version`), pnpm 12 (pinned in the root `package.json`), and Docker (Podman works too). The run order (dev database, root key, migrate, server, console) is in [README.md](README.md#local-development); each area's own commands are in its `AGENTS.md` under Context files.
+
+The repo root is one pnpm workspace with one lockfile. Run `pnpm install` at the root (its `prepare` script installs the git hooks), then `pnpm check` (format, lint, types, drift, and the strict .NET build) and `pnpm test` before you push; `pnpm fix` applies the fixers. Vite+ is new on Windows: if the global installer or its shims misbehave, use the local `vp` through these scripts (spec 0008 TL-2, TL-5).
 
 ## Read before you write code
 
 Read the matching practice spec first. Each rule has an ID (for example `API-1`, `UX-27`), so cite the ID in code review. Where an installed skill disagrees with a spec, the spec wins (rule GEN-0 in spec 0002).
 
-| You are writing                                      | Read first                                                                                                                                                    |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| .NET server code or the .NET SDK                     | [0002 .NET backend practices](docs/specs/0002-dotnet-backend-practices/index.md)                                                                              |
-| Console UI (React)                                   | [0003 React console practices](docs/specs/0003-react-console-practices/index.md) and [0001 Console UX patterns](docs/specs/0001-console-ux-patterns/index.md) |
-| Dart or Flutter SDK                                  | [0004 Dart and Flutter practices](docs/specs/0004-dart-flutter-practices/index.md)                                                                            |
-| TypeScript, JavaScript, or Next.js SDK               | [0005 TypeScript SDK practices](docs/specs/0005-typescript-sdk-practices/index.md)                                                                            |
-| Server runtime, install, the image, or compose files | [0007 Stack and architecture](docs/specs/0007-stack-architecture/index.md)                                                                                    |
+| You are writing                                        | Read first                                                                                                                                                    |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| .NET server code or the .NET SDK                       | [0002 .NET backend practices](docs/specs/0002-dotnet-backend-practices/index.md)                                                                              |
+| Console UI (React)                                     | [0003 React console practices](docs/specs/0003-react-console-practices/index.md) and [0001 Console UX patterns](docs/specs/0001-console-ux-patterns/index.md) |
+| Dart or Flutter SDK                                    | [0004 Dart and Flutter practices](docs/specs/0004-dart-flutter-practices/index.md)                                                                            |
+| TypeScript, JavaScript, or Next.js SDK                 | [0005 TypeScript SDK practices](docs/specs/0005-typescript-sdk-practices/index.md)                                                                            |
+| Server runtime, install, the image, or compose files   | [0007 Stack and architecture](docs/specs/0007-stack-architecture/index.md)                                                                                    |
+| Lint, format, hooks, CI workflows, or the SDK starters | [0008 Coding standards and tooling](docs/specs/0008-coding-standards-tooling/index.md)                                                                        |
 
 Each spec has a `rationale.md` beside it; read it only when you need the why. Each spec also lists its implementation skills under `.claude/skills/`; load only the ones the task needs.
 
@@ -50,7 +53,19 @@ Stored in `docs/specs/`, one folder per spec: `docs/specs/NNNN-title/index.md`. 
 - The data API is engine neutral (other database engines come later). Do not leak Postgres specifics into the public API or SDKs.
 - Usage is metered from the start. New billable operations must be countable.
 - Console strings are translation ready from day one (see spec 0003).
-- Coding standards and tooling (lint, hooks, CI, git integration) are not decided yet. Do not invent them; they come from feature 7.
+- Coding standards and tooling are spec 0008: Oxfmt and Oxlint through Vite+, a small ESLint config for the rest, `dotnet format` for C#, a staged pre-commit hook, and CI behind one `ci-gate` check. PR titles follow Conventional Commits and PRs are squash merged (GIT-2). A rule disable says why on the same line (LNT-5).
+
+## Agent skills
+
+Load only what the task needs. Spec 0008 wins where a skill disagrees (TL-0).
+
+- [migrate-oxlint](.claude/skills/migrate-oxlint/): `oxc-project/oxc`, the Oxlint and ESLint split
+- [migrate-oxfmt](.claude/skills/migrate-oxfmt/): `oxc-project/oxc`, Oxfmt setup
+- [authoring-github-workflows](.claude/skills/authoring-github-workflows/): `dotnet/skills`, workflow files
+- [github-actions-hardening](.claude/skills/github-actions-hardening/): `github/awesome-copilot`, workflow hardening (CI-4)
+- [dependabot](.claude/skills/dependabot/): `github/awesome-copilot`, Dependabot config (DPB rules)
+- [msbuild](.claude/skills/msbuild/): `dotnet/skills`, MSBuild props and analyzer wiring
+- Declined (2026-10-16): a CodeQL skill; no MCP server fits these tools
 
 ## Context files
 
