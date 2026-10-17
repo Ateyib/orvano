@@ -17,4 +17,4 @@ You can still say a fork is "based on Orvano", as long as nobody could mistake i
 
 ## Questions
 
-Ask the maintainers through the address in [SECURITY.md](SECURITY.md#how-to-report) (`{{SECURITY_EMAIL}}`), or open an issue.
+Ask the maintainers through the address in [SECURITY.md](SECURITY.md#how-to-report) ([security@orvano.dev](mailto:security@orvano.dev)), or open an issue.
