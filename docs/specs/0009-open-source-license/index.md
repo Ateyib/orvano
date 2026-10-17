@@ -1,7 +1,7 @@
 # 0009. Open source license: Apache 2.0 everywhere, DCO sign off
 
 **Date**: 2026-10-16
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
