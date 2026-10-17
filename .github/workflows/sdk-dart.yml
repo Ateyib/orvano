@@ -75,7 +75,8 @@ jobs:
           output="$("$tool" pub publish --dry-run 2>&1 || true)"
           status=0
           for file in LICENSE NOTICE; do
-            if ! printf '%s\n' "$output" | grep -Eq "(^|[[:space:]|'-])$file\b"; then
+            # Only the file tree lines count: pub's own "You must have a LICENSE file" error names the file too.
+            if ! printf '%s\n' "$output" | grep -Eq "^[[:space:]]*(├|└)── $file( |$)"; then
               echo "::error::the published package has no $file (spec 0009 LIC-6)"
               status=1
             fi
