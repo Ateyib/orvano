@@ -16,20 +16,24 @@
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
-  <!-- LIB-2: the packable project. Fill in the license once feature 57 picks it. -->
+  <!-- LIB-2 and spec 0009 LIC-6: the packable project. -->
   <PropertyGroup Condition="'$(IsPackable)' != 'false'">
     <IsAotCompatible>true</IsAotCompatible>
     <!-- Every public member is documented (CS1591 as an error). -->
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageLicenseExpression><!-- feature 57 --></PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/orvanohq/orvano-dotnet</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/orvanohq/sdk-dotnet</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+  <!-- Spec 0009 LIC-6: NuGet packs neither file by itself. -->
+  <ItemGroup Condition="'$(IsPackable)' != 'false'">
+    <None Include="$(MSBuildThisFileDirectory)LICENSE;$(MSBuildThisFileDirectory)NOTICE" Pack="true" PackagePath="" Visible="false" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />

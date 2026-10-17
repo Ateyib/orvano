@@ -45,3 +45,15 @@ jobs:
         run: dotnet test -c Release --no-build --coverage --coverage-output-format cobertura
       - name: Pack (package shape, LIB-2)
         run: dotnet pack -c Release --no-build -p:CI=true -o "$RUNNER_TEMP/packages"
+      - name: Packages carry LICENSE and NOTICE (spec 0009 LIC-8)
+        run: |
+          status=0
+          for pkg in "$RUNNER_TEMP"/packages/*.nupkg; do
+            for file in LICENSE NOTICE; do
+              if ! unzip -Z1 "$pkg" | grep -qx "$file"; then
+                echo "::error::$(basename "$pkg") has no $file at its root (spec 0009 LIC-6)"
+                status=1
+              fi
+            done
+          done
+          exit "$status"

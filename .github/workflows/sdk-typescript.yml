@@ -37,6 +37,21 @@ jobs:
         run: pnpm check
       - name: Build (tsdown, with publint and are-the-types-wrong, NPM-1 to NPM-4)
         run: pnpm build
+      - name: Packages carry LICENSE and NOTICE (spec 0009 LIC-8)
+        run: |
+          status=0
+          for manifest in packages/*/package.json; do
+            dir="$(dirname "$manifest")"
+            if node -e 'process.exit(require(process.argv[1]).private ? 0 : 1)' "./$manifest"; then continue; fi
+            files="$(cd "$dir" && npm pack --dry-run --json | node -e 'const [p]=JSON.parse(require("fs").readFileSync(0));console.log(p.files.map(f=>f.path).join("\n"))')"
+            for file in LICENSE NOTICE; do
+              if ! printf '%s\n' "$files" | grep -qx "$file"; then
+                echo "::error file=$manifest::$dir packs no $file (spec 0009 LIC-6)"
+                status=1
+              fi
+            done
+          done
+          exit "$status"
       - name: Generator drift (CGN-1)
         run: git diff --exit-code
       - name: Tests

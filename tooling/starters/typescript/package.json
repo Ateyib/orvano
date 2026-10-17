@@ -1,6 +1,7 @@
 {
-  "name": "orvano-js-repo",
+  "name": "orvano-sdk-repo",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "packageManager": "pnpm@12.12.1",
   "engines": {

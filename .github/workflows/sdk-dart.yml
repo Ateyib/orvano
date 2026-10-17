@@ -66,6 +66,21 @@ jobs:
           for script in tool/check_imports.dart tool/check_deps.dart tool/check_version.dart; do
             if [ -f "$script" ]; then dart run "$script"; fi
           done
+      - name: The package carries LICENSE and NOTICE (spec 0009 LIC-8)
+        if: matrix.sdk == 'stable'
+        env:
+          FLUTTER: ${{ inputs.flutter }}
+        run: |
+          tool=dart; [ "$FLUTTER" = "true" ] && tool=flutter
+          output="$("$tool" pub publish --dry-run 2>&1 || true)"
+          status=0
+          for file in LICENSE NOTICE; do
+            if ! printf '%s\n' "$output" | grep -Eq "(^|[[:space:]|'-])$file\b"; then
+              echo "::error::the published package has no $file (spec 0009 LIC-6)"
+              status=1
+            fi
+          done
+          exit "$status"
       - name: Tests
         env:
           FLUTTER: ${{ inputs.flutter }}

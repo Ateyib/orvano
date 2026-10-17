@@ -1,6 +1,7 @@
 {
   "name": "orvano-repo",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "prepare": "node tooling/scripts/prepare.mjs",

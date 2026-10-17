@@ -61,7 +61,7 @@ Choose Orvano's license and contributor terms before the first public push. It d
 spec [0009](../specs/0009-open-source-license/index.md) · code in `LICENSE`, `NOTICE`, `.github/dependency-review-config.yml`, `deploy/Dockerfile`, `tooling/starters/`
 
 - [x] Design it (spec): `/architect open source license`
-- [ ] Apply it: `/develop open source license` (spec 0009 Rollout steps 1 to 5; step 6 is feature 58)
+- [x] Apply it: `/develop open source license` (spec 0009 Rollout steps 1 to 5; step 6 is feature 58)
 - [ ] Verify it: `/check verify open source license`
 
 ### 6. Stack & architecture · done

@@ -1,9 +1,9 @@
 # .NET SDK starter
 
-For the `orvano-dotnet` repo (spec 0002 LIB-1 to LIB-12). Copy these into the repo root:
+For the `sdk-dotnet` repo (spec 0002 LIB-1 to LIB-12, name from spec 0007 REP-3). Copy these into the repo root:
 
 - `global.json`, `Directory.Build.props`, `Directory.Packages.props`: the server's settings plus LIB-2's package
-  settings. Set `PackageLicenseExpression` once feature 57 picks the license.
+  settings, including `Apache-2.0` and packing `LICENSE` and `NOTICE` (spec 0009 LIC-6).
 - `.editorconfig`: the common basics plus the server's C# rules (FMT-6), in one file that replaces
   `common/.editorconfig`.
 - `BannedSymbols.txt`: the server's list without the EF Core and Npgsql rows (the SDK has neither) and without

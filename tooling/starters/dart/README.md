@@ -1,6 +1,6 @@
 # Dart and Flutter SDK starter
 
-For the `orvano-dart` and `orvano-flutter` repos (spec 0004).
+For the `sdk-dart` and `sdk-flutter` repos (spec 0004, names from spec 0007 REP-3).
 
 - `analysis_options.yaml`: copy to the repo root (DRT-4). Confirm the casing of `no_runtimeType_toString` and that
   every rule exists in the floor's analyzer (DRT-1); drop any that don't, with a note in spec 0004.

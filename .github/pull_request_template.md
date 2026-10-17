@@ -16,7 +16,7 @@ Delete the checklist blocks this PR doesn't touch. The Security block always sta
 - [ ] Any cache has a measured need or a spec, and goes through `HybridCache` (PRF-2)
 - [ ] Reads project to records or use `AsNoTracking()`, with no N+1 queries (DAT-4)
 - [ ] Tests are named `<Behavior>_<expected>_when_<condition>`, one behavior each (TST-3)
-- [ ] A new package has an allowed license and recent maintenance (GEN-5)
+- [ ] A new package has an allowed license (spec 0009 DEP-1) and recent maintenance (GEN-5)
 
 ## Console
 

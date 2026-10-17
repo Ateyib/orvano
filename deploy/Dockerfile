@@ -37,8 +37,12 @@ COPY --from=console /src/console/dist /out/wwwroot/console
 RUN mkdir -p /rootfs/var/lib/orvano/storage
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0.13-noble-chiseled@sha256:84def277556c2843a44fdeefbd3145d0a2e32d8f736d0c1a7b0a96b2880b0187
+# Spec 0009 LIC-6: the license travels with the image.
+LABEL org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.source="https://github.com/orvanohq/orvano"
 WORKDIR /app
 COPY --from=server /out ./
+COPY LICENSE NOTICE /app/
 # 1654 is the chiseled image's non root `app` user, so a fresh named volume inherits that owner.
 COPY --from=server --chown=1654:1654 /rootfs/var/lib/orvano /var/lib/orvano
 ENV ASPNETCORE_HTTP_PORTS=8080
