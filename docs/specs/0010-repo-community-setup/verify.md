@@ -1,4 +1,4 @@
-# Verify: Repo and community setup · spec 0010 · updated 2026-10-16
+# Verify: Repo and community setup · spec 0010 · updated 2026-10-17
 
 _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones. OPN-1 and OPN-2 record their ticks, dates, and times here too._
 
@@ -26,7 +26,11 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
   - 2026-10-17: `node tooling/scripts/github-settings.mjs --org orvanohq` printed `orvanohq: matches ORG-1.` and exited 0. The API returned all four fields (2FA required, SHA pinning required, workflow token `read`, Actions can't approve PRs), so no manual tick was needed.
   - Fork settings, left at GitHub's defaults: "Approval for running fork pull request workflows from contributors" is "Require approval for first-time contributors"; "Fork pull request workflows in private and internal repositories" has "Run workflows from fork pull requests" off.
 - [ ] Skills inventory table in `rationale.md`; each kept skill has its `LICENSE` → AC-14
-- [ ] HIS-4 sweep on the rewritten clone and again on a fresh clone right before the flip: only `atteprojects@gmail.com` and `noreply` emails, no `the employer word`, gitleaks clean or every finding explained; `git ls-remote origin` right after the push lists only `refs/heads/main` and `HEAD` → AC-13
+- [ ] Before step 10: `git grep -i -f ~/orvano-backups/his/sweep-terms.txt` on `main` finds nothing (HIS-0, build step 9a) → AC-13
+- [ ] Sweep self test: `sweep-terms.txt` has no blank line, and its first term is found by `grep -ci -f` on itself (HIS-4) → AC-13
+- [ ] On a scratch clone, the two HIS-0 regex lines work: no sweep term in any old version of spec 0010, and each merge message reads `Merge old pull request N from ...` → AC-13, AC-21
+- [ ] HIS-4 sweep on the rewritten clone and again on a fresh clone right before the flip: only `atteprojects@gmail.com` and `noreply` emails, nothing from the HIS-0 sweep terms file, gitleaks clean or every finding explained; `git ls-remote origin` right after the push lists only `refs/heads/main` and `HEAD` → AC-13
+- [ ] First HIS-4 run only: no `Merge pull request #` subject, and every old PR in tracked text is in the `` `<sha>` (old PR N) `` form, each SHA a merge commit on the new `main` → AC-21
 
 ## After the flip (OPN-2)
 
@@ -60,4 +64,4 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 
 ## Acceptance-criteria coverage
 
-- AC-1 Commands, After the flip · AC-2 Commands · AC-3 Commands · AC-4 Commands · AC-5 While private · AC-6 After the flip · AC-7 Commands, While private · AC-8 Commands, After the flip · AC-9 After the flip · AC-10 After the flip · AC-11 After the flip · AC-12 While private · AC-13 While private · AC-14 While private · AC-15 After the flip · AC-16 Commands, Templates · AC-17 Templates · AC-18 Commands · AC-19 Commands · AC-20 Templates
+- AC-1 Commands, After the flip · AC-2 Commands · AC-3 Commands · AC-4 Commands · AC-5 While private · AC-6 After the flip · AC-7 Commands, While private · AC-8 Commands, After the flip · AC-9 After the flip · AC-10 After the flip · AC-11 After the flip · AC-12 While private · AC-13 While private · AC-21 While private · AC-14 While private · AC-15 After the flip · AC-16 Commands, Templates · AC-17 Templates · AC-18 Commands · AC-19 Commands · AC-20 Templates
