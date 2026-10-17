@@ -14,6 +14,8 @@ concurrency:
 jobs:
   dependency-review:
     name: dependency-review
+    # Dependency review needs a public repo (or Advanced Security). Skipped while private; on once it goes public (CI-3).
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

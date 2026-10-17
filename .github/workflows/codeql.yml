@@ -19,6 +19,8 @@ concurrency:
 jobs:
   analyze:
     name: analyze (${{ matrix.language }})
+    # Code scanning needs a public repo (or Advanced Security). Skipped while private; on once it goes public (CI-3).
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
