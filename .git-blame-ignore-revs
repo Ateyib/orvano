@@ -1,0 +1,5 @@
+# Spec 0008 FMT-5: commits that only reformat. GitHub's blame view reads this file; locally run
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: format the repo with Oxfmt (FMT-5)
+4848e5a93ddf7fc20d35412c403843e50ff0b386
