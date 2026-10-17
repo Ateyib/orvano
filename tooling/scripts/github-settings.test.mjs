@@ -1,13 +1,19 @@
 // Spec 0010 SET-4, RUL-1 to RUL-3, ORG-1, AC-8: github-settings.mjs against a fake GitHub API (no network).
 // The fake keeps state, so --apply is proven by the check that follows it.
 import assert from "node:assert/strict";
-import { describe, test } from "node:test";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, describe, test } from "node:test";
 import {
   actionsAppId,
   diffOrg,
+  ghApi,
   main,
   parseArgs,
   profiles,
+  readLive,
+  SettingsError,
   subsetDiff,
 } from "./github-settings.mjs";
 
@@ -625,5 +631,306 @@ describe("arguments", () => {
       repo,
       profile: "core",
     });
+  });
+});
+
+/**
+ * Runs main over the fake API, with some routes answered differently.
+ * @param {string[]} argv
+ * @param {ReturnType<typeof matchingState>} state
+ * @param {Record<string, import("./github-settings.mjs").ApiResponse>} routes keyed by "METHOD path"
+ */
+function runWith(argv, state, routes) {
+  const { api, calls } = fakeApi(state);
+  /** @type {string[]} */
+  const lines = [];
+  const code = main(
+    argv,
+    (method, path, body) => routes[`${method} ${path}`] ?? api(method, path, body),
+    (line) => lines.push(line),
+  );
+  return { code, out: lines.join("\n"), calls };
+}
+
+describe("reading the live repo", () => {
+  const r = `repos/${repo}`;
+
+  test("private reporting refused on a private repo waits for public, it isn't drift or an error", () => {
+    const state = matchingState("core");
+    state.repo.private = true;
+    const result = runWith([repo, "--profile", "core"], state, {
+      [`GET ${r}/private-vulnerability-reporting`]: { status: 404, data: { message: "Not Found" } },
+    });
+    assert.equal(result.code, 0, result.out);
+    assert.match(result.out, /waiting for public {2}security\.private_vulnerability_reporting/);
+  });
+
+  test("readLive marks the ruleset, private reporting, and default setup needs-public on a private repo", () => {
+    const state = matchingState("core");
+    state.repo.private = true;
+    const { api } = fakeApi(state);
+    const live = readLive(
+      (method, path, body) =>
+        path === `${r}/private-vulnerability-reporting`
+          ? { status: 403, data: {} }
+          : api(method, path, body),
+      repo,
+      profile("core"),
+    );
+    assert.equal(live.rulesets, "needs-public");
+    assert.equal(live.privateVulnerabilityReporting, "needs-public");
+    assert.equal(live.codeScanningDefaultSetup, "needs-public");
+  });
+
+  for (const [what, route, status, message] of /** @type {[string, string, number, RegExp][]} */ ([
+    [
+      "a 403 on rulesets",
+      `GET ${r}/rulesets?includes_parents=false`,
+      403,
+      /listing rulesets failed: HTTP 403/,
+    ],
+    [
+      "a 404 on private reporting",
+      `GET ${r}/private-vulnerability-reporting`,
+      404,
+      /reading private vulnerability reporting failed: HTTP 404/,
+    ],
+    [
+      "a 403 on default setup",
+      `GET ${r}/code-scanning/default-setup`,
+      403,
+      /reading CodeQL default setup failed: HTTP 403/,
+    ],
+  ])) {
+    test(`${what} on a public repo is an error (exit 2), never "waiting for public"`, () => {
+      const result = runWith([repo, "--profile", "core"], matchingState("core"), {
+        [route]: { status, data: { message: "no" } },
+      });
+      assert.equal(result.code, 2, result.out);
+      assert.match(result.out, message);
+      assert.doesNotMatch(result.out, /waiting for public/);
+    });
+  }
+
+  test("a Dependabot alerts read that is neither 204 nor 404 is an error (exit 2)", () => {
+    const result = runWith([repo, "--profile", "core"], matchingState("core"), {
+      [`GET ${r}/vulnerability-alerts`]: {
+        status: 403,
+        data: { message: "Must have admin rights" },
+      },
+    });
+    assert.equal(result.code, 2);
+    assert.match(result.out, /reading Dependabot alerts failed: HTTP 403 .*admin rights/);
+  });
+
+  test("a repo that can't be read exits 2 and names it", () => {
+    const result = runWith([repo, "--profile", "core"], matchingState("core"), {
+      [`GET ${r}`]: { status: 404, data: { message: "Not Found" } },
+    });
+    assert.equal(result.code, 2);
+    assert.match(result.out, /reading orvanohq\/orvano failed: HTTP 404/);
+  });
+
+  test("with Discussions off, core reports has_discussions as drift and doesn't query the categories", () => {
+    const state = matchingState("core");
+    state.repo.has_discussions = false;
+    const result = run([repo, "--profile", "core"], state);
+    assert.equal(result.code, 1);
+    assert.match(result.out, /drift {2}repo\.has_discussions: want true, got false/);
+    assert.doesNotMatch(result.out, /discussions\.categories/);
+    assert.equal(
+      result.calls.some((c) => c.path === "graphql"),
+      false,
+    );
+  });
+
+  test("the GraphQL query asks for this repo's owner and name", () => {
+    const result = run([repo, "--profile", "core"], matchingState("core"));
+    const query = result.calls.find((c) => c.path === "graphql");
+    assert.deepEqual(query?.body.variables, { owner: "orvanohq", name: "orvano" });
+  });
+});
+
+// ghApi runs the real `gh` binary, so these tests put a fake `gh` (a shell script) first on PATH.
+// PATH holds only the fake's folder (or an empty one), so a real gh on the machine is never found. POSIX only:
+// Windows can't run a shebang script as `gh`.
+describe("ghApi", { skip: process.platform === "win32" }, () => {
+  const dir = mkdtempSync(join(tmpdir(), "fake-gh-"));
+  const bin = join(dir, "bin");
+  const empty = join(dir, "empty");
+  const stdout = join(dir, "stdout");
+  const stderr = join(dir, "stderr");
+  const argsFile = join(dir, "args");
+  const stdinFile = join(dir, "stdin");
+  mkdirSync(bin);
+  mkdirSync(empty);
+  const gh = join(bin, "gh");
+  writeFileSync(
+    gh,
+    `#!/bin/sh
+printf '%s\\n' "$@" > "${argsFile}"
+/bin/cat > "${stdinFile}"
+/bin/cat "${stderr}" >&2
+/bin/cat "${stdout}"
+`,
+  );
+  chmodSync(gh, 0o755);
+  const savedPath = process.env.PATH;
+
+  after(() => {
+    process.env.PATH = savedPath;
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  /**
+   * Calls ghApi with the fake gh printing `out` (and `err` on stderr).
+   * @param {string} out
+   * @param {{ err?: string, method?: string, path?: string, body?: unknown, path_env?: string }} options
+   */
+  function call(out, { err = "", method = "GET", path = "repos/o/r", body, path_env = bin } = {}) {
+    writeFileSync(stdout, out);
+    writeFileSync(stderr, err);
+    writeFileSync(argsFile, "");
+    writeFileSync(stdinFile, "");
+    process.env.PATH = path_env;
+    try {
+      return ghApi(method, path, body);
+    } finally {
+      process.env.PATH = savedPath;
+    }
+  }
+
+  test("parses the status line and the JSON body", () => {
+    const response = call(
+      'HTTP/2.0 200 OK\nContent-Type: application/json\n\n{"private":true,"name":"r"}',
+    );
+    assert.deepEqual(response, { status: 200, data: { private: true, name: "r" } });
+  });
+
+  test("an empty 204 body is null data", () => {
+    assert.deepEqual(call("HTTP/2.0 204 No Content\nX-GitHub-Request-Id: 1\n\n"), {
+      status: 204,
+      data: null,
+    });
+  });
+
+  test("a status line with headers only and no blank line is still read", () => {
+    assert.deepEqual(call("HTTP/1.1 404 Not Found\nContent-Length: 0"), {
+      status: 404,
+      data: null,
+    });
+  });
+
+  test("a body that isn't JSON comes back as text", () => {
+    assert.deepEqual(call("HTTP/2.0 502 Bad Gateway\n\n<html>oops</html>\n"), {
+      status: 502,
+      data: "<html>oops</html>",
+    });
+  });
+
+  test("CRLF line endings are read like LF", () => {
+    assert.deepEqual(call('HTTP/1.1 403 Forbidden\r\nA: b\r\n\r\n{"message":"no"}\r\n'), {
+      status: 403,
+      data: { message: "no" },
+    });
+  });
+
+  test("an error status is returned, not thrown, so callers decide (needs public, 404 alerts)", () => {
+    assert.equal(call('HTTP/2.0 403 Forbidden\n\n{"message":"Upgrade"}').status, 403);
+  });
+
+  test("sends the method, --include, the API version headers, and the path", () => {
+    call("HTTP/2.0 200 OK\n\n{}", { method: "PATCH", path: "repos/o/r/labels/a%20b" });
+    const args = readFileSync(argsFile, "utf8").trimEnd().split("\n");
+    assert.deepEqual(args, [
+      "api",
+      "--method",
+      "PATCH",
+      "--include",
+      "-H",
+      "Accept: application/vnd.github+json",
+      "-H",
+      "X-GitHub-Api-Version: 2022-11-28",
+      "repos/o/r/labels/a%20b",
+    ]);
+    assert.equal(readFileSync(stdinFile, "utf8"), "");
+  });
+
+  test("a body goes as JSON on stdin with --input -", () => {
+    call("HTTP/2.0 201 Created\n\n{}", { method: "POST", body: { name: "bug", color: "d73a4a" } });
+    const args = readFileSync(argsFile, "utf8").trimEnd().split("\n");
+    assert.deepEqual(args.slice(-2), ["--input", "-"]);
+    assert.deepEqual(JSON.parse(readFileSync(stdinFile, "utf8")), {
+      name: "bug",
+      color: "d73a4a",
+    });
+  });
+
+  test("no HTTP status line (not logged in) throws a SettingsError with the login fix and gh's stderr", () => {
+    assert.throws(
+      () => call("", { err: "To get started with GitHub CLI, please run:  gh auth login" }),
+      (error) =>
+        error instanceof SettingsError &&
+        /gh auth status/.test(error.message) &&
+        /please run: {2}gh auth login/.test(error.message),
+    );
+  });
+
+  test("a missing gh throws a SettingsError with the install link", () => {
+    assert.throws(
+      () => call("", { path_env: empty }),
+      (error) => error instanceof SettingsError && /https:\/\/cli\.github\.com/.test(error.message),
+    );
+  });
+
+  test("main turns a missing gh into exit 2 with the fix", () => {
+    process.env.PATH = empty;
+    /** @type {string[]} */
+    const lines = [];
+    let code;
+    try {
+      code = main([repo, "--profile", "core"], ghApi, (line) => lines.push(line));
+    } finally {
+      process.env.PATH = savedPath;
+    }
+    assert.equal(code, 2);
+    assert.match(lines.join("\n"), /isn't installed or isn't on PATH/);
+  });
+});
+
+describe("unexpected API answers are errors (exit 2), never drift (exit 1)", () => {
+  const r = `repos/${repo}`;
+
+  test("a GraphQL error for the Discussions categories exits 2 with the reason", () => {
+    const result = runWith([repo, "--profile", "core"], matchingState("core"), {
+      "POST graphql": {
+        status: 200,
+        data: { data: null, errors: [{ message: "Resource not accessible by integration" }] },
+      },
+    });
+    assert.equal(result.code, 2, result.out);
+    assert.match(result.out, /Reading Discussions categories failed: .*Resource not accessible/);
+  });
+
+  test("a GraphQL answer without the categories exits 2", () => {
+    const result = runWith([repo, "--profile", "core"], matchingState("core"), {
+      "POST graphql": { status: 200, data: { data: { repository: null } } },
+    });
+    assert.equal(result.code, 2, result.out);
+  });
+
+  test("a rulesets list that isn't a list exits 2", () => {
+    const result = runWith([repo, "--profile", "core"], matchingState("core"), {
+      [`GET ${r}/rulesets?includes_parents=false`]: { status: 200, data: { message: "odd" } },
+    });
+    assert.equal(result.code, 2, result.out);
+    assert.match(result.out, /listing rulesets returned .*not a list/);
+  });
+
+  test("a labels list that isn't a list exits 2", () => {
+    const result = runWith([repo, "--profile", "core"], matchingState("core"), {
+      [`GET ${r}/labels?per_page=100`]: { status: 200, data: null },
+    });
+    assert.equal(result.code, 2, result.out);
   });
 });

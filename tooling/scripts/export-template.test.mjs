@@ -75,13 +75,21 @@ function commitAll(dir) {
  * @param {string} target
  * @param {string} dir
  * @param {boolean} check
- * @param {{ sha?: string, root?: string }} options
+ * @param {{ sha?: string | null, root?: string, force?: boolean }} options `sha: null` leaves the pin to the script
  */
 function run(target, dir, check, options = {}) {
   /** @type {string[]} */
   const lines = [];
   const code = exportTemplate(
-    { target, outDir: dir, check, sha: options.sha ?? sha, date, root: options.root ?? root },
+    {
+      target,
+      outDir: dir,
+      check,
+      force: options.force,
+      sha: options.sha === null ? undefined : (options.sha ?? sha),
+      date,
+      root: options.root ?? root,
+    },
     (line) => lines.push(line),
   );
   return { code, out: lines.join("\n") };
@@ -267,6 +275,17 @@ describe("writing and --check", () => {
     writeFileSync(join(dir, "old.txt"), "x\n");
     writeFileSync(join(dir, "untracked.txt"), "x\n");
     spawnSync("git", ["-C", dir, "add", "old.txt"]);
+    spawnSync("git", [
+      "-C",
+      dir,
+      "-c",
+      "user.name=t",
+      "-c",
+      "user.email=t@example.com",
+      "commit",
+      "-qm",
+      "old",
+    ]);
     const check = run("sdk-template-dart", dir, true);
     assert.equal(check.code, 1);
     assert.match(check.out, /stale {4}old\.txt/);
@@ -301,6 +320,60 @@ describe("writing and --check", () => {
   });
 });
 
+/** A core copy that is its own git repo, so `origin/main` can point somewhere known. */
+function gitCore(/** @type {string} */ name) {
+  const fakeRoot = join(temp, name);
+  mkdirSync(join(fakeRoot, ".github"), { recursive: true });
+  mkdirSync(join(fakeRoot, "tooling"), { recursive: true });
+  cpSync(join(root, "tooling/starters"), join(fakeRoot, "tooling/starters"), { recursive: true });
+  cpSync(join(root, ".github/CODEOWNERS"), join(fakeRoot, ".github/CODEOWNERS"));
+  spawnSync("git", ["init", "-q", fakeRoot]);
+  commitAll(fakeRoot);
+  return fakeRoot;
+}
+
+/** Today in the local time zone, as YYYY-MM-DD. */
+const today = () => {
+  const now = new Date();
+  return [now.getFullYear(), now.getMonth() + 1, now.getDate()]
+    .map((n) => String(n).padStart(2, "0"))
+    .join("-");
+};
+
+describe("the pin (value sourcing)", () => {
+  test("without a SHA, a write pins CI to the core's origin/main and today's date (TPL-3)", () => {
+    const fakeRoot = gitCore("core-pinned");
+    const head = spawnSync("git", ["-C", fakeRoot, "rev-parse", "HEAD"], {
+      encoding: "utf8",
+    }).stdout.trim();
+    spawnSync("git", ["-C", fakeRoot, "update-ref", "refs/remotes/origin/main", head]);
+    const dir = clone();
+    const before = today();
+    /** @type {string[]} */
+    const lines = [];
+    const code = exportTemplate(
+      { target: "sdk-template-dart", outDir: dir, check: false, root: fakeRoot },
+      (line) => lines.push(line),
+    );
+    assert.equal(code, 0, lines.join("\n"));
+    const pin = existingPin(dir);
+    assert.equal(pin?.sha, head);
+    assert.ok(pin && [before, today()].includes(pin.date), pin?.date);
+  });
+
+  test("without a SHA and no origin/main in the core, it stops and says to fetch", () => {
+    const fakeRoot = gitCore("core-unfetched");
+    assert.throws(
+      () =>
+        exportTemplate(
+          { target: "sdk-template-dart", outDir: clone(), check: false, root: fakeRoot },
+          () => {},
+        ),
+      /Can't read the core's origin\/main\. Run `git fetch`/,
+    );
+  });
+});
+
 /** @param {string[]} argv */
 function cli(argv) {
   /** @type {string[]} */
@@ -325,6 +398,104 @@ describe("arguments", () => {
 
   test("missing arguments or an unknown option exit 2", () => {
     assert.equal(cli(["sdk-template-dart"]).code, 2);
-    assert.equal(cli(["sdk-template-dart", clone(), "--force"]).code, 2);
+    assert.equal(cli(["sdk-template-dart", clone(), "--nope"]).code, 2);
+  });
+});
+
+/**
+ * A copy of the core's starters and root files outside any git repo, so it has no origin/main.
+ * @param {string} name
+ */
+function fakeCore(name) {
+  const dir = join(temp, name);
+  mkdirSync(join(dir, ".github"), { recursive: true });
+  mkdirSync(join(dir, "tooling"), { recursive: true });
+  cpSync(join(root, "tooling/starters"), join(dir, "tooling/starters"), { recursive: true });
+  for (const file of [
+    ".github/CODEOWNERS",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md",
+    "SUPPORT.md",
+    ".node-version",
+  ]) {
+    cpSync(join(root, file), join(dir, file));
+  }
+  return dir;
+}
+
+describe("safety (review 2026-10-16)", () => {
+  test("refuses to write into the core repo, and deletes nothing there", () => {
+    const result = cli(["sdk-template-dart", root]);
+    assert.equal(result.code, 2);
+    assert.match(result.out, /is the core repo, or overlaps it/);
+    assert.ok(existsSync(join(root, "tooling/scripts/export-template.mjs")));
+  });
+
+  test("refuses --check on the core repo too", () => {
+    assert.equal(cli(["sdk-template-dart", root, "--check"]).code, 2);
+  });
+
+  test("refuses an out dir that holds the core", () => {
+    const dir = clone();
+    const core = fakeCore(join(dir.slice(temp.length + 1), "core"));
+    assert.throws(() => run("sdk-template-dart", dir, false, { root: core }), /overlaps it/);
+  });
+
+  test("refuses to write over uncommitted changes to tracked files, unless --force", () => {
+    const dir = clone();
+    run("sdk-template-dotnet", dir, false);
+    commitAll(dir);
+    writeFileSync(join(dir, "typos.toml"), "# my edit\n");
+    assert.throws(
+      () => run("sdk-template-dotnet", dir, false),
+      /uncommitted changes to tracked files \(typos\.toml\)/,
+    );
+    assert.equal(readFileSync(join(dir, "typos.toml"), "utf8"), "# my edit\n");
+    assert.equal(run("sdk-template-dotnet", dir, false, { force: true }).code, 0);
+    assert.notEqual(readFileSync(join(dir, "typos.toml"), "utf8"), "# my edit\n");
+  });
+
+  test("untracked files don't block a write", () => {
+    const dir = clone();
+    run("sdk-template-dart", dir, false);
+    commitAll(dir);
+    writeFileSync(join(dir, "notes.txt"), "x\n");
+    assert.equal(run("sdk-template-dart", dir, false).code, 0);
+  });
+
+  test("--check and --force together exit 2", () => {
+    assert.equal(cli(["sdk-template-dart", clone(), "--check", "--force"]).code, 2);
+  });
+
+  test("a second run before committing a removal doesn't crash, and --check doesn't call it stale", () => {
+    const dir = clone();
+    run("sdk-template-dart", dir, false);
+    writeFileSync(join(dir, "OLD.md"), "x\n");
+    commitAll(dir);
+    assert.equal(run("sdk-template-dart", dir, false).code, 0);
+    assert.equal(existsSync(join(dir, "OLD.md")), false);
+    const again = run("sdk-template-dart", dir, false, { force: true });
+    assert.equal(again.code, 0, again.out);
+    const check = run("sdk-template-dart", dir, true);
+    assert.equal(check.code, 0, check.out);
+    assert.doesNotMatch(check.out, /OLD\.md/);
+  });
+
+  test("the .github target needs no core origin/main, in either mode", () => {
+    const core = fakeCore("core-no-origin");
+    const dir = clone();
+    const write = run(".github", dir, false, { root: core, sha: null });
+    assert.equal(write.code, 0, write.out);
+    assert.doesNotMatch(write.out, /pinned/);
+    const check = run(".github", dir, true, { root: core, sha: null });
+    assert.equal(check.code, 0, check.out);
+  });
+
+  test("an SDK target still needs the core's origin/main when nothing pins it", () => {
+    const core = fakeCore("core-no-origin-sdk");
+    assert.throws(
+      () => run("sdk-template-dart", clone(), false, { root: core, sha: null }),
+      /git fetch/,
+    );
   });
 });

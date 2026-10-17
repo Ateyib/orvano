@@ -99,7 +99,7 @@ spec [0010](../specs/0010-repo-community-setup/index.md) · code in the root com
   - [ ] Go public and prove it: the flip, settings applied, Discussions, the proof PR (AC-6, AC-9 to AC-11, AC-15)
   - [ ] Org `.github` and the three template repos, then the CodeQL gate once uploads are proven (AC-16, AC-17, AC-20)
 - [ ] Verify it: `/check verify repo & community setup`
-- [ ] Test it: `/test repo & community setup`
+- [x] Test it: `/test repo & community setup`
 - [ ] Review it (fresh model): `/check review repo & community setup`
 - [ ] Document it: `/document repo & community setup`
 

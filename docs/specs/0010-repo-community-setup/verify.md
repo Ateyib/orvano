@@ -4,14 +4,14 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 
 ## Commands (any time, local)
 
-- [ ] `pnpm check` → exits 0 → AC-19
-- [ ] `pnpm test:tooling` → `dco.test.mjs`, `github-settings.test.mjs`, `export-template.test.mjs` all pass → AC-7, AC-8, AC-16, AC-19
+- [x] `pnpm check` → exits 0 → AC-19
+- [x] `pnpm test:tooling` → `dco.test.mjs`, `github-settings.test.mjs`, `export-template.test.mjs` all pass → AC-7, AC-8, AC-16, AC-19
 - [ ] `git grep -n '{{SECURITY_EMAIL}}'` → lists only `SECURITY.md`, `CODE_OF_CONDUCT.md`, `TRADEMARKS.md` before VRP-1's mailbox exists, and nothing after (OPN-1 item 1) → AC-1, AC-2
-- [ ] Diff `CODE_OF_CONDUCT.md` against the official Contributor Covenant 3.0 Markdown → only the reporting contact line changed, and the template's enforcement "NOTE" removed → AC-2
-- [ ] Read `CONTRIBUTING.md` → the COM-2 sections in order, the full DCO 1.1 text, the CTB-6 sentence, the `git rebase --signoff origin/main` fix, the DPB-3 step, the Windows notes → AC-3
-- [ ] `ls SUPPORT.md TRADEMARKS.md .github/CODEOWNERS` and `README.md` has the status line and a Community section linking all five files → AC-4
-- [ ] `ls tooling/starters/common/.github/workflows/` shows `codeql.yml` and `dependency-review.yml`; `node tooling/scripts/export-template.mjs sdk-template-dart <clone>` writes no `codeql.yml` → AC-18
-- [ ] `node tooling/scripts/github-settings.mjs orvanohq/orvano --profile core` on the private repo → only drift you expect, and exactly four `waiting for public` lines (secret scanning, push protection, private vulnerability reporting, the ruleset) → AC-8 (OPN-1 item 6)
+- [x] Diff `CODE_OF_CONDUCT.md` against the official Contributor Covenant 3.0 Markdown → only the reporting contact line changed, and the template's enforcement "NOTE" removed → AC-2
+- [x] Read `CONTRIBUTING.md` → the COM-2 sections in order, the full DCO 1.1 text, the CTB-6 sentence, the `git rebase --signoff origin/main` fix, the DPB-3 step, the Windows notes → AC-3
+- [x] `ls SUPPORT.md TRADEMARKS.md .github/CODEOWNERS` and `README.md` has the status line and a Community section linking all five files → AC-4
+- [x] `ls tooling/starters/common/.github/workflows/` shows `codeql.yml` and `dependency-review.yml`; `node tooling/scripts/export-template.mjs sdk-template-dart <clone>` writes no `codeql.yml` → AC-18
+- [x] `node tooling/scripts/github-settings.mjs orvanohq/orvano --profile core` on the private repo → only drift you expect, and exactly four `waiting for public` lines (secret scanning, push protection, private vulnerability reporting, the ruleset) → AC-8 (OPN-1 item 6)
 
 ## On GitHub, while private (OPN-1)
 
