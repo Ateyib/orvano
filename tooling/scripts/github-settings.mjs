@@ -448,6 +448,19 @@ function expectOk(response, what) {
 }
 
 /**
+ * An unexpected response shape is an error (exit 2), never drift (exit 1).
+ * @param {unknown} data
+ * @param {string} what
+ * @returns {any[]}
+ */
+function expectArray(data, what) {
+  if (!Array.isArray(data)) {
+    throw new SettingsError(`${what} returned ${JSON.stringify(data)}, not a list.`);
+  }
+  return data;
+}
+
+/**
  * Reads everything a profile compares.
  * @param {Api} api
  * @param {string} repo
@@ -464,7 +477,7 @@ export function readLive(api, repo, profile) {
   if (list.status === 403 && isPrivate) {
     rulesets = "needs-public";
   } else {
-    rulesets = /** @type {any[]} */ (expectOk(list, "listing rulesets")).map((set) =>
+    rulesets = expectArray(expectOk(list, "listing rulesets"), "listing rulesets").map((set) =>
       expectOk(
         api("GET", `repos/${repo}/rulesets/${String(set.id)}`),
         `reading ruleset ${set.name}`,
@@ -473,7 +486,10 @@ export function readLive(api, repo, profile) {
   }
 
   const labelData = /** @type {Label[]} */ (
-    expectOk(api("GET", `repos/${repo}/labels?per_page=100`), "listing labels")
+    expectArray(
+      expectOk(api("GET", `repos/${repo}/labels?per_page=100`), "listing labels"),
+      "listing labels",
+    )
   );
 
   const alerts = api("GET", `repos/${repo}/vulnerability-alerts`);
@@ -525,7 +541,14 @@ export function readLive(api, repo, profile) {
       }),
       "reading Discussions categories",
     );
-    live.discussionCategories = result.data.repository.discussionCategories.nodes;
+    // GraphQL answers HTTP 200 even when the query fails, with the reason in `errors`.
+    const nodes = result?.data?.repository?.discussionCategories?.nodes;
+    if (result?.errors || !Array.isArray(nodes)) {
+      throw new SettingsError(
+        `Reading Discussions categories failed: ${JSON.stringify(result?.errors ?? result)}`,
+      );
+    }
+    live.discussionCategories = nodes;
   }
   return live;
 }

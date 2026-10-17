@@ -6,7 +6,7 @@ Thanks for helping. This guide covers how to get a change from your machine onto
 
 - Answer a question or share what you built in [Discussions](https://github.com/orvanohq/orvano/discussions).
 - Report a bug or ask for a feature with the [issue forms](https://github.com/orvanohq/orvano/issues/new/choose).
-- Improve the docs, fix a bug, or pick up an issue labeled `triage` that a maintainer has confirmed.
+- Improve the docs, fix a bug, or pick up an open issue without the `triage` label (a maintainer has looked at it). Say in the issue that you are on it, so nobody does the same work twice.
 
 Questions go to [Discussions Q&A](https://github.com/orvanohq/orvano/discussions/categories/q-a), not issues. [SUPPORT.md](SUPPORT.md) says where everything else goes. Security problems never go in public: see [SECURITY.md](SECURITY.md).
 

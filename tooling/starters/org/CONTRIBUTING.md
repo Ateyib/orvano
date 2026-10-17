@@ -6,7 +6,7 @@ Thanks for helping. This guide is the default for every Orvano SDK repo. The ser
 
 - Answer a question or share what you built in [Discussions](https://github.com/orvanohq/orvano/discussions) on the core repo. SDK repos keep Discussions off.
 - Report a bug or ask for a feature with the issue forms in the SDK's own repo.
-- Improve the docs or examples, fix a bug, or pick up an issue labeled `triage` that a maintainer has confirmed.
+- Improve the docs or examples, fix a bug, or pick up an open issue without the `triage` label (a maintainer has looked at it). Say in the issue that you are on it, so nobody does the same work twice.
 
 Questions go to [Discussions Q&A](https://github.com/orvanohq/orvano/discussions/categories/q-a), not issues. [SUPPORT.md](https://github.com/orvanohq/.github/blob/main/SUPPORT.md) says where everything else goes. Security problems never go in public: see [SECURITY.md](https://github.com/orvanohq/.github/blob/main/SECURITY.md).
 

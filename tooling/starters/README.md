@@ -25,7 +25,8 @@ node tooling/scripts/export-template.mjs sdk-template-dotnet ../sdk-template-dot
 Targets: `sdk-template-dotnet`, `sdk-template-typescript`, `sdk-template-dart`, `.github`. The export fills
 `<lang>` and `<codeql-lang>`, pins `<FULL_SHA>` to this repo's `origin/main` with `<date>` set to today, trims
 `dependabot.yml` to the target's ecosystems, adds `.github/CODEOWNERS`, and merges the folder READMEs into one
-`SETUP.md`. It removes tracked files it no longer produces and never commits. With `--check` it writes nothing and
+`SETUP.md`. It removes tracked files it no longer produces and never commits. It refuses to write into the core repo,
+or into a clone with uncommitted changes to tracked files (commit them first, or pass `--force` to discard them). With `--check` it writes nothing and
 exits 1 when the clone differs (the pinned SHA and date already in the clone are kept for the comparison).
 
 Repos already made from a template don't follow it: port a change to them by hand (TPL-6).

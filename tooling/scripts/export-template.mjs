@@ -1,8 +1,9 @@
 // Spec 0010 TPL-2, TPL-3: writes a template repo's whole tree from tooling/starters/** (and the core root community
 // files) into a clone of that repo. It removes tracked files it no longer produces (never .git) and never commits.
 // --check writes nothing and exits 1 when the clone differs; it keeps the core SHA and date already pinned in the
-// clone's ci.yml, so moving main alone isn't drift.
-// Usage: node tooling/scripts/export-template.mjs <target> <out-dir> [--check]
+// clone's ci.yml, so moving main alone isn't drift. It refuses to write into the core repo, and into a clone with
+// uncommitted changes to tracked files unless you pass --force.
+// Usage: node tooling/scripts/export-template.mjs <target> <out-dir> [--check | --force]
 // Exit codes: 0 done or in step, 1 drift (--check), 2 usage errors.
 import { spawnSync } from "node:child_process";
 import {
@@ -11,12 +12,13 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  lstatSync,
   realpathSync,
   rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 
 const coreRoot = join(import.meta.dirname, "..", "..");
 
@@ -301,6 +303,60 @@ function trackedFiles(outDir) {
 }
 
 /**
+ * The git folder shared by every worktree of a repo, or undefined outside one.
+ * @param {string} dir
+ */
+function gitCommonDir(dir) {
+  const result = git(dir, ["rev-parse", "--path-format=absolute", "--git-common-dir"]);
+  return result.status === 0 ? realpathSync(result.stdout.trim()) : undefined;
+}
+
+/**
+ * True when `path` is `folder` or inside it.
+ * @param {string} path
+ * @param {string} folder
+ */
+const inside = (path, folder) => path === folder || path.startsWith(folder + sep);
+
+/**
+ * The export deletes tracked files it doesn't produce, so it must never point at the core repo (or a worktree of it),
+ * a folder inside it, or a folder that holds it.
+ * @param {string} outDir
+ * @param {string} root
+ */
+function refuseCoreRepo(outDir, root) {
+  const out = realpathSync(outDir);
+  const core = realpathSync(root);
+  const coreGit = gitCommonDir(core);
+  if (inside(out, core) || inside(core, out) || (coreGit && coreGit === gitCommonDir(out))) {
+    throw new ExportError(
+      `${outDir} is the core repo, or overlaps it. Export into a separate clone of the template repo.`,
+    );
+  }
+}
+
+/**
+ * Tracked files with uncommitted changes, which a write could overwrite or delete.
+ * @param {string} outDir
+ */
+function dirtyFiles(outDir) {
+  return git(outDir, ["status", "--porcelain", "--untracked-files=no"])
+    .stdout.split("\n")
+    .filter(Boolean)
+    .map((line) => line.slice(3));
+}
+
+/** @param {string} path */
+function present(path) {
+  try {
+    lstatSync(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * The core SHA and date pinned in a clone's ci.yml, if any.
  * @param {string} outDir
  */
@@ -312,21 +368,29 @@ export function existingPin(outDir) {
 }
 
 /**
- * @param {{ target: string, outDir: string, check: boolean, root?: string, sha?: string, date?: string }} options
+ * @param {{ target: string, outDir: string, check: boolean, force?: boolean, root?: string, sha?: string,
+ *   date?: string }} options
  * @param {(line: string) => void} print
  * @returns {number} the exit code
  */
-export function exportTemplate({ target, outDir, check, root = coreRoot, sha, date }, print) {
-  if (!targets[target]) {
+export function exportTemplate(
+  { target, outDir, check, force = false, root = coreRoot, sha, date },
+  print,
+) {
+  const spec = targets[target];
+  if (!spec) {
     throw new ExportError(
       `Unknown target "${target}". Targets: ${Object.keys(targets).join(", ")}.`,
     );
   }
   if (!existsSync(outDir))
     throw new ExportError(`${outDir} doesn't exist. Clone the target repo first.`);
+  refuseCoreRepo(outDir, root);
   const tracked = trackedFiles(outDir);
 
-  let pin = check ? existingPin(outDir) : undefined;
+  // Only the SDK targets pin the core (the .github target has no workflows).
+  let pin = check || !spec.sdk ? existingPin(outDir) : undefined;
+  if (!pin && !spec.sdk) pin = { sha: "", date: "" };
   if (!pin) {
     let pinSha = sha;
     if (!pinSha) {
@@ -357,7 +421,8 @@ export function exportTemplate({ target, outDir, check, root = coreRoot, sha, da
       }
     }
   }
-  const stale = tracked.filter((path) => !tree.has(path));
+  // git ls-files still lists a removal that isn't committed, so only files still on disk are stale.
+  const stale = tracked.filter((path) => !tree.has(path) && present(join(outDir, path)));
   for (const path of stale) drift.push(`stale    ${path}`);
 
   if (check) {
@@ -370,16 +435,22 @@ export function exportTemplate({ target, outDir, check, root = coreRoot, sha, da
     return drift.length === 0 ? 0 : 1;
   }
 
+  const dirty = dirtyFiles(outDir);
+  if (dirty.length > 0 && !force) {
+    throw new ExportError(
+      `${outDir} has uncommitted changes to tracked files (${dirty.join(", ")}), which the export could overwrite or delete. Commit or stash them, or pass --force to discard them.`,
+    );
+  }
   for (const [path, file] of tree) {
     const dest = join(outDir, path);
     mkdirSync(dirname(dest), { recursive: true });
     writeFileSync(dest, file.content);
     chmodSync(dest, file.executable ? 0o755 : 0o644);
   }
-  for (const path of stale) rmSync(join(outDir, path));
+  for (const path of stale) rmSync(join(outDir, path), { force: true });
   for (const line of drift) print(line);
   print(
-    `${target}: wrote ${String(tree.size)} file(s) to ${outDir}, pinned to ${pin.sha} (${pin.date}). Review the diff there, then commit with -s.`,
+    `${target}: wrote ${String(tree.size)} file(s) to ${outDir}${spec.sdk ? `, pinned to ${pin.sha} (${pin.date})` : ""}. Review the diff there, then commit with -s.`,
   );
   return 0;
 }
@@ -391,16 +462,18 @@ export function exportTemplate({ target, outDir, check, root = coreRoot, sha, da
 export function main(argv, print) {
   try {
     const check = argv.includes("--check");
-    const positional = argv.filter((arg) => arg !== "--check");
+    const force = argv.includes("--force");
+    if (check && force) throw new ExportError("--check never writes, so it takes no --force.");
+    const positional = argv.filter((arg) => arg !== "--check" && arg !== "--force");
     const unknown = positional.find((arg) => arg.startsWith("--"));
     if (unknown) throw new ExportError(`Unknown option ${unknown}.`);
     const [target, outDir] = positional;
     if (!target || !outDir || positional.length !== 2) {
       throw new ExportError(
-        `Usage: node tooling/scripts/export-template.mjs <${Object.keys(targets).join("|")}> <out-dir> [--check]`,
+        `Usage: node tooling/scripts/export-template.mjs <${Object.keys(targets).join("|")}> <out-dir> [--check | --force]`,
       );
     }
-    return exportTemplate({ target, outDir: resolve(outDir), check }, print);
+    return exportTemplate({ target, outDir: resolve(outDir), check, force }, print);
   } catch (error) {
     if (error instanceof ExportError) {
       print(error.message);
