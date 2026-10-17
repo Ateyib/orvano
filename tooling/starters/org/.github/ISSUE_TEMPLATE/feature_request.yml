@@ -1,0 +1,48 @@
+# Spec 0010 ISS-3: the SDK feature form (the core form, ISS-2, with the package).
+name: Feature request
+description: Suggest something an Orvano SDK should do.
+labels: [enhancement, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a bigger idea you want to talk through first, an [Ideas discussion](https://github.com/orvanohq/orvano/discussions/categories/ideas) on the core repo works well too.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - orvano_flutter
+        - orvano_server (Dart)
+        - "@orvano/client"
+        - "@orvano/server"
+        - "@orvano/nextjs"
+        - Orvano.Server (.NET)
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: The proposed solution
+      description: What you'd like the SDK to do.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other ways you thought of, or how you work around it now.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues and discussions.
+          required: true

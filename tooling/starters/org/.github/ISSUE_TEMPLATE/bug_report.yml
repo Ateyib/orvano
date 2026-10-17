@@ -1,0 +1,83 @@
+# Spec 0010 ISS-3: the SDK bug form (the core form, ISS-2, with the package, its version, and the runtime).
+name: Bug report
+description: Something in an Orvano SDK doesn't work as it should.
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. For a security problem, stop here and use [private reporting](https://github.com/orvanohq/orvano/security/advisories/new) instead.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - orvano_flutter
+        - orvano_server (Dart)
+        - "@orvano/client"
+        - "@orvano/server"
+        - "@orvano/nextjs"
+        - Orvano.Server (.NET)
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and platform
+      placeholder: Flutter 3.x on iOS 18, or Node 24
+    validations:
+      required: true
+  - type: input
+    id: server-version
+    attributes:
+      label: Orvano server version
+      description: The image tag, or the output of `orvano --version`.
+      placeholder: ghcr.io/orvanohq/orvano:0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, including any error message.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The smallest code or set of steps that shows the problem.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant log output or stack trace. Remove secrets, keys, and personal data first.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues.
+          required: true
+        - label: This is not a security vulnerability (those go to private reporting).
+          required: true

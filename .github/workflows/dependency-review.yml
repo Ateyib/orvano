@@ -1,5 +1,5 @@
 # Spec 0008 CI-3, spec 0006 SUP-2: fails a PR that adds a moderate or worse vulnerability, or a license outside
-# .github/dependency-review-config.yml. Required directly by branch protection (feature 58).
+# .github/dependency-review-config.yml. The `main` ruleset requires it directly (spec 0010 RUL-3).
 name: Dependency review
 
 on:
