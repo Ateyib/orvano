@@ -1,0 +1,13 @@
+# Spec 0010 ISS-3: the SDK repos' default issue config. An org default can't link per repo, so vulnerability reports
+# for any SDK start on the core and the maintainer moves the advisory to the SDK repo (VRP-5).
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/orvanohq/orvano/discussions/categories/q-a
+    about: Questions and help go to Discussions Q&A on the core repo.
+  - name: Report a vulnerability
+    url: https://github.com/orvanohq/orvano/security/advisories/new
+    about: Report security problems privately, never in a public issue. This covers every SDK.
+  - name: A bug in the server or console
+    url: https://github.com/orvanohq/orvano/issues/new/choose
+    about: The server, console, and install live in the core repo.

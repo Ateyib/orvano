@@ -1,5 +1,6 @@
 # Spec 0008 KIT-1: repo hygiene for the core repo and every SDK repo. SDK repos call it as
-# orvanohq/orvano/.github/workflows/repo-hygiene.yml@<full SHA>. Needs only `contents: read`; takes no secrets.
+# orvanohq/orvano/.github/workflows/repo-hygiene.yml@<full SHA>. The caller grants `contents: read` and
+# `pull-requests: read` (the dco job reads the PR's commits, spec 0010 DCO-1); it takes no secrets.
 name: Repo hygiene
 
 on:
@@ -40,6 +41,86 @@ jobs:
             exit 1
           fi
           echo "PR title: ok"
+
+  # Spec 0009 CTB-1 to CTB-3, spec 0010 DCO-1, DCO-2: every commit in the PR is signed off by its author. Runs inside
+  # ci-gate. Inline (not a file in tooling/scripts) because an SDK repo's checkout doesn't have the core's scripts;
+  # tooling/scripts/dco.test.mjs runs this exact block against a stub API.
+  dco:
+    name: dco
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check every commit is signed off
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMIT_COUNT: ${{ github.event.pull_request.commits }}
+        run: |
+          # read -d '' returns 1 at the end of input, hence || true.
+          read -r -d '' script <<'JS' || true
+          const api = process.env.GITHUB_API_URL || "https://api.github.com";
+          const { GH_TOKEN, REPO, PR_NUMBER } = process.env;
+          const limit = 250; // the most the PR commits endpoint returns (CTB-3)
+          const tooMany = `This PR has more than ${limit} commits, and the dco check can't read them all. Please split this PR.`;
+
+          // Trailers are the last paragraph of the message; the key is case insensitive, the email is inside <...>.
+          const signOffs = (message) =>
+            message.trim().split(/\r?\n\s*\r?\n/).at(-1).split(/\r?\n/)
+              .map((line) => /^signed-off-by:.*<([^<>]+)>\s*$/i.exec(line.trim())?.[1])
+              .filter(Boolean)
+              .map((email) => email.trim().toLowerCase());
+
+          async function main() {
+            if (Number(process.env.COMMIT_COUNT) > limit) return [tooMany];
+            const commits = [];
+            for (let page = 1; page <= 3; page++) {
+              const response = await fetch(`${api}/repos/${REPO}/pulls/${PR_NUMBER}/commits?per_page=100&page=${page}`, {
+                headers: {
+                  accept: "application/vnd.github+json",
+                  authorization: `Bearer ${GH_TOKEN}`,
+                  "x-github-api-version": "2022-11-28",
+                },
+              });
+              if (!response.ok) return [`Listing the PR's commits failed: HTTP ${response.status}.`];
+              const batch = await response.json();
+              commits.push(...batch);
+              if (batch.length < 100) break;
+            }
+            if (commits.length > limit) return [tooMany];
+
+            const failures = [];
+            let checked = 0;
+            for (const c of commits) {
+              if (c.parents.length > 1) continue; // a merge commit
+              if (c.author?.type === "Bot") continue; // a null author (email not linked to an account) is not a bot
+              checked++;
+              const author = (c.commit.author?.email ?? "").toLowerCase();
+              const emails = signOffs(c.commit.message);
+              if (emails.length === 0) failures.push(`${c.sha}: no Signed-off-by line.`);
+              else if (!emails.includes(author)) failures.push(`${c.sha}: no Signed-off-by matches the author email ${author}.`);
+            }
+            if (failures.length === 0) {
+              console.log(`dco: ${checked} commit(s) signed off, ${commits.length - checked} skipped (merge or bot).`);
+            }
+            return failures;
+          }
+
+          const failures = await main();
+          if (failures.length > 0) {
+            for (const failure of failures) console.log(`::error::${failure}`);
+            console.log("");
+            console.log("Every commit needs a sign off that matches its author email (CONTRIBUTING.md, Sign your work). To fix it:");
+            console.log("  git rebase --signoff origin/main");
+            console.log("  git push --force-with-lease");
+            process.exitCode = 1;
+          }
+          JS
+          node --input-type=module -e "$script"
 
   workflows:
     name: workflows

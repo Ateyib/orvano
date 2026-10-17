@@ -1,0 +1,12 @@
+# Spec 0010 ISS-1: forms only, no blank issues. Questions and vulnerabilities go elsewhere.
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/orvanohq/orvano/discussions/categories/q-a
+    about: Questions and help go to Discussions Q&A.
+  - name: Report a vulnerability
+    url: https://github.com/orvanohq/orvano/security/advisories/new
+    about: Report security problems privately, never in a public issue (SECURITY.md).
+  - name: A bug in an SDK
+    url: https://github.com/orvanohq
+    about: Each SDK has its own repo. Open the issue there.

@@ -19,3 +19,4 @@ jobs:
     uses: ./.github/workflows/ci.yml
     permissions:
       contents: read
+      pull-requests: read # ci.yml passes it to the dco job (spec 0010 DCO-1); dco skips scheduled runs

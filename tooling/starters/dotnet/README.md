@@ -1,6 +1,6 @@
 # .NET SDK starter
 
-For the `sdk-dotnet` repo (spec 0002 LIB-1 to LIB-12, name from spec 0007 REP-3). Copy these into the repo root:
+For the `sdk-dotnet` repo (spec 0002 LIB-1 to LIB-12, name from spec 0007 REP-3). At the repo root:
 
 - `global.json`, `Directory.Build.props`, `Directory.Packages.props`: the server's settings plus LIB-2's package
   settings, including `Apache-2.0` and packing `LICENSE` and `NOTICE` (spec 0009 LIC-6).

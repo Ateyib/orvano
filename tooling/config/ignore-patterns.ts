@@ -17,6 +17,8 @@ export const ignorePatterns = [
   "docs/.agent-cache/**",
   // template files, checked by their own repos once copied (KIT-2)
   "tooling/starters/**",
+  // the Contributor Covenant text, kept identical to upstream (spec 0010 COC-1)
+  "CODE_OF_CONDUCT.md",
   // vendored skills, kept identical to upstream
   ".claude/skills/**",
   ".agents/skills/**",

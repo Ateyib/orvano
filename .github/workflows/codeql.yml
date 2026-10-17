@@ -1,5 +1,5 @@
-# Spec 0008 CI-3, spec 0006 SUP-3: CodeQL as a reviewed workflow file, not repo default setup. Required directly by
-# branch protection (feature 58), since ci-gate can't need another workflow.
+# Spec 0008 CI-3, spec 0006 SUP-3: CodeQL as a reviewed workflow file, not repo default setup. The `main` ruleset
+# requires each `analyze (...)` check directly (spec 0010 RUL-3), since ci-gate can't need another workflow.
 name: CodeQL
 
 on:
@@ -41,8 +41,9 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: none
           queries: security-extended
-      # Fork PRs get a read only token, so the upload is skipped there; the analysis still runs (CI-3).
+      # Spec 0010 RUL-5: upload on every event, fork and Dependabot PRs included (both get a read only token, which
+      # code scanning accepts with security-events: write). If either is refused, set `never` for that kind of PR only.
       - uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           category: /language:${{ matrix.language }}
-          upload: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'always' || 'never' }}
+          upload: always

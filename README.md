@@ -2,6 +2,8 @@
 
 Open source, self hostable backend as a service: auth, databases, storage, realtime, functions, sites, and messaging, with a React console and client and server SDKs. Orvano runs as one server image and needs only PostgreSQL 18 beside it ([spec 0007](docs/specs/0007-stack-architecture/index.md)).
 
+> **Status:** early development, not ready for production.
+>
 > Early days: this is the scaffold. The server boots, migrates, and serves the console; features arrive slice by slice ([scope](docs/scope/index.md)).
 
 ## Repository layout
@@ -95,3 +97,13 @@ From the repository root:
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 -f deploy/Dockerfile -t ghcr.io/orvanohq/orvano:edge .
 ```
+
+## Community
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to set up, open a PR, and sign off your commits
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): how we treat each other in every project space
+- [SUPPORT.md](SUPPORT.md): where questions, bugs, and ideas go
+- [SECURITY.md](SECURITY.md): how to report a vulnerability privately
+- [TRADEMARKS.md](TRADEMARKS.md): what the license covers, and how to use the Orvano name
+
+Orvano is licensed under the [Apache License 2.0](LICENSE).

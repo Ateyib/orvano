@@ -15,6 +15,7 @@ extend-exclude = [
   "coverage/",
   "docs/.agent-cache/",
   "tooling/starters/",
+  "CODE_OF_CONDUCT.md",
   ".claude/skills/",
   ".agents/skills/",
   "skills-lock.json",
