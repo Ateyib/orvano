@@ -105,10 +105,11 @@ after(() => {
 /**
  * Runs the run block the way Actions does (`bash -e`), against the stub.
  * @param {ApiCommit[]} commits
- * @param {{ count?: number, httpStatus?: number }} options
+ * @param {{ count?: number, httpStatus?: number, prAuthorType?: string }} options `prAuthorType` defaults to a
+ *   person's PR; leave it out with `undefined` to test a missing value
  * @returns {Promise<{ code: number | null, out: string }>}
  */
-function runDco(commits, { count = commits.length, httpStatus = 200 } = {}) {
+function runDco(commits, { count = commits.length, httpStatus = 200, prAuthorType = "User" } = {}) {
   served = commits;
   status = httpStatus;
   requests.length = 0;
@@ -121,6 +122,7 @@ function runDco(commits, { count = commits.length, httpStatus = 200 } = {}) {
         REPO: "orvanohq/demo",
         PR_NUMBER: "7",
         COMMIT_COUNT: String(count),
+        ...(prAuthorType === undefined ? {} : { PR_AUTHOR_TYPE: prAuthorType }),
       },
     });
     let out = "";
@@ -218,10 +220,51 @@ describe("dco script", () => {
     assert.equal(result.code, 0, result.out);
   });
 
-  test("skips commits by a Bot author", async () => {
-    const result = await runDco([commit({ bot: true, message: "build(deps): bump x" }), commit()]);
+  test("skips a Bot commit in a PR a Bot opened (DCO-2)", async () => {
+    const result = await runDco([commit({ bot: true, message: "build(deps): bump x" }), commit()], {
+      prAuthorType: "Bot",
+    });
     assert.equal(result.code, 0, result.out);
-    assert.match(result.out, /1 commit\(s\) signed off, 1 skipped/);
+    assert.match(result.out, /1 commit\(s\) signed off, 1 skipped \(merge or bot PR\)/);
+  });
+
+  test("fails an unsigned Bot commit in a person's PR, with the reset author fix (DCO-2)", async () => {
+    const faked = commit({
+      sha: sha(42),
+      bot: true,
+      email: "49699333+dependabot[bot]@users.noreply.github.com",
+      message: "build(deps): bump x",
+    });
+    const result = await runDco([faked, commit()], { prAuthorType: "User" });
+    assert.equal(result.code, 1);
+    assert.match(
+      result.out,
+      new RegExp(`::error::${sha(42)}: authored by a bot .* inside a person's PR`),
+    );
+    assert.match(result.out, /git commit --amend --reset-author -s/);
+  });
+
+  test("a missing PR_AUTHOR_TYPE counts as a person's PR (fail closed)", async () => {
+    const result = await runDco([commit({ bot: true, message: "build(deps): bump x" })], {
+      prAuthorType: undefined,
+    });
+    assert.equal(result.code, 1);
+    assert.match(result.out, /authored by a bot/);
+  });
+
+  test("a Bot commit in a person's PR passes when its sign off matches its author", async () => {
+    const email = "41898282+github-actions[bot]@users.noreply.github.com";
+    const result = await runDco([
+      commit({ bot: true, email, message: `x\n\nSigned-off-by: bot <${email}>` }),
+    ]);
+    assert.equal(result.code, 0, result.out);
+  });
+
+  test("passes the PR author type through env:, never inline", () => {
+    assert.match(
+      dcoJob(),
+      /^ {10}PR_AUTHOR_TYPE: \$\{\{ github\.event\.pull_request\.user\.type \}\}$/m,
+    );
   });
 
   test("checks a commit whose email isn't linked to an account (null author)", async () => {
