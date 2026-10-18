@@ -1,6 +1,6 @@
 # /check verify repo and community setup · BLOCKED (partial run, nothing failed)
 
-_Feature 58, spec 0010. Build: `main` at `022bea5` (PR 4, orvanohq/orvano#4, merged). Steps from
+_Feature 58, spec 0010. Build: `main` at `da10ed0`, after `65f6379` (old PR 4) merged. Steps from
 [verify.md](../specs/0010-repo-community-setup/verify.md). Run on 2026-10-16, while the repo is still private on GitHub
 Free and the project mailbox doesn't exist yet._
 
@@ -18,7 +18,7 @@ OPN-1 and OPN-2. The scope's `Verify it` box stays unticked, because most steps 
   76, 161, 222, 270, 278) and `verify.md` lines 9 and 48, because they quote the placeholder. OPN-1 item 1 says the grep
   must find nothing, so as written it would block the flip forever. You may want `/architect` to scope the check, for
   example `git grep -n '{{SECURITY_EMAIL}}' -- ':!docs/specs'`. Left unticked in verify.md for that reason.
-- **A skipped CodeQL job reports an unexpanded name.** On PR 4's head commit, the skipped CodeQL check run is named
+- **A skipped CodeQL job reports an unexpanded name.** On the head commit of `65f6379` (old PR 4), the skipped CodeQL check run is named
   `analyze (${{ matrix.language }})`, not `analyze (csharp)` or `analyze (javascript-typescript)`. Today the job's only
   skip condition is `if: ${{ !github.event.repository.private }}` (`codeql.yml:23`, no path filter), so after the flip it
   should always run and report the real names. Low risk, but if a skip condition is ever added, the required checks
@@ -33,7 +33,7 @@ OPN-1 and OPN-2. The scope's `Verify it` box stays unticked, because most steps 
 | CoC diff (AC-2)                       | Downloaded the official Contributor Covenant 3.0 Markdown (EthicalSource `contributor_covenant`, `content/version/3/0/code_of_conduct.md`, Hugo front matter stripped) and diffed it. Exactly two changes: the reporting line now reads ``email `{{SECURITY_EMAIL}}`.`` instead of the reporting NOTE, and the enforcement NOTE paragraph is removed                                                                                                                                           |
 | `CONTRIBUTING.md` (AC-3)              | Sections in COM-2 order: Ways to help, Before a big change, Local setup (points to `README.md#local-development` and `AGENTS.md`), Branches and pull requests, Sign your work (DCO), Dependabot NuGet PRs, Windows notes, License (with the trademark pointer). The DCO 1.1 text is word for word the one on developercertificate.org. CTB-6 sentence at line 107, `git rebase --signoff origin/main` at 98, `--force-with-lease` at 102, web edits sign off (CTB-4) at 105, DPB-3 step at 117 |
 | Files and README (AC-4)               | `ls SUPPORT.md TRADEMARKS.md .github/CODEOWNERS` finds all three. `README.md:5` has the status line; `## Community` links CONTRIBUTING, CODE_OF_CONDUCT, SUPPORT, SECURITY, and TRADEMARKS                                                                                                                                                                                                                                                                                                     |
-| Starters and export (AC-18)           | `tooling/starters/common/.github/workflows/` has `ci.yml`, `codeql.yml`, `dependency-review.yml`. `node tooling/scripts/export-template.mjs sdk-template-dart <scratch clone>` exits 0, writes 17 files pinned to `022bea5`, and no `codeql.yml` among them                                                                                                                                                                                                                                    |
+| Starters and export (AC-18)           | `tooling/starters/common/.github/workflows/` has `ci.yml`, `codeql.yml`, `dependency-review.yml`. `node tooling/scripts/export-template.mjs sdk-template-dart <scratch clone>` exits 0, writes 17 files pinned to `da10ed0`, and no `codeql.yml` among them                                                                                                                                                                                                                                    |
 | Settings check (AC-8)                 | `node tooling/scripts/github-settings.mjs orvanohq/orvano --profile core` (read only) exits 1. Real drift, all settings not applied yet: merge commits, rebase merge, squash title, web sign off, delete branch on merge, auto merge, update branch, projects, discussions, Dependabot alerts and security updates, the `triage` label. Exactly 4 `waiting for public` lines: secret scanning, push protection, private vulnerability reporting, `ruleset.main`                                |
 
 ## Partly checked on GitHub (read only)
@@ -44,8 +44,8 @@ OPN-1 and OPN-2. The scope's `Verify it` box stays unticked, because most steps 
   vulnerability, A bug in an SDK) for the repo. The API doesn't list YAML issue forms, and the built in browser isn't
   signed in to GitHub (the private repo returns 404), so nobody has looked at the chooser page itself. Open
   `https://github.com/orvanohq/orvano/issues/new/choose` signed in to tick this.
-- **AC-7 dco, pass path only.** PR 4 (head `ada300a`): `repo / hygiene / dco` succeeded and its log prints
-  `dco: 2 commit(s) signed off, 0 skipped (merge or bot).`; `ci-gate` succeeded. Both commits (`505aba9`, `ada300a`) have
+- **AC-7 dco, pass path only.** `65f6379` (old PR 4, head `fd2f541`): `repo / hygiene / dco` succeeded and its log prints
+  `dco: 2 commit(s) signed off, 0 skipped (merge or bot).`; `ci-gate` succeeded. Both commits (`de938fb`, `fd2f541`) have
   author `atteprojects@gmail.com` and a matching `Signed-off-by`. The failure cases (an unsigned commit, a mismatched
   email), the Dependabot and merge commit skips, and the weekly `Scheduled` run were not exercised. They need a
   throwaway PR with an unsigned commit, which wasn't run without your go.

@@ -1,7 +1,7 @@
 # Review, repo & community setup (feature 58), 2026-10-16
 
-**Reviewed by**: Sonnet 5.5 (author on Opus 5.5, from the commit trailer on ada300a)
-**Scope**: 39 files merged in ada300a (PR orvanohq/orvano#4), plus 3 uncommitted test files, on `main`
+**Reviewed by**: Sonnet 5.5 (author on Opus 5.5, from the commit trailer on fd2f541)
+**Scope**: 39 files from commit `fd2f541`, merged in `65f6379` (old PR 4), plus 3 uncommitted test files, on `main`
 **Verdict**: Changes requested
 
 ## Summary

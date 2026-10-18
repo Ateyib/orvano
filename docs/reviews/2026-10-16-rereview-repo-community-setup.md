@@ -1,7 +1,7 @@
 # Rereview, repo & community setup (feature 58), 2026-10-16
 
-**Reviewed by**: Sonnet 5.5 (the fixes were written on Opus 5.5, from the commit trailers on b41d414 and 6118cc2)
-**Scope**: only the fixes for the first review (`docs/reviews/2026-10-16-review-repo-community-setup.md`): PR orvanohq/orvano#5 (b41d414) and PR orvanohq/orvano#7 (6118cc2), both merged on `main`
+**Reviewed by**: Sonnet 5.5 (the fixes were written on Opus 5.5, from the commit trailers on 09941a0 and 50f1c4b)
+**Scope**: only the fixes for the first review (`docs/reviews/2026-10-16-review-repo-community-setup.md`): `8204a94` (old PR 5), fix commit `09941a0`, and `eda5a0a` (old PR 7), fix commit `50f1c4b`, both merged on `main`
 **Verdict**: Approve with nits
 
 ## Summary
@@ -18,7 +18,7 @@ I ran `node --test "tooling/scripts/*.test.mjs"` (224 pass). I also ran the expo
 | 🟡 Minor: a re-run before committing crashes, and `--check` calls a removed file stale     | **Resolved**                     | `stale` now needs the file to exist (`lstat`), and `rmSync` uses `force: true`. A tracked symlink is covered by the same check. See nit 1 for the re-run itself.                                                                                                                                                              |
 | 🟡 Minor: `.github` `--check` needs the core's `origin/main`                               | **Resolved**                     | Pin lookup is only for targets with `sdk`. Tests cover both modes for `.github`, and that an SDK target still needs it.                                                                                                                                                                                                       |
 | 🟡 Minor: a GraphQL error or odd API shape exits 1                                         | **Resolved**                     | `readLive` throws `SettingsError` on `errors` or a missing `nodes` array, and `expectArray` guards the rulesets and labels lists. Four tests. This matches SET-4 (exit 1 is drift only).                                                                                                                                      |
-| 🟡 Minor: the Bot skip can be claimed through a git author email                           | **Resolved**                     | Matches DCO-2 as decided in PR 6 and AC-7. See the DCO section.                                                                                                                                                                                                                                                               |
+| 🟡 Minor: the Bot skip can be claimed through a git author email                           | **Resolved**                     | Matches DCO-2 as decided in `19f6a6d` (old PR 6) and AC-7. See the DCO section.                                                                                                                                                                                                                                               |
 | 🟡 Minor: CONTRIBUTING sends people to `triage` issues                                     | **Resolved**                     | Both `CONTRIBUTING.md` and `tooling/starters/org/CONTRIBUTING.md` now say an open issue _without_ `triage`, which matches ISS-5 ("Needs a first look").                                                                                                                                                                       |
 | ⚪ Nits (dco API failure advice, `toggle` DELETE, CodeQL write, COC wording, README links) | Not in scope for these two fixes | Not reviewed again. They stay as the first review left them (the first review marked them as nits).                                                                                                                                                                                                                           |
 
@@ -32,7 +32,7 @@ Tried, all refused with exit 2:
 
 One case passes, which I think is fine: a separate full clone of the core repo somewhere else. It is a different repo with its own `.git`, so the guard does not see it. The dirty check still protects uncommitted work there, and `--check` against it reports lots of stale files, so a wrong target is easy to spot. I would not add code for this. The spec wording ("a clone of its repo") cannot tell a core clone from a template clone without a content check.
 
-## DCO-2 (PR 7)
+## DCO-2: `eda5a0a` (old PR 7)
 
 - `PR_AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}` is under `env:`. Every `${{ }}` in `repo-hygiene.yml` sits in `env:`, `with:`, or `working-directory:`, none inline in `run:`, and the script text is a quoted heredoc. No untrusted event text reaches the shell.
 - `botPr = PR_AUTHOR_TYPE === "Bot"`, so a missing or any other value is a person (fails closed). A commit is skipped only when `botCommit && botPr`. A null author is still not a bot.

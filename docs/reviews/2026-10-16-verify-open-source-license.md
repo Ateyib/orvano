@@ -1,6 +1,6 @@
 # /check verify open source license · PASS
 
-_Feature 57, spec 0009 Rollout steps 1 to 5. Build: commit 2822601 on `main`, plus the Dart fix in `a55353b`. Steps
+_Feature 57, spec 0009 Rollout steps 1 to 5. Build: commit 269a067 on `main`, plus the Dart fix in `4335a79`. Steps
 from [verify.md](../specs/0009-open-source-license/verify.md). First run on 2026-10-16 (FAIL), rerun the same day
 after the fix (PASS)._
 
@@ -16,7 +16,7 @@ Next: feature 57's next box. The scope's Verify it box is now ticked. Marking th
   `(^|[[:space:]|'-])LICENSE\b` over the whole `pub publish --dry-run` output, matched pub's own error line
   `* You must have a LICENSE file in the root directory.`, so a package with no `LICENSE` passed (exit 0). The `|| true`
   hides pub's own failure and no other step runs a publish dry run, so nothing else caught it.
-- `a55353b` now matches only the dry run's file tree lines: `grep -Eq "^[[:space:]]*(├|└)── $file( |$)"`.
+- `4335a79` now matches only the dry run's file tree lines: `grep -Eq "^[[:space:]]*(├|└)── $file( |$)"`.
 - Evidence (rerun): the committed step's script, extracted from the workflow and run with `FLUTTER=false` against three
   scratch Dart packages with real `dart pub publish --dry-run`, in the default locale and with `LC_ALL=C`: both files →
   exit 0; no `NOTICE` → `::error::the published package has no NOTICE`, exit 1; no `LICENSE` →

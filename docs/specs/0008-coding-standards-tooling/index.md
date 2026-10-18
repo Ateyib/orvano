@@ -56,7 +56,7 @@ Versions below are the ones the build pinned on 2026-10-16, the newest that clea
   The exact pins apply to the dev tools only; the console's runtime dependencies keep their caret ranges, since the lockfile pins them. `eslint-plugin-oxlint` always equals the Oxlint version `vp --version` reports for the pinned vite-plus, so it moves by hand with the toolchain PR (DPB-2), not on its own.
 
 - **TL-5 (MUST)**: Vite+ stays only while the Windows CI job (CI-8) passes. If that job can't be made to pass, the repo falls back in one PR to standalone Vite, Vitest, the `oxlint` and `oxfmt` CLIs, tsdown for SDKs, and Lefthook for hooks, and this spec records the reason. You (the maintainer) make the call at Rollout step 11, at most two weeks after the repo's first push. Known Windows issues and their workarounds live in `CONTRIBUTING.md` (feature 58), with a short note in root `AGENTS.md`.
-  - **Decided 2026-10-17: keep Vite+.** The Windows job (CI-8), hook proof included, passed on the first CI run that got through (`747b063`), so you chose to keep Vite+ then, without waiting for the weekly run. The fallback stays written here: if the Windows job later fails and can't be fixed, the one PR fallback above still applies.
+  - **Decided 2026-10-17: keep Vite+.** The Windows job (CI-8), hook proof included, passed on the first CI run that got through (`4c9b27c`), so you chose to keep Vite+ then, without waiting for the weekly run. The fallback stays written here: if the Windows job later fails and can't be fixed, the one PR fallback above still applies.
 - **TL-6 (MUST)**: One command checks the repo locally, from the root, on every OS. These are root `package.json` scripts, run as `pnpm <name>` (the same as `vp run <name>`). Vite+'s own `vp check` command is a different thing: it is one step inside `check:js`.
   - `pnpm check` runs `check:js` then `check:dotnet`.
   - `check:js`:
@@ -375,7 +375,7 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 9. Local proof (repo not pushed yet): `pnpm check` and `pnpm test` clean on macOS; `changes.mjs` gives the right areas for a few sample diffs; actionlint and zizmor clean on every workflow file, run locally through Docker; the image builds
 10. Starters: `tooling/starters/*` files and the `sdk-*.yml` reusable workflows (KIT-1, KIT-2); they are proven later by the first SDK repo (KIT-3)
 11. Later, once the repo is on GitHub (feature 58): CI green, CodeQL on fork PRs checked (CI-3), the NuGet lock file question answered (DPB-3), the Windows job green and TL-5 decided (within two weeks), the weekly run seen once
-    - Progress (2026-10-17): the repo is pushed to `orvanohq/orvano` (private). The first run's findings were fixed (`747b063`: typos words, one audit ignore per CI-10, `actions: read` for CodeQL), and CI then went green, including the Windows job (CI-8). TL-5 is decided: keep Vite+. CodeQL and dependency review skip while the repo is private (CI-3).
+    - Progress (2026-10-17): the repo is pushed to `orvanohq/orvano` (private). The first run's findings were fixed (`4c9b27c`: typos words, one audit ignore per CI-10, `actions: read` for CodeQL), and CI then went green, including the Windows job (CI-8). TL-5 is decided: keep Vite+. CodeQL and dependency review skip while the repo is private (CI-3).
     - Still open: the weekly `scheduled.yml` run seen once (CI-9); CodeQL on a fork PR (CI-3) and the required checks, once feature 58 makes the repo public; the DPB-3 lock file question, at the first Dependabot NuGet PR
 
 **Verify at build** (results from the build on 2026-10-16, also in rationale.md):
@@ -413,8 +413,8 @@ This is a guide, not a fixed plan: `/develop` derives the real steps at build ti
 
 ## Follow-up
 
-- [x] `/sync` after the build (done in `8a2dcf9`): update root `AGENTS.md` (replace the "Coding standards and tooling ... not decided yet" rule with a pointer to this spec and `pnpm check`; Local setup: pnpm and Node are pinned at the root), `console/AGENTS.md`, `server/AGENTS.md`, and `deploy/AGENTS.md` (commands, the image build), and record the five newly installed skills under `## Agent skills`
-- [x] (Done in `07ac0a2`.) `/sync` again for the build results above: check that the `AGENTS.md` files say dotnet commands run from `server/` (TL-6), CI gets pnpm from setup-vp (TL-1), `pnpm test` includes `test:tooling`, and the pin wait (TL-8); add only what is missing
+- [x] `/sync` after the build (done in `1ab6f68`): update root `AGENTS.md` (replace the "Coding standards and tooling ... not decided yet" rule with a pointer to this spec and `pnpm check`; Local setup: pnpm and Node are pinned at the root), `console/AGENTS.md`, `server/AGENTS.md`, and `deploy/AGENTS.md` (commands, the image build), and record the five newly installed skills under `## Agent skills`
+- [x] (Done in `0b82c71`.) `/sync` again for the build results above: check that the `AGENTS.md` files say dotnet commands run from `server/` (TL-6), CI gets pnpm from setup-vp (TL-1), `pnpm test` includes `test:tooling`, and the pin wait (TL-8); add only what is missing
 - [x] Spec 0003: update the Enforcement table row for A11Y-6 (Oxlint jsx-a11y, LNT-4, full strict coverage per VER-3) and close the two Rollout items for feature 7 (ESLint 10 chosen; restriction rules, import boundary, and size runner chosen here)
 - [x] Spec 0001: its Follow-up for feature 7 is met by LNT-3 (import boundary), LNT-2 (literal strings through Lingui), and A11Y-5 in CI
 - [x] Spec 0006: SUP-1 to SUP-3 and SUP-5, SUP-6 are wired by DPB, CI-3, CI-4; SUP-4 (secret scanning with push protection) is a repo setting for feature 58 (no text in 0006 needed changing)
