@@ -25,12 +25,18 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 - [x] `github-settings.mjs --org orvanohq` (with `gh auth refresh -s admin:org`) exits 0, or SHA pinning is ticked here by hand if the API doesn't return it; fork PR approval setting name written here → AC-12
   - 2026-10-17: `node tooling/scripts/github-settings.mjs --org orvanohq` printed `orvanohq: matches ORG-1.` and exited 0. The API returned all four fields (2FA required, SHA pinning required, workflow token `read`, Actions can't approve PRs), so no manual tick was needed.
   - Fork settings, left at GitHub's defaults: "Approval for running fork pull request workflows from contributors" is "Require approval for first-time contributors"; "Fork pull request workflows in private and internal repositories" has "Run workflows from fork pull requests" off.
-- [ ] Skills inventory table in `rationale.md`; each kept skill has its `LICENSE` → AC-14
-- [ ] Before step 10: `git grep -i -f ~/orvano-backups/his/sweep-terms.txt` on `main` finds nothing (HIS-0, build step 9a) → AC-13
-- [ ] Sweep self test: `sweep-terms.txt` has no blank line, and its first term is found by `grep -ci -f` on itself (HIS-4) → AC-13
-- [ ] On a scratch clone, the two HIS-0 regex lines work: no sweep term in any old version of spec 0010, and each merge message reads `Merge old pull request N from ...` → AC-13, AC-21
+- [x] Skills inventory table in `rationale.md`; each kept skill has its `LICENSE` → AC-14
+  - 2026-10-17: 51 rows; 47 kept with their `LICENSE`, 4 removed by the HIS-2 rewrite.
+- [x] Before step 10: `git grep -i -f ~/orvano-backups/his/sweep-terms.txt` on `main` finds nothing (HIS-0, build step 9a) → AC-13
+  - 2026-10-17: nothing on `main` at `f26a944`.
+- [x] Sweep self test: `sweep-terms.txt` has no blank line, and its first term is found by `grep -ci -f` on itself (HIS-4) → AC-13
+  - 2026-10-17: 0 blank lines; the first term finds itself.
+- [x] On a scratch clone, the two HIS-0 regex lines work: no sweep term in any old version of spec 0010, and each merge message reads `Merge old pull request N from ...` → AC-13, AC-21
+  - 2026-10-17: no sweep term in any commit; merges read `Merge old pull request N` for 4 to 12 (rationale.md, OPN-1 record).
 - [ ] HIS-4 sweep on the rewritten clone and again on a fresh clone right before the flip: only `atteprojects@gmail.com` and `noreply` emails, nothing from the HIS-0 sweep terms file, gitleaks clean or every finding explained; `git ls-remote origin` right after the push lists only `refs/heads/main` and `HEAD` → AC-13
-- [ ] First HIS-4 run only: no `Merge pull request #` subject, and every old PR in tracked text is in the `` `<sha>` (old PR N) `` form, each SHA a merge commit on the new `main` → AC-21
+  - 2026-10-17: first run on the rewritten clone passed (rationale.md, OPN-1 record). The second run (fresh clone of GitHub right before the flip) and the `ls-remote` check after the push are still to come.
+- [x] First HIS-4 run only: no `Merge pull request #` subject, and every old PR in tracked text is in the `` `<sha>` (old PR N) `` form, each SHA a merge commit on the new `main` → AC-21
+  - 2026-10-17: both counts 0 on the rewritten clone.
 
 ## After the flip (OPN-2)
 

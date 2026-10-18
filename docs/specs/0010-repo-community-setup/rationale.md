@@ -187,3 +187,26 @@ Follow-ups for `/sync` once HIS-2 removes the four (SKL-2): `console/AGENTS.md` 
 ## OPN-1 record
 
 _Filled by the build: the HIS-1 inventory, the HIS-4 sweep output (email list, gitleaks image digest and result, any explained findings), and the date each OPN-1 item was ticked._
+
+**HIS-1 inventory (2026-10-17)**, read with `gh api` on `orvanohq/orvano`: no Actions secrets, variables, or Dependabot secrets; no webhooks, deploy keys, environments, releases, tags, autolinks, deployments, or Pages site. One collaborator (`Atteprojects`). The delete drops 11 closed PRs (old PRs 1 to 3 from Dependabot, never merged; old PRs 4 to 12 merged), 81 Actions runs, and 7 Actions caches; none needs recreating. Container packages weren't listed, because the `gh` login lacked `read:packages`; checked before the delete (below).
+
+**HIS-3 bundle**: `~/orvano-backups/orvano-before-rewrite.bundle`, made 2026-10-17 from the original clone with `--all`, holding old `main` at `f26a944` (the HIS-0 build step 9a merge). An earlier bundle from before step 9a sits beside it. Both are deleted once OPN-2 has passed, together with the HIS-0 files in `~/orvano-backups/his/`.
+
+**HIS-2 rewrite (2026-10-17)**, `git filter-repo` 2.47.0 on a fresh clone of `main` only, with the four HIS-0 files and `--invert-paths` for the four SKL-2 folders (five paths). 41 commits in, 41 out, none pruned; new `main` before the reference fix was `eb986a8`. A scratch clone dry run the same day gave the same SHAs, and its reviewed reference fix applied with an identical tree. The reference fix commit changed 9 files (33 lines), mapping 28 SHA references and rewriting 21 old PR references; the four hex strings that aren't orvano commits are listed in its body.
+
+**HIS-3 diff**: `git diff f26a944 <new main> --stat` lists 131 files: the SKL-2 folders, plus exactly the 9 files of the reference fix commit. Nothing else changed.
+
+**HIS-4 first run (2026-10-17, on the rewritten clone before the push)**:
+
+| Check                                                                                                                                               | Result                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Author and committer emails                                                                                                                         | `atteprojects@gmail.com`, `38020025+Atteprojects@users.noreply.github.com`, `noreply@github.com` |
+| Sweep terms self test                                                                                                                               | no blank line; the first term finds itself                                                       |
+| Sweep terms in messages, names, file contents (every commit), file paths, ref names                                                                 | none                                                                                             |
+| `Merge pull request #` subjects                                                                                                                     | none                                                                                             |
+| Old PR references outside the `` `<sha>` (old PR N) `` form                                                                                         | none                                                                                             |
+| gitleaks v8.30.1, `ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f`, default config, no allowlist | 2 findings, explained below                                                                      |
+
+| File                                                                        | Commits              | Rule              | Why it's safe                                                                                                                                                                         |
+| --------------------------------------------------------------------------- | -------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.claude/skills/workers-best-practices/references/configuration.md` line 82 | `25e661d`, `96c5802` | `generic-api-key` | A made up placeholder (`"sk-live-abc123..."`) in an "Anti-pattern" example of the upstream `cloudflare/skills` skill (Apache-2.0), showing what not to commit. It isn't a credential. |
