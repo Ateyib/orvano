@@ -21,6 +21,11 @@ extend-exclude = [
   "skills-lock.json",
 ]
 
+[default]
+# Commit SHAs (7 to 40 hex characters) aren't words: the history rewrite gave one the short SHA `ede31c4`, which read
+# as a misspelling of "edge" (spec 0010 HIS-2).
+extend-ignore-identifiers-re = ["^[0-9a-f]{7,40}$"]
+
 [default.extend-words]
 # Rule ID prefix from spec 0005 (SIZ-1, SIZ-2).
 SIZ = "SIZ"
